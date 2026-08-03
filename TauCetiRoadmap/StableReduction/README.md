@@ -1,11 +1,13 @@
-# Roadmap: stable reduction of curves
+# Roadmap: stable reduction of curves and stable maps
 
 The eventual application is the **properness of the moduli space of stable maps**. This
-roadmap builds one prerequisite at a time: the stable-reduction theory of curves over a
-discrete valuation ring. Its summit is the existence and uniqueness of a stable model after
-a finite base extension, first for smooth curves of genus at least two and then for stable
-pointed curves in the full stable range. It does **not** yet define stable maps or claim that
-their moduli space is proper.
+roadmap builds two prerequisites: the stable-reduction theory of curves over a discrete
+valuation ring and the scheme-level theory of stable maps. Its summit includes existence
+and uniqueness of a stable curve model after finite base extension, first for smooth curves
+of genus at least two and then for stable pointed curves in the full stable range. It also
+defines families of stable maps to a projective target and develops their basic geometric
+API. It does **not** construct a moduli functor, stack, or coarse moduli space, and it does
+not yet claim that such an object is proper.
 
 The proof route is the scheme-theoretic Artin–Winters/Deligne–Mumford route organized in
 the [Stacks Project, *Semistable Reduction*](https://stacks.math.columbia.edu/tag/0C2P)
@@ -18,10 +20,10 @@ while the chosen route splits into reusable scheme, curve, surface, divisor, and
 theory.
 
 Suggested home: `TauCeti/AlgebraicGeometry/Curves/`, with the model and reduction theory
-under `TauCeti/AlgebraicGeometry/Curves/StableReduction/`. General-purpose blowups,
-intersection theory, relative `Proj`, coherent cohomology, and duality belong in the
-corresponding shared `TauCeti/AlgebraicGeometry/` directories rather than under a
-stable-reduction namespace.
+under `TauCeti/AlgebraicGeometry/Curves/StableReduction/` and the map-specific definitions
+under `TauCeti/AlgebraicGeometry/Curves/StableMaps/`. General-purpose blowups, intersection
+theory, relative `Proj`, coherent cohomology, and duality belong in the corresponding shared
+`TauCeti/AlgebraicGeometry/` directories rather than under either specialized namespace.
 
 ## The end goals
 
@@ -42,12 +44,22 @@ Henselian, algebraic-closure, or perfect-residue-field hypothesis.
    extension statement for a generic fibre that is already a stable pointed nodal curve;
    here the theorem may first be stated after a finite extension, with separability proved
    wherever the construction supplies it.
-4. **A valuative interface.** Package existence after finite DVR extension and uniqueness
+4. **Stable maps as geometric objects.** For a projective target `V → S`, define a family
+   of `n`-pointed genus-`g` stable maps as a pointed prestable curve `C → S`, a morphism
+   `F : C → V` over `S`, and the fibrewise stability condition. Prove that stability is
+   equivalent both to the component criterion for components contracted by `F` and to
+   finiteness of the automorphism group scheme. Keep the target polarization separate from
+   the underlying stable-map data.
+5. **A usable stable-map API.** Develop base change, isomorphisms, automorphisms, evaluation
+   maps, polarization degree, decorated dual graphs, constant maps, reindexing and forgetting
+   markings, gluing, and map-aware stabilization. These are constructions on individual
+   objects and families, not the construction of their moduli space.
+6. **A valuative interface.** Package existence after finite DVR extension and uniqueness
    over a fixed DVR in a form that a future moduli-stack development can consume. Do not
    call this `IsProper`: Mathlib's `AlgebraicGeometry.ValuativeCriterion` concerns morphisms
    of schemes, whereas the moduli object here is eventually a stack.
 
-The mathematical shape of the first summit is:
+The mathematical shape of the two summits is:
 
 ```lean
 -- Suggested shape once the prerequisite vocabulary exists; this is not present-day Lean.
@@ -58,10 +70,17 @@ The mathematical shape of the first summit is:
 --     [SmoothOfRelativeDimension 1 toK] [IsProjective toK]
 --     (hconn : GeometricallyConnected toK) (hg : arithmeticGenus toK = g) (hg2 : 2 ≤ g) :
 --   ∃ (K' R' : Type*) ..., StableFamily ... ∧ genericFiber ... ≅ baseChange C K'
+
+-- Suggested stable-map data once pointed prestable curves exist; this is not present-day Lean.
+-- structure PrestableMap (target : V ⟶ S) (n : ℕ) where
+--   curve : PointedPrestableFamily S n
+--   map : curve.total ⟶ V
+--   map_over : map ≫ target = curve.toBase
+-- def IsStableMap (F : PrestableMap target n) : Prop := ...
 ```
 
 Do not freeze this spelling before the curve-family, projective-morphism, and DVR-extension
-APIs exist. The definitive target is the mathematical statement above, not this comment.
+APIs exist. The definitive targets are the mathematical statements above, not this comment.
 
 ## Standing conventions
 
@@ -89,6 +108,20 @@ APIs exist. The definitive target is the mathematical statement above, not this 
   `ω_{X/S}(s₁ + ⋯ + sₙ)` is relatively ample; equivalently, on every geometric fibre
   each genus-zero component has at least three special points and each genus-one component
   has at least one. This is the convention needed in genus zero and one.
+- **Stable-map stability is map-dependent.** A stable map has a pointed prestable source,
+  not necessarily a stable pointed source. On every geometric fibre, only components on
+  which the map is constant must satisfy the pointed stability inequalities: a contracted
+  genus-zero component has at least three special points and a contracted genus-one
+  component has at least one. Prove equivalence with finiteness of the automorphism group
+  scheme. In positive characteristic, finiteness does not by itself mean unramifiedness;
+  isolate hypotheses such as separability when a reduced or unramified automorphism scheme
+  is needed.
+- **Polarizations are structure for degree, not hidden data.** The core stable-map structure
+  records a target morphism and a map over the base. A chosen relatively ample invertible
+  sheaf `L` on a projective target supplies component degrees, a numerical total degree, and
+  the positivity criterion using
+  `ω_{C/S}(Σsᵢ) ⊗ F^*(L^⊗3)`. Prove that the stability predicate is independent of the
+  chosen ample polarization.
 - **Genus means arithmetic genus.** For a proper geometrically connected curve over a field,
   `g = dim H¹(X, 𝒪_X)`. In a family, genus `g` means that `R¹f_*𝒪_X` is locally free of
   rank `g`, with the fibrewise and Euler-characteristic formulations proved equivalent.
@@ -155,8 +188,8 @@ This inventory was checked on 2026-08-03 against Tau Ceti commit
 ### Work already in motion
 
 The audit found no Tau Ceti issue, pull request, or public Lean project intention for general
-stable reduction, stable curves, or nodal families. Two open Mathlib pull requests develop
-coordinate-level singular Weierstrass cubics:
+stable reduction, stable curves, nodal families, or stable maps. Two open Mathlib pull
+requests develop coordinate-level singular Weierstrass cubics:
 [#25071](https://github.com/leanprover-community/mathlib4/pull/25071) and rational points on
 nodal cubics [#25069](https://github.com/leanprover-community/mathlib4/pull/25069). If they
 land, use them for elliptic examples; they are not a general scheme-theoretic node or family
@@ -168,9 +201,10 @@ foundation below, especially blowups, coherent cohomology, and duality.
 There is presently no scheme-level API for families of curves, relative dimension at most
 one, nodal singularities or the relative singular locus, arithmetic genus in families,
 relative dualizing sheaves, ampleness/projective morphisms, prestable/semistable/stable
-curves, marked curves, blowups or contractions, intersection theory on arithmetic surfaces,
-regular/minimal models, numerical types, or semistable/stable reduction. The theorem cannot
-be reached by filling one isolated `sorry`; every item below is part of its dependency graph.
+curves, marked curves, stable maps, blowups or contractions, intersection theory on
+arithmetic surfaces, regular/minimal models, numerical types, or semistable/stable reduction.
+The summit cannot be reached by filling one isolated `sorry`; every item below is part of
+its dependency graph.
 
 ---
 
@@ -378,6 +412,76 @@ ownership before implementation.
   over a fixed DVR. This is the precise input a future properness proof for
   `Mbar_{g,n}` and for stable-map moduli should consume.
 
+### Layer 10: stable maps and their stability condition
+
+This layer depends on the pointed-prestable-curve core of Layer 3 and may begin while the
+stable-reduction layers are still in progress.
+
+- For a target `q : V → S`, define a `PrestableMap q n` to consist of a pointed prestable
+  family `π : C → S`, its `n` ordered markings, a morphism `F : C → V`, and the equation
+  `F ≫ q = π`. Supply coercions or projections to the source family without duplicating its
+  properties. Define pullback along `S' → S` using chosen pullbacks and prove independence
+  from those choices up to canonical isomorphism.
+- Define isomorphisms of prestable maps over a fixed target: isomorphisms of pointed source
+  curves that commute with `F`. Develop identity, inverse, composition, extensionality, and
+  transport along isomorphisms of the base and target. Package the automorphism functor and
+  prove representability by a group scheme in the finite-presentation cases used here.
+- On a geometric fibre, define when an irreducible component is **contracted** by `F`.
+  Relate constancy of the restricted morphism, set-theoretic image dimension zero, and—when
+  the target has an ample invertible sheaf—degree zero of its pullback. Prove that this
+  notion is invariant under field extension and target isomorphism.
+- Define `IsStableMap F` fibrewise: every contracted rational component has at least three
+  special points and every contracted genus-one component has at least one. Prove invariance
+  under isomorphism, stability under arbitrary base change, and openness on the base in a
+  family of prestable maps.
+- Prove the two standard characterizations. First, `F` is stable exactly when its geometric
+  fibres have finite automorphism group schemes. Do not strengthen `Finite` to `Unramified`
+  in positive characteristic without a separability hypothesis. Second, for a relatively
+  ample invertible sheaf `L` on a projective target, stability is equivalent to relative
+  ampleness of
+  `ω_{C/S}(Σsᵢ) ⊗ F^*(L^⊗3)`. Prove independence from `L` and the analogous statement for
+  every exponent at least three.
+- Show that a constant prestable map is stable exactly when its pointed source is stable.
+  A nonconstant map may be stable even when its pointed source is not; formalize this as an
+  API theorem rather than making source stability a field of `PrestableMap`.
+
+### Layer 11: basic stable-map API and map-aware stabilization
+
+- Define the evaluation morphism at the `i`th marking as `sᵢ ≫ F : S → V`. Prove its
+  compatibility with base change, reindexing of markings, isomorphisms of stable maps, and
+  postcomposition on the target.
+- Given a relatively ample `L`, define the degree of a map and its degree on each geometric
+  irreducible component by the degree of `F^*L`. Prove nonnegativity, additivity over the
+  components of a nodal curve, invariance under algebraically closed field extension, and
+  local constancy of total degree in a connected family. Until a general cycle theory is
+  available, this polarization degree is the compiled numerical invariant; connect it to
+  the pushforward curve class once Chow groups of one-cycles exist.
+- Decorate the dual graph from Layer 1 with marking legs and component degrees. Prove the
+  genus and total-degree formulas and characterize stable vertices: a degree-zero vertex of
+  genus zero has valence plus markings at least three, and a degree-zero vertex of genus one
+  has at least one incident edge or marking. Develop restriction to a component,
+  normalization at a node, and reconstruction of the numerical data.
+- Reindex markings by equivalences and define forgetting one marking followed by
+  **map-aware stabilization** whenever the resulting numerical type satisfies
+  `2g - 2 + (n - 1) + 3d > 0`: contract only components that become unstable and on which
+  `F` is constant. Prove that `F` descends uniquely through the contraction, the result is a
+  stable map, and the operation commutes with base change and repeated forgetting.
+- Define gluing two marked stable maps when their evaluation morphisms at the chosen
+  markings agree. Construct the nodal source pushout in the cases needed here, descend the
+  target maps, calculate the decorated dual graph, and prove stability of the glued map.
+  Include self-gluing of two markings on one source.
+- For a projective target with relatively ample `L`, map degree `d`, and
+  `2g - 2 + n + 3d > 0`, construct stabilization of a prestable map using the relative
+  `Proj` of the section algebra of `ω_{C/S}(Σsᵢ) ⊗ F^*(L^⊗3)`. Identify precisely the
+  degree-zero unstable components it contracts. Prove its universal property, uniqueness,
+  compatibility with base change, and identity on an already stable map. Prove separately
+  that the excluded degree-zero genus-zero and genus-one numerical types admit no stable
+  map.
+- Record functoriality under target isomorphisms and closed immersions. For a general
+  postcomposition `V → W`, prove a sharp criterion for preservation of stability rather
+  than asserting it unconditionally: the new target map may contract additional source
+  components.
+
 ## Acceptance criteria and worked examples
 
 Build these alongside the layers; they detect definitions that are fibrewise, geometric,
@@ -402,10 +506,23 @@ or logarithmic in the wrong way.
 - **Good reduction:** if `C` already extends to a smooth proper family of genus at least two,
   its stable reduction is that family itself, and uniqueness identifies any other stable
   model with it.
+- **Stable maps versus stable sources:** the identity `ℙ¹ → ℙ¹` with no markings is a stable
+  map although its source is not a stable pointed curve. The constant map from the same
+  source is not stable, while a constant map from `(ℙ¹; 0,1,∞)` is stable.
+- **Contracted and noncontracted components:** attach an unmarked rational tail to a stable
+  source. A map that is constant on the tail is unstable; a map of positive degree on the
+  tail can be stable. Verify both the component criterion and positivity of
+  `ω(Σpᵢ) ⊗ F^*L^3`.
+- **Evaluation and gluing:** glue two stable maps at markings with equal evaluations and
+  check the resulting map, arithmetic genus, total degree, and decorated dual graph. Also
+  verify that unequal evaluations correctly prevent the gluing construction.
+- **Forgetting a marking:** forget one of four markings on a degree-zero map from `ℙ¹` and
+  stabilize. Contrast this with a positive-degree three-pointed component, which remains
+  after its last marking is forgotten because the map is nonconstant.
 
 ## Ordering and work lanes
 
-Begin with Layer 0 and the nodal-family core of Layer 1. Three lanes can then advance without
+Begin with Layer 0 and the nodal-family core of Layer 1. Four lanes can then advance without
 duplicating ownership:
 
 1. **Curve/duality lane:** Layers 1–3, shared with the Jacobian roadmap.
@@ -413,26 +530,33 @@ duplicating ownership:
    `xy = πⁿ` calculation.
 3. **Combinatorial/Picard lane:** Layer 6, whose abstract numerical-type theory can start
    before all scheme comparisons exist.
+4. **Stable-map lane:** Layer 10 begins after the pointed-curve and positivity cores of
+   Layers 2–3. Its definitions, isomorphisms, evaluation maps, and decorated graphs can
+   proceed independently of arithmetic-surface reduction. Layer 11's contraction results
+   then join it to Layers 8–9.
 
 Layer 7 joins the model and Picard lanes; Layer 8 also needs the duality/positivity lane;
-Layer 9 comes last. Every implementation issue should name the exact layer and target it
-claims. A headline stable-reduction statement with unresolved definitions, hidden
-resolution assumptions, or a placeholder notion of node does not advance the summit.
+Layer 9 completes pointed reduction, while Layers 10–11 complete the stable-map foundation.
+Every implementation issue should name the exact layer and target it claims. A headline
+stable-reduction or stable-map statement with unresolved definitions, hidden resolution
+assumptions, or a placeholder notion of node does not advance the summit.
 
-## Boundary with stable maps
+## Boundary: moduli spaces and properness
 
-A stable map `f : (C,pᵢ) → V` can have a rational or elliptic component that is unstable as
-a pointed curve but has finite automorphism group because `f` is nonconstant there.
-Consequently, one cannot prove properness of stable-map moduli by forgetting the map and
-applying pointed stable reduction verbatim.
+This roadmap defines stable maps and develops their object-level and family-level API, but
+it does not define a functor, algebraic stack, or coarse space parametrizing them. It also
+does not prove boundedness, finite type, separatedness, or properness of such a moduli
+object.
 
-The next roadmap must build stable maps to a projective target, curve classes/degrees,
-boundedness, extension of the graph or of a sufficiently positive polarization, and
-contraction using
-`ω_C(Σpᵢ) ⊗ f^*L^m`. It will also need the algebraic stack or coarse moduli object
-whose properness is to be stated. This roadmap supplies its curve-theoretic compactness,
-marking, normalization/gluing, contraction, and uniqueness engine, and stops at that exact
-interface.
+A stable map can have a rational or elliptic component that is unstable as a pointed curve
+but is protected from contraction because the map is nonconstant there. Consequently, the
+future valuative proof cannot forget the map and apply pointed stable reduction verbatim.
+It must extend a generic map to the target—using graph closure, elimination of
+indeterminacy, or a sufficiently positive polarization—then apply the map-aware
+stabilization developed here. Packaging that theorem as properness additionally requires
+the moduli object and the bridge from finite DVR extensions to its valuative criterion.
+Those are the next roadmap; the present one stops with stable maps themselves and the API
+needed to state that work without placeholders.
 
 ## References
 
@@ -456,6 +580,13 @@ interface.
 - F. F. Knudsen,
   [*The projectivity of the moduli space of stable curves, II: The stacks M_{g,n}*](https://doi.org/10.7146/math.scand.a-12001),
   Math. Scand. 52 (1983), 161–199, for pointed stabilization and clutching.
+- K. Behrend and Yu. Manin,
+  [*Stacks of stable maps and Gromov–Witten invariants*](https://arxiv.org/abs/alg-geom/9506023),
+  Duke Math. J. 85 (1996), 1–60, for stable maps, decorated graphs, and their morphisms.
+- W. Fulton and R. Pandharipande,
+  [*Notes on stable maps and quantum cohomology*](https://arxiv.org/abs/alg-geom/9608011),
+  Proc. Sympos. Pure Math. 62 (1997), Part 2, 45–96, especially the basic definition,
+  stability criterion, and polarization used in the projective construction.
 - Q. Liu, *Algebraic Geometry and Arithmetic Curves*, for models, intersection theory,
   reduction of curves, and arithmetic surfaces.
 - D. Mumford, J. Fogarty, and F. Kirwan, *Geometric Invariant Theory*, and D. Gieseker,
@@ -465,6 +596,6 @@ interface.
 ## Acknowledgements
 
 This roadmap follows the Artin–Winters and Deligne–Mumford arguments through the modern
-organization of the Stacks Project. Its shared Picard, divisor, and cohomology foundations
-are coordinated with the existing Tau Ceti Jacobian challenge rather than independently
-redesigned here.
+organization of the Stacks Project, and follows Behrend–Manin and Fulton–Pandharipande for
+the stable-map layer. Its shared Picard, divisor, and cohomology foundations are coordinated
+with the existing Tau Ceti Jacobian challenge rather than independently redesigned here.
