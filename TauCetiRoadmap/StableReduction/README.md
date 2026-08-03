@@ -99,10 +99,12 @@ APIs exist. The definitive targets are the mathematical statements above, not th
 - **Terminology follows the Stacks Project.** A scheme-level family of curves is proper,
   flat, finitely presented, and of relative dimension at most one. A **prestable** family
   is an at-worst-nodal relative curve of pure relative dimension one with geometrically
-  connected fibres. An unpointed **semistable** family has no rational tails; an unpointed
-  **stable** family of genus at least two has neither rational tails nor rational bridges.
-  Record the equivalence with global generation/ampleness of powers of the relative
-  dualizing sheaf. Do not use `semistable` merely as an unpinned synonym for `nodal`.
+  connected fibres. An unpointed **semistable** family is defined to have no rational tails;
+  for genus at least one, record the equivalence with global generation of powers of the
+  relative dualizing sheaf. An unpointed **stable** family of genus at least two has neither
+  rational tails nor rational bridges; in that range, record the equivalence with ampleness
+  of the relative dualizing sheaf. Do not use `semistable` merely as an unpinned synonym for
+  `nodal`.
 - **Marked stability is logarithmic.** Markings are pairwise disjoint sections through the
   smooth locus. An `n`-pointed prestable curve is stable when
   `ω_{X/S}(s₁ + ⋯ + sₙ)` is relatively ample; equivalently, on every geometric fibre
@@ -142,8 +144,9 @@ APIs exist. The definitive targets are the mathematical statements above, not th
 ## Inventory: what Mathlib and Tau Ceti already give us
 
 This inventory was checked on 2026-08-03 against Tau Ceti commit
-`373eee14f6209add708eddd85923d14ec0a128ee` and its pinned Mathlib commit
-`30696563acb0596ab44d272bc5dfee96b2e72263`.
+`373eee14f6209add708eddd85923d14ec0a128ee` and the Mathlib commit pinned by that Tau Ceti
+checkout, `30696563acb0596ab44d272bc5dfee96b2e72263`; this roadmap repository itself builds
+against Mathlib commit `9caeba1000ef8f302920981f4a08651d325abc81`.
 
 ### Consume from Mathlib
 
@@ -270,8 +273,9 @@ ownership before implementation.
   Cohen–Macaulay curves. For Gorenstein fibres, prove that `ω_{X/S}` is invertible and that
   its formation commutes with arbitrary base change. Nodal curves are Gorenstein.
 - Prove the componentwise degree formula on a geometric nodal fibre:
-  `deg(ω_X|_E) = 2g(E) - 2 + #(branches joining E to the rest)` and, with markings,
-  add the number of markings on `E`.
+  `deg(ω_X|_E) = 2g(Ẽ) - 2 + #(branches on Ẽ above nodes of X lying on E)`, where `Ẽ`
+  is the normalization of `E`; the count includes all such branches, so a self-node of `E`
+  contributes two. With markings, add the number of markings on `E`.
 - Extend Tau Ceti's invertible-sheaf API with tensor powers, Cartier divisors, pullback,
   degree on components, global generation, and relative ampleness. Build projective
   morphisms and relative `Proj` of a finitely generated graded quasi-coherent algebra;
@@ -286,9 +290,9 @@ ownership before implementation.
   with geometrically connected fibres. Prove equivalence with universal
   `f_*𝒪_X = 𝒪_S`, and develop restriction, pullback, and fibre APIs.
 - Define unpointed semistable and stable families with the conventions above. Prove:
-  semistable iff there are no rational tails iff `ω^m` is fibrewise globally generated
-  for `m ≥ 2`; stable iff there are no rational tails or bridges iff `ω` is relatively
-  ample.
+  in genus at least one, semistable iff there are no rational tails iff `ω^m` is fibrewise
+  globally generated for `m ≥ 2`; in genus at least two, stable iff there are no rational
+  tails or bridges iff `ω` is relatively ample.
 - Define an `n`-pointed prestable family using sections `s : Fin n → (S ⟶ X)` with
   `s i ≫ f = 𝟙 S`, pairwise-disjoint images, and images in the smooth locus. Define
   stability by relative ampleness of `ω(Σsᵢ)` and prove the geometric-component
@@ -315,8 +319,11 @@ ownership before implementation.
   of components of the special fibre.
 - Formalize the resolution theorem in the exact scope required here: a normal proper model
   of a smooth curve over a DVR admits a regular proper model after a finite sequence of
-  blowups in closed points, and two regular proper models admit a common resolution. Do not
-  cite unrestricted resolution of singularities as a black box.
+  normalized blowups in closed points (blowup followed by normalization, per Lipman's
+  theorem in the scope needed here), and two regular proper models admit a common
+  resolution. Over a general, possibly non-excellent DVR, prove that the relevant
+  normalizations are finite; this is available here because the generic fibre is smooth.
+  Do not cite unrestricted resolution of singularities as a black box.
 - Define exceptional curves of the first kind and prove the curve-on-surface contraction
   theorem, including preservation of properness and control of the generic fibre.
 
@@ -516,9 +523,11 @@ or logarithmic in the wrong way.
 - **Evaluation and gluing:** glue two stable maps at markings with equal evaluations and
   check the resulting map, arithmetic genus, total degree, and decorated dual graph. Also
   verify that unequal evaluations correctly prevent the gluing construction.
-- **Forgetting a marking:** forget one of four markings on a degree-zero map from `ℙ¹` and
-  stabilize. Contrast this with a positive-degree three-pointed component, which remains
-  after its last marking is forgotten because the map is nonconstant.
+- **Forgetting a marking:** take the constant map from the two-line nodal curve with two
+  markings on each component from the pointed-stability example. Forget a marking on one
+  component; that contracted rational component now has only two special points and
+  map-aware stabilization must contract it. Contrast this with a positive-degree component,
+  which remains after its last marking is forgotten because the map is nonconstant.
 
 ## Ordering and work lanes
 
