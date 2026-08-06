@@ -124,8 +124,8 @@ lemma baseChangeHom_comp {M N P : Model R K C toK} (f : Hom M N) (g : Hom N P) :
       baseChangeHom (R := R) (K := K) f.hom f.over_base ≫
         baseChangeHom (R := R) (K := K) g.hom g.over_base := by
   apply pullback.hom_ext
-  · simp [baseChangeHom, Category.assoc]
-  · simp [baseChangeHom]
+  · simp only [baseChangeHom, pullback.lift_fst, pullback.lift_fst_assoc, Category.assoc]
+  · simp only [baseChangeHom, pullback.lift_snd, Category.assoc]
 
 /-- Models of a fixed generic fibre form a category. -/
 instance : Category (Model R K C toK) where
@@ -211,7 +211,7 @@ abbrev Pic (T : NumericalType) := T.Divisor ⧸ T.principalDivisors
 
 /-- The `ℓ`-torsion subgroup of the Picard group of a numerical type. -/
 def torsion (T : NumericalType) (ℓ : ℕ) : AddSubgroup T.Pic :=
-  AddSubgroup.torsionOf ℓ T.Pic
+  AddSubgroup.torsionBy T.Pic (ℓ : ℤ)
 
 end NumericalType
 
