@@ -133,11 +133,14 @@ instance : Category (Model R K C toK) where
   id M :=
     { hom := 𝟙 M.total
       over_base := by simp
-      genericFiber := by simp }
+      genericFiber := by
+        dsimp only [genericFiber]
+        rw [baseChangeHom_id, Category.id_comp] }
   comp f g :=
     { hom := f.hom ≫ g.hom
       over_base := by rw [Category.assoc, g.over_base, f.over_base]
       genericFiber := by
+        dsimp only [genericFiber] at f g ⊢
         rw [baseChangeHom_comp, Category.assoc, g.genericFiber, f.genericFiber] }
   id_comp f := by ext; simp
   comp_id f := by ext; simp
