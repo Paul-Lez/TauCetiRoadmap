@@ -1006,12 +1006,6 @@ representability, no moduli problem**.
   the LMFDB layer's equality checks (Layer 9) become finite computations.
 #### 10A — the analytic modular curve
 
-- **The reusable Riemann sphere.** Equip Mathlib's carrier `OnePoint ℂ` with the standard
-  complex-manifold structure given by the finite coordinate `t` and the coordinate `1/t` at
-  infinity, and write this manifold as `P^1`. Prove that the existing underlying set equivalence
-  `OnePoint.equivProjectivization ℂ` has the expected homogeneous-coordinate formulas; no
-  topology on `ℙ ℂ (Fin 2 → ℂ)` is assumed. This is the common target for `X(1) ≃ P^1` and
-  for roadmaps consuming the Riemann sphere, not a modular-curve-specific duplicate atlas.
 - **The analytic theory of cusps and compactification.** Build `X(Γ) = Γ\ℍ*` as a compact
   Riemann surface — with the point-set work stated as milestones, not assumed: the effective
   `PSL₂` action, proper discontinuity (Mathlib's `ProperlyDiscontinuous.lean`), Hausdorffness

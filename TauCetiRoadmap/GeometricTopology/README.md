@@ -193,13 +193,6 @@ and the constructor `Pregroupoid.groupoid` (`Mathlib/Geometry/Manifold/Structure
 `contDiffGroupoid`, `analyticGroupoid`, and `continuousGroupoid`.
 
 **What to build, gluing track.**
-- **Manifold orientations.** Following
-  [mathlib4#35376](https://github.com/leanprover-community/mathlib4/pull/35376), construct
-  `Manifold.Orientation`, `Orientable`, `OrientedManifold`, and `OrientationLift` from signs of
-  `tangentCoordChange`, including pullback along diffeomorphisms, products, restrictions, and
-  `OrientationLift.compatible_of_det`.  Prove the boundary-orientation convention with outward
-  normal first and its compatibility with collars and boundary gluing.  All oriented connected
-  sums, cobordisms, and downstream complex-orientation arguments consume this one API.
 - **Boundary as a manifold.** `I.boundary M` is currently only a set; promote it to a
   boundaryless `C^n` manifold one dimension lower, with its inclusion a smooth embedding.
   This is the prerequisite for every gluing below. ⚠ "One dimension lower" hides a model

@@ -60,12 +60,14 @@ construction-specific axioms.
 ## Ownership and dependencies
 
 - The [geometric-topology roadmap](../GeometricTopology/README.md) owns manifolds with boundary,
-  orientations, collars, general boundary gluing and handle attachment, general framed surgery,
-  connected sum, cobordism foundations, and smooth triangulation.  This roadmap consumes those objects,
-  contributes the open-gluing theorem for compatible structure-groupoid atlases, and owns Morse
-  handle decompositions, the high-dimensional h-cobordism theorem, framed-surgery arguments for
-  homotopy spheres, and the homotopy-sphere calculation needed for smooth recognition.  It does
-  not define a second collar, handle, surgery operation, boundary-gluing, or triangulation API.
+  collars, general boundary gluing and handle attachment, general framed surgery, connected sum,
+  cobordism foundations, and smooth triangulation.  Its boundary, gluing, connected-sum, and
+  cobordism constructions consume the orientation API owned by Heegaard Floer.  This roadmap
+  consumes those objects, contributes the open-gluing theorem for compatible structure-groupoid
+  atlases, and owns Morse handle decompositions, the high-dimensional h-cobordism theorem,
+  framed-surgery arguments for homotopy spheres, and the homotopy-sphere calculation needed for
+  smooth recognition.  It does not define a second collar, handle, surgery operation,
+  boundary-gluing, or triangulation API.
 - The [universal-covers roadmap](../UniversalCovers/README.md) owns universal covers, deck groups,
   quotient covers, and induced maps on homotopy groups.  This roadmap consumes the corresponding
   Tau Ceti modules for the Fuchsian and torus quotients; it does not package another equivariant
@@ -75,10 +77,11 @@ construction-specific axioms.
   Mathlib's `Analysis/Complex/BranchLogRoot.lean` API.  The
   [modular-forms roadmap](../ModularForms/README.md) owns Mathlib-compatible modular forms,
   Hecke theory, analytic modular curves for congruence subgroups, and the normalized level-one
-  `j`-function with its exact elliptic orders, the reusable Riemann-sphere atlas on `OnePoint C`,
-  and `X(1) ≃ P^1`.  This roadmap consumes those libraries and owns the particular
-  `(3,4,∞)` Fuchsian orbifold, its comparison with the level-one modular curve, and the three
-  period functions required by this family.
+  `j`-function on the upper half-plane with its modular invariance, Laurent `q`-expansion, and
+  exact elliptic orders.  This roadmap consumes only that pre-compactification function theory;
+  it owns the reusable Riemann-sphere atlas on `OnePoint C`, the particular `(3,4,∞)` Fuchsian
+  orbifold and its compactified uniformization, and the three period functions required by this
+  family.
 - The [Hodge-structures roadmap](../HodgeStructures/README.md) concerns abstract pure and mixed
   Hodge structures.  Here the periods are an explicit weight-one rank-four family, so no general
   variation-of-Hodge-structure API is introduced.
@@ -87,12 +90,15 @@ construction-specific axioms.
   here is a free `Z`-module with a representation, and a fibre lattice is a discrete full
   `Submodule Z` of the underlying real vector space of `C^2`; neither is renamed as that
   roadmap's bilinear lattice.
-- The [Heegaard Floer roadmap](../HeegaardFloer/README.md), Lanes M and F0, owns
-  finite-dimensional Sard, Morse functions, stable and unstable manifolds, and Morse--Smale
-  transversality.  Layer 9 consumes that substrate and owns the handle-decomposition,
-  cancellation, Whitney, and h-cobordism consequences.  Heegaard Floer also owns general
-  almost-complex and pseudoholomorphic-curve analysis; this roadmap constructs an integrable
-  atlas by holomorphic charts and transition maps and does not duplicate that theory.
+- The [Heegaard Floer roadmap](../HeegaardFloer/README.md)'s orientation-and-degree inventory
+  target owns the general `Manifold.Orientation`, `Orientable`, `OrientedManifold`,
+  `OrientationLift`, and degree API in the shape of mathlib4#35376.  Separately, its Lanes M and
+  F0 own finite-dimensional Sard, Morse functions, stable and unstable manifolds, and
+  Morse--Smale transversality.  Layers 7 and 9 consume those respective substrates and own the
+  duality, handle-decomposition, cancellation, Whitney, and h-cobordism consequences.  Heegaard
+  Floer also owns general almost-complex and pseudoholomorphic-curve analysis; this roadmap
+  constructs an integrable atlas by holomorphic charts and transition maps and does not
+  duplicate that theory.
 
 ## Encoding conventions: standard public interfaces
 
@@ -160,11 +166,12 @@ sibling Tau Ceti roadmaps.
   modular discriminant, `ModularForm.discriminant_eq_E₄_cube_sub_E₆_sq`, and the discriminant's
   nonvanishing and `q`-expansion theorems; Mathlib's complex analytic functions, locally uniform
   convergence, and `BranchLogRoot` API; together with the conformal-mapping roadmap's
-  analytic-continuation targets and the modular-forms roadmap's `j`-function and analytic
-  modular-curve targets.
+  analytic-continuation targets and the modular-forms roadmap's upper-half-plane `j`-function
+  targets.
 - `OnePoint C` and the underlying set equivalence `OnePoint.equivProjectivization` from
-  `Mathlib/Topology/Compactification/OnePoint/ProjectiveLine.lean`; the modular-forms roadmap
-  equips this carrier with the standard two-chart complex-manifold structure called `P^1`.
+  `Mathlib/Topology/Compactification/OnePoint/ProjectiveLine.lean`, including its existing
+  homogeneous-coordinate formulas; Layer 0 equips this carrier with the standard two-chart
+  complex-manifold structure called `P^1`.
 - `Submodule`, `Basis`, `Matrix`, `Representation`, `Monoid.Coprod`, exterior powers, and
   `IsZLattice` in `Mathlib/Algebra/Module/ZLattice/Basic.lean`; Mathlib's
   `Submodule.smithNormalForm`; Tau Ceti's
@@ -188,8 +195,8 @@ sibling Tau Ceti roadmaps.
   second-countability, or compactness.  Layer 9 therefore proves the mathematically valid direct
   theorem with these hypotheses rather than claiming the unrestricted proposition.
 - The geometric-topology roadmap's manifold-boundary, collar, handle, connected-sum, cobordism,
-  orientation, and smooth-triangulation targets; the universal-covers roadmap's pointed induced
-  homotopy-group maps.
+  and smooth-triangulation targets; the Heegaard Floer roadmap's manifold-orientation and degree
+  targets; the universal-covers roadmap's pointed induced homotopy-group maps.
 
 The following Mathlib pull requests determine the target shape of interfaces not wholly available
 at the dependency pin.  Import every declaration present at the pin; implement the remaining
@@ -204,7 +211,7 @@ interface locally in the same shape, and replace that implementation by imports 
   atlas transport follow that direction.
 - [mathlib4#35376](https://github.com/leanprover-community/mathlib4/pull/35376) develops
   `Manifold.Orientation`, `Orientable`, `OrientedManifold`, and `OrientationLift` using signs of
-  `tangentCoordChange`.  Geometric topology Layer 1 builds that interface in the same shape;
+  `tangentCoordChange`.  Heegaard Floer builds that interface in the same shape;
   consume `OrientationLift.compatible_of_det` here to prove that a complex atlas induces its
   canonical real orientation, and do not retain a chart-list-specific orientation certificate.
 - [mathlib4#31350](https://github.com/leanprover-community/mathlib4/pull/31350) proposes the
@@ -247,19 +254,31 @@ This layer provides the common atlas and quotient interfaces used by every later
    resulting identity map is a diffeomorphism and that recharting commutes with products and open
    restrictions.  Specialise the general theorem to identify the realification of
    `EuclideanSpace C (Fin 3)` with Mathlib's `EuclideanSpace R (Fin 6)`.
-3. **Smooth quotients.**  Complete the API suggested by mathlib4#40727: a smooth free properly
+3. **The reusable Riemann sphere.**  On Mathlib's existing carrier `OnePoint C`, construct the
+   standard two-chart complex-manifold structure.  The finite chart has domain
+   `OnePoint C \ {infinity}` and coordinate `coe z |-> z`; the chart at infinity has domain
+   `OnePoint C \ {coe 0}` and sends `infinity` to `0` and `coe z` to `z⁻¹`.  Prove that the
+   transition map on `C \ {0}` is inversion and is biholomorphic, then establish `ChartedSpace`,
+   `HasGroupoid`, and `IsManifold` for this atlas and retain Mathlib's existing compact,
+   Hausdorff, and second-countable topology.  Call this complex manifold `P^1`.  Consume the
+   existing lemmas `OnePoint.equivProjectivization_apply_infinity`,
+   `OnePoint.equivProjectivization_apply_coe`, and
+   `OnePoint.equivProjectivization_symm_apply_mk` to record its homogeneous-coordinate formulas;
+   do not construct a second carrier or assume a topology on
+   `Projectivization C (Fin 2 -> C)`.
+4. **Smooth quotients.**  Complete the API suggested by mathlib4#40727: a smooth free properly
    discontinuous action produces the standard orbit quotient with `IsManifold`; `Quotient.mk` is
    a covering map and local diffeomorphism; invariant smooth maps descend, and smooth maps out of
    the quotient are characterised after precomposition with the projection.  Give the additive
    translation-action version by `to_additive`.  Prove the analogous complex-manifold and
    holomorphic descent statements.
-4. **Compatible atlases on `TopCat.GlueData`.**  Given manifold structures on every `D.U i` and
+5. **Compatible atlases on `TopCat.GlueData`.**  Given manifold structures on every `D.U i` and
    structure-groupoid-compatible transition maps on every `D.V (i,j)`, construct one
    `ChartedSpace` on `D.toGlueData.glued`, prove `HasGroupoid` and `IsManifold`, and prove each
    canonical `D.toGlueData.ι i` is an open local diffeomorphism.  Establish uniqueness up to the
    identity diffeomorphism and functoriality under maps of gluing data.  Smooth and complex gluing
    are corollaries of this one structure-groupoid theorem.
-5. **Holomorphic line bundles.**  Extend Mathlib's `FiberBundle`, `VectorBundle`, and
+6. **Holomorphic line bundles.**  Extend Mathlib's `FiberBundle`, `VectorBundle`, and
    `ContMDiffVectorBundle` APIs over a complex base with line bundles presented by holomorphic
    `C^*`-valued transition cocycles.  Prove cocycle gluing and change-of-trivialization,
    pullback, dual, tensor product and tensor powers, the trivial-bundle criterion, and the
@@ -268,7 +287,7 @@ This layer provides the common atlas and quotient interfaces used by every later
    identify its transition cocycle; construct determinant bundles and the canonical line bundle
    from the holomorphic cotangent transition cocycle.  Layer 6 uses this API to state and prove
    the exact orders of the multiple fibres' normal and canonical bundles.
-6. **Finite star gluings as an application.**  Express the four-piece star used below as an
+7. **Finite star gluings as an application.**  Express the four-piece star used below as an
    ordinary finite `TopCat.GlueData`.  Prove second countability from a finite index type and
    second-countable pieces, Hausdorffness from the closed-graph conditions on the generated
    equivalence relation, and connectedness from connected pieces whose nonempty-overlap graph is
@@ -312,9 +331,11 @@ Make their matrices in the stated ordered basis coordinate theorems.  Use the co
   `range(A_2-1)=span_Z{-6*wHat+3*deltaHat,-uHat+wHat,-uHat-wHat+deltaHat}`, and
   `ker(M_0-1)=range(M_0-1)=span_Z{wHat,deltaHat}`, together with the coinvariants, saturation,
   and Smith normal forms used in Sections 4 and 7;
-- `Lambda_tor = ker(M_0-1) = range(M_0-1)`, the quotient
-  `LambdaBar = Lambda ⧸ Lambda_tor`, the induced unimodular equivalence
-  `B_0 : LambdaBar ≃ₗ[Z] Lambda_tor`, the factorization of `gammaCoeff` through
+- `Lambda_tor = ker(M_0-1) = range(M_0-1)` with ordered basis
+  `e_1=wHat`, `e_2=deltaHat`; the quotient `LambdaBar = Lambda ⧸ Lambda_tor` with ordered basis
+  `gammaHatBar=class(gammaHat)`, `uHatBar=class(uHat)`; the induced unimodular equivalence
+  `B_0 : LambdaBar ≃ₗ[Z] Lambda_tor`, pinned by
+  `B_0(gammaHatBar)=-e_2` and `B_0(uHatBar)=e_1`; the factorization of `gammaCoeff` through
   `gammaBarCoeff : LambdaBar ->ₗ[Z] Z`, and the two vectors fixed by their respective elliptic
   stabilizers
   `epsilon=gammaHat+2*uHat-4*wHat` and
@@ -335,8 +356,8 @@ theorem and a basis-independent statement.
 
 ## Layer 2: the `(3,4,∞)` Fuchsian orbifold
 
-Use the modular-forms roadmap's `P^1`, whose carrier is `B = OnePoint C`, as the base throughout;
-write `t` for its finite chart and `t_c=1/t` for its chart at infinity.
+Use Layer 0's `P^1`, whose carrier is `B = OnePoint C`, as the base throughout; write `t` for its
+finite chart and `t_c=1/t` for its chart at infinity.
 
 1. Use the action `[[a,b],[c,d]]*z=(a*z+b)/(c*z+d)` and the determinant-one lifts
    `g_1=[[-1,1],[-1,0]]` and `g_2=[[0,-1],[1,sqrt(2)]]`; thus
@@ -358,11 +379,15 @@ write `t` for its finite chart and `t_c=1/t` for its chart at infinity.
    `a_1^3=a_2^4=1`, with `a_1*a_2*a_0=1`.  All three meridians are clockwise, and the associated
    deck generators act by `rho_Lambda`; record that reversing all meridians replaces every
    monodromy and twist exponent by its inverse or negative.
-3. Consume the modular-forms roadmap's normalized `j`-function, its Laurent `q`-expansion, exact
-   orders of `j` and `j-1728`, and biholomorphism `X(1) ≃ P^1`.  Construct the homomorphism from
-   `Delta` to the level-one modular group used by the modular parameter and prove the normalized
-   `(3,4,∞)` pullback/orbifold uniformization, including the induced elliptic ramification and
-   `q`-coordinate at the cusp.
+3. Consume the pre-compactification modular-form API for the normalized `j`-function on the upper
+   half-plane: its modular invariance, Laurent `q`-expansion, and the exact orders of `j` and
+   `j-1728` at the elliptic orbits.  Construct the homomorphism from `Delta` to the level-one
+   modular group used by the modular parameter.  Descend the resulting map to the compactified
+   quotient constructed in Step 2 and to Layer 0's `P^1`; prove from the elliptic orders and the
+   single simple cusp pole that it has degree one, and hence is a biholomorphism by the local
+   normal form.  Use this particular biholomorphism to establish the normalized `(3,4,∞)`
+   pullback/orbifold uniformization and its elliptic and cusp coordinates.  Do not depend on a
+   separately packaged `X(1) ≃ P^1` theorem.
 4. Prove orbit-local-finiteness and Hausdorff-separation lemmas for every properly discontinuous
    Fuchsian action.  For `Delta`, additionally construct explicit compact fundamental sets and
    cusp neighbourhoods and prove that their translates have the finiteness and overlap
@@ -387,12 +412,13 @@ the paper, rather than assuming their existence as an axiom.
    `mu(g_1 z) = (1-mu z)/tau z` and `mu(g_2 z) = 1+mu z/tau z`, and prove an explicit norm bound
    on a cusp neighbourhood using direct quantified inequalities.  Also prove
    `mu(g_0*z)=mu(z)`.
-3. Consume the modular-forms roadmap's analytic structure sheaf, divisor-twist, Cech-to-sheaf
-   cohomology, Riemann--Roch, and high-degree `H^1`-vanishing interfaces.  Specialise them along
-   `X(1) ≃ P^1` to prove `H^1(P^1,O(-1))=H^1(P^1,O)=0`, and extract the two-chart Laurent
-   splitting of overlap cocycles needed for computation.  Prove the finite-orbifold descent and
-   finite-jet interpolation theorem with frame orders `(2,1)` for `O(-1)`--value and first
-   derivative at `z_1`, value at `z_2`--and `(0,0)` for `O`.  Interpret the affine transformation
+3. On Layer 0's two-chart `P^1`, use Laurent expansions to prove directly that every holomorphic
+   overlap cocycle for `O(-1)` or `O` splits as a difference of sections on the two charts;
+   formulate this as the reusable two-chart Cech statements `H^1(P^1,O(-1))=0` and
+   `H^1(P^1,O)=0`, without introducing a second structure sheaf or a general Riemann--Roch
+   development.  Prove the finite-orbifold descent and finite-jet interpolation theorem with
+   frame orders `(2,1)` for `O(-1)`--value and first derivative at `z_1`, value at `z_2`--and
+   `(0,0)` for `O`.  Interpret the affine transformation
    law for `beta` as an `O`-torsor cocycle, solve it by that theorem, and prove
    `beta(g_1*z)=beta(z)+2-6*(1-mu(z))^2/tau(z)`,
    `beta(g_2*z)=beta(z)-3-6*mu(z)^2/tau(z)`, and `beta(g_0*z)=beta(z)+1`.  Prove
@@ -590,9 +616,10 @@ This layer develops the required generic topology as standard, map-level APIs.
    universal coefficient short exact sequence with its naturality and splitting consequences.
    Construct the Alexander--Whitney and Eilenberg--Zilber chain maps and chain homotopies; use them
    to define cup and cap products and prove their naturality, associativity, unit, graded-sign,
-   and boundary formulas.  Consume geometric topology's orientation and boundary conventions,
-   construct integral fundamental classes, and prove Poincare and Poincare--Lefschetz duality for
-   compact oriented manifolds, including the top-degree and torsion consequences used here.
+   and boundary formulas.  Consume Heegaard Floer's orientation and degree foundation together
+   with geometric topology's boundary and collar conventions, construct integral fundamental
+   classes, and prove Poincare and Poincare--Lefschetz duality for compact oriented manifolds,
+   including the top-degree and torsion consequences used here.
 7. **Euler characteristic.**  Define Euler characteristic for finite-CW-type spaces and prove
    homotopy invariance, multiplicativity for fibre bundles with finite-CW base and fibre and for
    finite covers, and additivity for finite excisive decompositions and finite CW
@@ -710,43 +737,69 @@ The final recognition theorem is a major library development in its own right.
    brackets with their indeterminacy and naturality; these are the inputs to the low-stem
    computation, not unexplained table lookups.
 2. Define the inclusions `SO(r) -> SO(r+1)`, stable `SO` as their colimit, and the comparison from
-   finite to stable orthogonal homotopy groups.  Prove the stable range and real Bott periodicity
-   through the loop equivalences giving the eight-periodic homotopy table.  Construct stable `J`
-   from the action of `SO(r)` on spheres and prove compatibility with both stabilization systems.
-3. Define stable tangent and normal framings, framed bordism, and almost-framed bordism (a stable
-   framing away from a disc).  Construct one-point compactifications and Thom spaces of vector
-   bundles, the tubular-neighbourhood collapse map with independence and naturality, and the
-   inverse regular-value construction using relative smooth approximation and transversality;
-   use these to prove Pontryagin--Thom for framed bordism.  This consumes Mathlib's compact
-   Whitney embedding theorem, geometric topology's tubular neighbourhoods, and Heegaard Floer
-   F0's Sard/transversality substrate.  For `n>=5`, define `P_n` geometrically.  A cycle
-   `(W,Sigma,phi)` is a compact oriented smooth `n`-manifold `W`, an orientation-preserving
-   identification of `boundary W` with a homotopy `(n-1)`-sphere `Sigma`, and a stable tangent
-   framing `phi` on the
-   complement of the interior of a chosen disc, product-compatible on a fixed boundary collar.
-   Two cycles are equivalent exactly when there is a compact oriented smooth `(n+1)`-manifold
-   with corners whose horizontal boundary is `W_0 disjointUnion (-W_1)`, whose vertical boundary
-   is an oriented h-cobordism `C : Sigma_0 -> Sigma_1`, with the specified corner and collar
-   identifications, and which has a stable framing outside a tubular neighbourhood `D^n x I` of
-   a properly embedded arc meeting the horizontal boundaries in exactly the two defect discs;
-   the framing restricts, up to stable homotopy relative to the collars, to the cycle framings.
-   Prove this relation is an equivalence relation and that boundary connected sum descends to a
-   well-defined abelian-group operation on `P_n`.  For `n>=6`, define
-   `P_n -> Theta_(n-1)` by sending a cycle to `[Sigma]`; prove it is a well-defined homomorphism
-   using the vertical h-cobordism.  Interior surgery is not an additional quotient relation:
-   Step 4 proves that the trace of every compatible framed surgery supplies a bordism of this
-   stated kind.  Do not define `P_n` to be a Wall quadratic `L`-group; the comparison with its
-   algebraic obstruction model is a theorem below.
+   finite to stable orthogonal homotopy groups.  Construct the stable oriented classifying space
+   `BSO` and prove the classification theorem needed below: stable isomorphism classes of
+   oriented real vector bundles over a finite CW complex are naturally identified with homotopy
+   classes of maps into `BSO`, pullback corresponds to precomposition, and a class is zero exactly
+   when the bundle admits a stable framing.  Prove homotopy invariance of this classification,
+   prove that `BSO` is simply connected, and for `n>=2` prove that forgetting the basepoint gives
+   `[S^n, BSO]_* ≃ [S^n, BSO]`.  Construct the clutching equivalences
+   `[S^n, BSO]_* ≃ pi_n(BSO) ≃ pi_(n-1)(SO)` in the same range.
+   Prove the stable range and real Bott periodicity through the loop equivalences giving the
+   eight-periodic homotopy table, including `pi_5(SO)=0` and `pi_6(SO)=0`.
+   Construct stable `J` from the action of `SO(r)` on spheres and prove compatibility with both
+   stabilization systems and with the clutching description of stable framings.
+3. Define stable tangent and normal framings and prove their equivalence after choosing an
+   embedding in sufficiently large Euclidean space.  Define framed bordism and construct
+   one-point compactifications and Thom spaces of vector bundles, the tubular-neighbourhood
+   collapse map with independence and naturality, and the inverse regular-value construction
+   using relative smooth approximation and transversality; use these to prove Pontryagin--Thom
+   for framed bordism.  This consumes Mathlib's compact Whitney embedding theorem, geometric
+   topology's tubular neighbourhoods, and Heegaard Floer F0's Sard/transversality substrate.
+
+   Define `A_n`, the group of almost-framed cobordism classes.  An `A_n`-cycle is a closed
+   oriented smooth `n`-manifold `M`, a chosen embedded defect disc `D^n -> M`, and a stable
+   tangent framing of `M \ interior(D^n)` which is product-compatible near its boundary.  An
+   almost-framed cobordism from `(M_0,D_0,phi_0)` to `(M_1,D_1,phi_1)` is a compact oriented
+   smooth `(n+1)`-dimensional cobordism together with a properly embedded arc joining the two
+   defect discs and a stable framing outside a tubular neighbourhood of that arc, restricting
+   up to stable homotopy relative to the collars to `phi_0` and `phi_1`.  Prove independence of
+   the chosen defect discs and collars, prove that this is an equivalence relation, and make
+   `A_n` an abelian group under connected sum.
+
+   For `n>=5`, separately define `P_n`, the group of framed cobordism classes of compact
+   parallelizable `n`-manifolds whose boundary is a homotopy `(n-1)`-sphere.  A `P_n`-cycle
+   `(W,Sigma,phi)` consists of a compact oriented smooth `n`-manifold `W`, an
+   orientation-preserving identification of `boundary W` with `Sigma`, and a stable tangent
+   framing `phi` on all of `W`, product-compatible on a fixed boundary collar.  Two such cycles
+   are equivalent exactly when there is a compact oriented smooth `(n+1)`-manifold with corners
+   whose horizontal boundary is `W_0 disjointUnion (-W_1)`, whose vertical boundary is an
+   oriented h-cobordism `C : Sigma_0 -> Sigma_1`, and which carries a stable framing on the
+   entire cobordism restricting, up to stable homotopy relative to the collars, to the two cycle
+   framings.  Prove that this is an equivalence relation and that boundary connected sum
+   descends to a well-defined abelian-group operation on `P_n`.
+
+   For `n>=5`, define `p : A_n -> P_n` by deleting the interior of the defect disc and define
+   `i : Theta_n -> A_n` by choosing the canonical almost framing on a punctured homotopy sphere.
+   For `n>=6`, define `b : P_n -> Theta_(n-1)` by taking the oriented boundary.  Prove
+   independence of all choices and, for `n>=6`, prove map by map the exact sequence
+   `... -> A_(n+1) ->^p P_(n+1) ->^b Theta_n ->^i A_n ->^p P_n ->^b Theta_(n-1) -> ...`.
+   Prove that the image of `b : P_(n+1) -> Theta_n` is exactly `bP_(n+1)`.
+   Interior surgery is not an additional quotient relation: Step 4 proves that every compatible
+   framed surgery trace is a framed cobordism of the stated kind.  Do not define `P_n` to be a
+   Wall quadratic `L`-group; the comparison with its algebraic obstruction model is a theorem
+   below.
 4. Consume geometric topology's surgery operation on framed embedded spheres.  Prove its effect
    on stable normal framings, the trace cobordism, fundamental groups, and homology, and develop
-   framed surgery below the middle dimension.  For an almost-framed `4k+2`-manifold made
-   `2k`-connected, construct the nonsingular middle-dimensional mod-two intersection pairing and
-   its quadratic refinement.  Prove that its Arf/Kervaire invariant is the obstruction in
-   `P_(4k+2)`, is bordism invariant, and vanishes exactly when middle-dimensional surgeries turn
-   the representative into a homotopy sphere.  Prove the corresponding intersection-form and
-   signature obstruction in dimensions divisible by four, and construct the realization maps
-   from the integral symmetric and mod-two quadratic obstruction data back to geometric `P_n`
-   cycles.
+   framed surgery below the middle dimension.  For an `A_(4k+2)`-cycle, perform surgeries away
+   from the defect disc to obtain a `2k`-connected representative, construct its nonsingular
+   middle-dimensional mod-two intersection pairing and quadratic refinement, and prove that its
+   Arf/Kervaire invariant is bordism invariant and classifies the punched-out class `p([M])` in
+   `P_(4k+2)`.  Prove that it vanishes exactly when middle-dimensional surgeries turn the
+   representative into a homotopy sphere.  In dimensions divisible by four, construct the
+   corresponding integral intersection form and signature obstruction and prove that it
+   classifies `p([M])` in `P_(4k)`.  Construct the realization maps from the integral symmetric
+   and mod-two quadratic obstruction data back to geometric `P_n` cycles.
 5. Prove the geometric obstruction-group calculations in their surgery ranges:
    `P_n=0` for odd `n>=5`; for `k>=2`,
    `P_(4k) ≃ Z` by the exact normalization `[W] |-> signature(W)/8`; and for `k>=1`,
@@ -757,13 +810,21 @@ The final recognition theorem is a major library development in its own right.
    `bP_(n+1) <= Theta_n` as the subgroup represented by homotopy `n`-spheres bounding compact
    parallelizable `(n+1)`-manifolds, and prove subgroup closure by boundary connected sum and
    orientation reversal.
-6. For an oriented smooth homotopy six-sphere, prove stable parallelizability directly: pull its
-   stable tangent class to `S^6` and use the dimension-six Bott/KO obstruction
-   `pi_5(SO)=0`.  Prove that changing a stable normal framing changes its Pontryagin--Thom class
-   by `image(J_6)`.  Construct and prove exact, map by map, the dimension-six almost-framed
-   surgery segment
-   `P_7 -> Theta_6 -> coker(J_6) -> P_6 -> Theta_5`, identify the two boundary images with
-   `bP_7` and `bP_6`, and derive
+6. Let `Sigma` be an oriented smooth homotopy six-sphere and choose a homotopy equivalence
+   `h : Sigma ~=_h S^6`.  Let `tau_Sigma : Sigma -> BSO` classify its stable tangent bundle.
+   Homotopy invariance from Step 2 transports `[tau_Sigma]` to a class in
+   `[S^6,BSO]_* ≃ pi_5(SO)`.  Since Bott periodicity gives `pi_5(SO)=0`, prove that this class
+   is zero and choose a stable tangent, equivalently stable normal, framing of `Sigma`.
+   Prove that two choices differ by an element of `pi_6(SO)` and that their
+   Pontryagin--Thom classes differ by its image under `J_6`.
+
+   Prove the exact sequence
+   `pi_6(SO) ->^J pi_6^S -> A_6 -> pi_5(SO)`
+   by comparing Pontryagin--Thom with the obstruction to extending a stable framing across the
+   defect disc.  Deduce canonically from `pi_5(SO)=0` that `A_6 ≃ coker(J_6)`.
+   Transport the exact segment from Step 3 across this equivalence to obtain, map by map,
+   `P_7 -> Theta_6 -> coker(J_6) -> P_6 -> Theta_5`.
+   Identify the two boundary images with `bP_7` and `bP_6`, and derive
    `0 -> bP_7 -> Theta_6 -> coker(J_6) ->^KI Z/2 -> bP_6 -> 0`.
    This roadmap does not assume a general indexed sequence or store exactness in fields of a
    record.
@@ -804,22 +865,23 @@ from discarding the geometric content of the construction.
 
 | Track | Depends on | Feeds |
 | --- | --- | --- |
-| L0 atlas/quotient/gluing | Mathlib manifold and quotient APIs | L4--L6, L10 |
+| L0 atlas/quotient/gluing and `P^1` | Mathlib manifold and quotient APIs | L2, L4--L6, L10 |
 | L1 integral representation | Mathlib/Tau Ceti linear algebra | L3, L5--L6, L8 |
-| L2 Fuchsian orbifold | conformal mapping, modular forms, universal covers | L3--L4 |
+| L2 Fuchsian orbifold | L0, conformal mapping, modular forms, universal covers | L3--L4 |
 | L3 periods | L1--L2 | L4--L6 |
 | L4 regular torus family | L0, L2--L3 | L6, L8 |
 | L5 cusp filling | L0--L1, L3 | L6, L8 |
 | L6 elliptic fillings and gluing | L0--L1, L3--L5, geometric topology | L8, L10 |
-| L7 algebraic topology | Mathlib/Tau Ceti topology, geometric topology orientations | L8--L9 |
+| L7 algebraic topology | Mathlib/Tau Ceti topology, Heegaard Floer orientation/degree inventory, geometric topology boundary API | L8--L9 |
 | L8 concrete topology | L1, L4--L7 | L9 |
 | L9 smooth recognition | L7--L8, geometric topology, universal covers, Heegaard Floer M/F0 | L10 |
 | L10 transported complex structure | L0, L6, L9 | headline |
 
-L0, L1, L2, L7.1--L7.5, and the geometric foundations can proceed in parallel; L7.6 consumes the
-orientation foundation from geometric topology.  The paper-specific construction then follows
-L3 -> L4/L5 -> L6 -> L8, while smooth recognition follows universal covers and Heegaard Floer
-M/F0 -> L7 -> L9; only L10 joins those two branches.
+L0, L1, L7.1--L7.5, and the geometric foundations can proceed in parallel; L2 follows Layer 0's
+`P^1`, while L7.6 consumes Heegaard Floer's orientation-and-degree inventory target and geometric
+topology's boundary API.  The paper-specific construction then follows
+L2 -> L3 -> L4/L5 -> L6 -> L8, while smooth recognition follows universal covers and Heegaard
+Floer M/F0 -> L7 -> L9; only L10 joins those two branches.
 
 ## Acceptance checks
 

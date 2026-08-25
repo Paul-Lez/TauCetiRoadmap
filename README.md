@@ -13,7 +13,6 @@ If you want to write or review a roadmap, start with [CONTRIBUTING.md](CONTRIBUT
 
 ## Roadmaps
 
-- [A complex structure on the six-sphere](TauCetiRoadmap/SphereSixComplex/README.md)
 - [A statement of the classification of finite simple groups](TauCetiRoadmap/CFSGStatement/README.md)
 - [Algebraic curves: function fields, divisors, and Riemann–Roch](TauCetiRoadmap/AlgebraicCurves/README.md)
 - [Arithmetic Dirichlet series and Tauberian methods](TauCetiRoadmap/ArithmeticDirichletSeries/README.md)
