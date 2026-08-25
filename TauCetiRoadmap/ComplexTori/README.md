@@ -254,11 +254,12 @@ The logarithmic-transform section of Barth--Hulek--Peters--Van de Ven gives the 
 
 ## Dependency order
 
-Milestone 1 consumes the complex-manifolds and universal-covers roadmaps. Milestone 2 uses
-Milestone 1 and the compact-uniform part of the lattice theory. Milestone 3 uses Milestone 2 and
-the universal-covers roadmap. Milestone 4 is algebraic and can proceed in parallel with
-Milestones 1--3. Milestone 5 uses Milestones 2 and 4. Milestone 6 uses Milestone 5 together with
-the complex-manifolds and geometric-topology gluing APIs.
+Milestone 1 consumes the complex-manifolds, universal-covers, and algebraic-topology roadmaps.
+Milestone 2 uses Milestone 1 and the compact-uniform part of the lattice theory. Milestone 3 uses
+Milestone 2 and the universal-covers roadmap. Milestone 4 is algebraic and can proceed in parallel
+with Milestones 1--3. Milestone 5 uses Milestones 2 and 4 together with the complex-manifolds
+roadmap's holomorphic-line-bundle API. Milestone 6 uses Milestone 5 together with the
+complex-manifolds and geometric-topology gluing APIs.
 
 ## Acceptance checks
 
