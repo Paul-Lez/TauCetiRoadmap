@@ -76,15 +76,9 @@ variable {E M G : Type*} [NormedAddCommGroup E] [NormedSpace ℂ E]
   [ContinuousConstSMul G M] [IsCancelSMul G M] [T2Space M] [LocallyCompactSpace M]
   [ChartedSpace E M] [IsManifold 𝓘(ℂ, E) ∞ M]
 
-/-- A free properly discontinuous action preserves the complex quotient atlas only when every
-action map is holomorphic. The hypothesis at `g⁻¹` makes each action map biholomorphic. -/
-theorem complexQuotient_isManifold
-    (_holo : ∀ g : G, ContMDiff 𝓘(ℂ, E) 𝓘(ℂ, E) ∞ fun x : M ↦ g • x) :
-    IsManifold 𝓘(ℂ, E) ∞ (MulAction.orbitRel.Quotient G M) := by
-  sorry
-
-/-- The orbit projection is a covering map and local biholomorphism. This is not a theorem about
-a separate projection from the quotient to an unrelated base. -/
+/-- After consuming Mathlib's quotient-manifold structure, the orbit projection is a local
+biholomorphism. This is not a theorem about a separate projection from the quotient to an unrelated
+base. -/
 theorem quotientMk_isLocalBiholomorph
     (_holo : ∀ g : G, ContMDiff 𝓘(ℂ, E) 𝓘(ℂ, E) ∞ fun x : M ↦ g • x) :
     IsLocalDiffeomorph 𝓘(ℂ, E) 𝓘(ℂ, E) ∞

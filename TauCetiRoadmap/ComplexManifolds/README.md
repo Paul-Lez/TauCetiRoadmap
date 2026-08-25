@@ -21,10 +21,9 @@ every object it introduces.
    restrictions.
 2. Mathlib's carrier `OnePoint ℂ` has a named two-chart complex atlas for the Riemann sphere, with
    compactness and separation inherited from its existing topology.
-3. A free properly discontinuous action by biholomorphisms gives Mathlib's standard orbit quotient
-   a complex-manifold structure. The orbit projection is a covering map and a local
-   biholomorphism, and invariant holomorphic maps and sections descend with the expected universal
-   property.
+3. Using Mathlib's quotient-manifold structure for free properly discontinuous actions, the orbit
+   projection for a biholomorphic action is a local biholomorphism, and invariant holomorphic maps
+   and sections descend with the expected universal property.
 4. Compatible manifold atlases on the pieces of `TopCat.GlueData` give its existing glued carrier
    a smooth or complex atlas. The canonical inclusions are open local diffeomorphisms, and the
    construction is unique and functorial.
@@ -34,8 +33,9 @@ every object it introduces.
 6. Finite open gluings have reusable Hausdorff, second-countability, connectedness, and proper-map
    criteria strong enough to establish global instances from local data.
 
-The roadmap owns boundaryless atlas mechanics, free properly discontinuous smooth and complex
-quotients, open gluing, and holomorphic bundle gluing. It does not own manifolds with boundary,
+The roadmap owns boundaryless atlas mechanics, the local-diffeomorphism and descent API extending
+Mathlib's free properly discontinuous quotients, open gluing, and holomorphic bundle gluing. It does
+not own manifolds with boundary,
 collars, handles, or boundary gluing; arbitrary covering-space classification; almost-complex or
 pseudoholomorphic-curve theory; analytic toric geometry; complex-torus families; coherent sheaf
 cohomology; or Riemann--Roch.
@@ -44,13 +44,13 @@ cohomology; or Riemann--Roch.
 
 - Mathlib owns `ChartedSpace`, `ModelWithCorners`, `StructureGroupoid`, `HasGroupoid`,
   `Structomorph`, `IsManifold`, `Diffeomorph`, `IsLocalDiffeomorph`, `TopCat.GlueData`,
-  `FiberBundle`, `VectorBundle`, `ContMDiffVectorBundle`, and the standard orbit quotients. This
-  roadmap extends those APIs and does not introduce replacement manifold, gluing, quotient, or
-  bundle carriers.
+  `FiberBundle`, `VectorBundle`, `ContMDiffVectorBundle`, the standard orbit quotients, and the
+  quotient-manifold theorem developed in mathlib4#40727. This roadmap extends those APIs and does
+  not introduce replacement manifold, gluing, quotient, or bundle carriers.
 - The [universal-covers roadmap](../UniversalCovers/README.md) owns universal covers, deck groups,
   quotient-cover classification, and lifting theory. This roadmap consumes
-  `IsQuotientCoveringMap` and `IsAddQuotientCoveringMap` and adds the compatible manifold and
-  holomorphic structure.
+  `IsQuotientCoveringMap` and `IsAddQuotientCoveringMap` and adds the compatible
+  local-diffeomorphism and holomorphic descent API.
 - The [geometric-topology roadmap](../GeometricTopology/README.md) owns manifolds with boundary,
   collars, handle attachment, connected sum, cobordisms, and boundary gluing. Open gluing of
   boundaryless structure-groupoid atlases is owned here.
@@ -80,8 +80,12 @@ Consume the following existing interfaces directly.
   colimit universal property from `Mathlib/Topology/Gluing.lean`.
 - `ProperlyDiscontinuousSMul`, `ProperlyDiscontinuousVAdd`, `IsQuotientCoveringMap`,
   `IsAddQuotientCoveringMap`, `MulAction.orbitRel.Quotient`, and
-  `AddAction.orbitRel.Quotient`. The quotient carrier is never replaced by a tagged copy or a
-  chosen quotient section.
+  `AddAction.orbitRel.Quotient`. In particular, consume
+  `isQuotientCoveringMap_quotientMk_of_properlyDiscontinuousSMul.isCoveringMap`,
+  `MulAction.isOpenQuotientMap_quotientMk`,
+  `t2Space_of_properlyDiscontinuousSMul_of_t2Space`,
+  `ContinuousConstSMul.secondCountableTopology`, and `Quotient.instConnectedSpace` directly. The
+  quotient carrier is never replaced by a tagged copy or a chosen quotient section.
 - `FiberBundle`, `VectorBundle`, `VectorBundleCore`, `ContMDiffVectorBundle`, bundle
   trivializations, and the existing pullback and bundle-hom APIs.
 - `OnePoint ℂ` and `OnePoint.equivProjectivization`, including the existing homogeneous-coordinate
@@ -89,10 +93,11 @@ Consume the following existing interfaces directly.
 
 Two open Mathlib pull requests fix the intended form of missing interfaces.
 
-- [mathlib4#40727](https://github.com/leanprover-community/mathlib4/pull/40727) extends the
-  properly-discontinuous quotient from `ChartedSpace` to `IsManifold`. Implement the missing
-  results in Tau Ceti in that PR's orbit-quotient vocabulary, including the local-diffeomorphism
-  and descent API, and replace them by imports when available.
+- The active [mathlib4#40727](https://github.com/leanprover-community/mathlib4/pull/40727) owns the
+  `IsManifold` theorem for properly discontinuous quotients. Its `IsManifold` construction, local
+  inverses, and transition-map API are the selected upstream shape. At a dependency pin predating
+  that API, Tau Ceti mirrors the same declarations locally, then replaces the mirror with imports
+  on a dependency update. Tau Ceti adds the local-diffeomorphism and descent API around that shape.
 - [mathlib4#42847](https://github.com/leanprover-community/mathlib4/pull/42847) develops transport
   of charted spaces and structure groupoids along homeomorphisms. Atlas transport and
   realification follow that design, with local implementations at the dependency pin.
@@ -162,27 +167,26 @@ holomorphic transition calculation.
 
 Fix a group `G` acting freely and properly discontinuously on a manifold `M`.
 
-1. Complete the smooth API in the form of mathlib4#40727. Equip
-   `MulAction.orbitRel.Quotient G M` with `IsManifold`, prove that
-   `Quotient.mk (MulAction.orbitRel G M)` is a covering map and local diffeomorphism, and give the
-   additive version through the existing additive action API.
-2. Prove the corresponding structure-groupoid theorem: if every action map and hence every
-   inverse action map is a structomorphism, the quotient atlas has the same groupoid. Specialize
-   this once to smooth actions and once to biholomorphic actions.
-3. For an invariant map `f : M → N`, construct its quotient descent on the standard quotient.
+Use the Mathlib-owned quotient-manifold theorem in the exact shape of mathlib4#40727, including its
+local inverses and transition maps. At a dependency pin predating that theorem, mirror the same API
+locally and replace the mirror with Mathlib imports on a dependency update. The covering-map,
+open-quotient, Hausdorff, second-countability, and connectedness results listed in the inventory are
+inputs here, not targets.
+
+1. Prove that `Quotient.mk (MulAction.orbitRel G M)` is a local diffeomorphism, using the local
+   inverse and transition-map API selected above. Specialize this to biholomorphic actions to obtain
+   a local biholomorphism, and give the additive versions through the existing additive action API.
+2. For an invariant map `f : M → N`, construct its quotient descent on the standard quotient.
    Prove continuity, smoothness, or holomorphy exactly when the pullback along the quotient
    projection has that property. Prove uniqueness, composition, products, and naturality under
    equivariant maps.
-4. Develop the corresponding descent of maps into fibers and of invariant sections of pulled-back
+3. Develop the corresponding descent of maps into fibers and of invariant sections of pulled-back
    bundles. Prove that equivariant bundle maps descend and that descent commutes with pullback,
    dual, tensor product, and determinant.
-5. If `M` is Hausdorff and locally compact, prove the properly discontinuous quotient is
-   Hausdorff.  If `M` is second countable, prove the open quotient map sends a countable basis to
-   a basis; if `M` is connected, prove its quotient is connected.  If a compact set `K ⊆ M` meets
-   every orbit, prove the quotient is the compact image of `K`.  For each `x`, choose an open
-   neighbourhood disjoint from all of its nontrivial translates and prove that the quotient map
-   restricts there to the chart homeomorphism and local diffeomorphism used by the quotient atlas.
-6. Prove that quotient atlases commute, up to the canonical identity diffeomorphism, with
+4. Package a compact-fundamental-domain convenience theorem: if a compact set `K ⊆ M` meets every
+   orbit, the quotient is compact because it is the image of `K` under the existing continuous
+   orbit projection.
+5. Prove that quotient atlases commute, up to the canonical identity diffeomorphism, with
    realification and recharting.
 
 Lee, *Introduction to Smooth Manifolds*, supplies the free proper-action quotient argument;
@@ -260,8 +264,8 @@ applications and can develop its general topology in parallel. Milestone 6 uses 
 ## Acceptance checks
 
 - The quotient of `ℂ` by integer translations is constructed on
-  `AddAction.orbitRel.Quotient ℤ ℂ`; its orbit projection is a covering map and local
-  biholomorphism.
+  `AddAction.orbitRel.Quotient ℤ ℂ`; it consumes Mathlib's quotient-manifold structure and existing
+  covering-map theorem, while Tau Ceti supplies the local-biholomorphism result.
 - A free properly discontinuous action by non-holomorphic diffeomorphisms does not satisfy the
   complex quotient theorem merely because its underlying real quotient is smooth.
 - The orbit projection `M → M/G` is never called the projection of a manifold bundle over an
