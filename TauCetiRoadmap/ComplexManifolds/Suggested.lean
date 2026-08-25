@@ -84,7 +84,7 @@ theorem complexQuotient_isManifold
   sorry
 
 /-- The orbit projection is a covering map and local biholomorphism. This is not a theorem about
-a later projection from the quotient to an unrelated base. -/
+a separate projection from the quotient to an unrelated base. -/
 theorem quotientMk_isLocalBiholomorph
     (_holo : ∀ g : G, ContMDiff 𝓘(ℂ, E) 𝓘(ℂ, E) ∞ fun x : M ↦ g • x) :
     IsLocalDiffeomorph 𝓘(ℂ, E) 𝓘(ℂ, E) ∞

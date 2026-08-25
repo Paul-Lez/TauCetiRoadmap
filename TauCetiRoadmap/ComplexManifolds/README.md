@@ -109,7 +109,7 @@ Two open Mathlib pull requests fix the intended form of missing interfaces.
   `∀ g, ContMDiff 𝓘(ℂ, E) 𝓘(ℂ, E) ∞ (g • ·)`. Applying the same hypothesis to `g⁻¹` proves that
   every action map is a biholomorphism. Continuity alone, or smoothness only after realification,
   is insufficient.
-- Keep the orbit projection and any later bundle projection distinct. For an action on `M`,
+- Keep the orbit projection and any separate bundle projection distinct. For an action on `M`,
   `M → MulAction.orbitRel.Quotient G M` is the covering map and local biholomorphism. A map from
   that quotient to another base can be a submersion, but is not thereby a covering map.
 - Transported atlases are named definitions. Supply local or scoped instances at their use sites;
@@ -133,7 +133,7 @@ Fix a finite-dimensional complex normed vector space `E` and the boundaryless mo
    homeomorphism of carriers. Prove that the identity map between the original and transported
    structures is a diffeomorphism and prove composition and inverse laws for transport.
 4. Prove that realification commutes, up to the canonical identity diffeomorphism, with recharting,
-   products, open restrictions, quotient atlases, and compatible open gluing.
+   products, and open restrictions.
 5. Construct the standard coordinate equivalence between the realification of
    `EuclideanSpace ℂ (Fin n)` and `EuclideanSpace ℝ (Fin (2 * n))`, and prove its compatibility
    with the preceding transport API.
@@ -176,8 +176,14 @@ Fix a group `G` acting freely and properly discontinuously on a manifold `M`.
 4. Develop the corresponding descent of maps into fibers and of invariant sections of pulled-back
    bundles. Prove that equivariant bundle maps descend and that descent commutes with pullback,
    dual, tensor product, and determinant.
-5. Prove Hausdorffness, second countability, connectedness, compactness under cocompactness, and
-   the expected local-chart formulas under their exact standard hypotheses.
+5. If `M` is Hausdorff and locally compact, prove the properly discontinuous quotient is
+   Hausdorff.  If `M` is second countable, prove the open quotient map sends a countable basis to
+   a basis; if `M` is connected, prove its quotient is connected.  If a compact set `K ⊆ M` meets
+   every orbit, prove the quotient is the compact image of `K`.  For each `x`, choose an open
+   neighbourhood disjoint from all of its nontrivial translates and prove that the quotient map
+   restricts there to the chart homeomorphism and local diffeomorphism used by the quotient atlas.
+6. Prove that quotient atlases commute, up to the canonical identity diffeomorphism, with
+   realification and recharting.
 
 Lee, *Introduction to Smooth Manifolds*, supplies the free proper-action quotient argument;
 Forster, Sections 4--5, supplies the analytic-covering and holomorphic descent pattern. The
@@ -199,6 +205,8 @@ and structure groupoid.
    and atlas transport.
 4. Verify the API on two-chart and finite-star gluings. These are tests of the general theorem,
    not separate gluing constructions.
+5. Prove that compatible open gluing commutes, up to the canonical identity diffeomorphism, with
+   realification and recharting.
 
 The topology is already encoded by `TopCat.GlueData`; Lee's atlas-gluing arguments and
 Kobayashi--Nomizu's pseudogroup formulation supply the manifold proof spine.
@@ -247,7 +255,7 @@ and change-of-trivialization spine.
 Milestones 1 and 2 start from Mathlib. Milestone 3 uses Milestone 1. Milestone 4 uses Milestone 1
 and Mathlib's `TopCat.GlueData`. Milestone 5 uses Milestone 4's canonical maps only for its gluing
 applications and can develop its general topology in parallel. Milestone 6 uses Milestones 1 and
-4. The quotient descent part of Milestone 6 uses Milestone 3.
+4.
 
 ## Acceptance checks
 
@@ -260,7 +268,7 @@ applications and can develop its general topology in parallel. Milestone 6 uses 
   unrelated base.
 - The finite and infinity charts make `OnePoint ℂ` a complex manifold and have transition
   `z ↦ z⁻¹` on the exact punctured overlap.
-- Two-chart and four-chart examples acquire complex atlases from the same `TopCat.GlueData`
+- Two-chart and finite-star examples acquire complex atlases from the same `TopCat.GlueData`
   theorem, and every canonical inclusion is an open local biholomorphism.
 - A cocycle for a trivial line bundle and a nontrivial finite-order character both pass through
   the same holomorphic-line-bundle constructor.
