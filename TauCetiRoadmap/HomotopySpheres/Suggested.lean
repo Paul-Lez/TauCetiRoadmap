@@ -3,67 +3,301 @@ import Mathlib
 /-!
 # High-dimensional differential topology and homotopy spheres: target signatures
 
-**This file is not the roadmap and is not exhaustive.** The definitive document is
-`README.md`. The declarations below pin the principal colimits, geometric cycles, equivalence
-relations, and quotients. An arbitrary `AddCommGrpCat` with the desired computed value does not
-meet these signatures.
+This file is not the roadmap and is not exhaustive. The definitive document is README.md.
+The declarations below pin representative interfaces whose types rule out the vacuous
+orientation, framing, boundary, Pontryagin--Thom, and Wall abstractions discussed in review.
 -/
 
-namespace TauCetiRoadmap.HomotopySpheres
-
-open CategoryTheory ContinuousMap
+open CategoryTheory ContinuousMap Manifold Topology
 open CategoryTheory.Limits
 open scoped ContDiff Manifold Topology
+
+namespace TauCetiRoadmap.HomotopySpheres
 
 universe u v
 
 /-! ## Convenient spaces and literal colimits -/
 
-/-- Mapping spaces, loop spaces, and topological colimits use Mathlib's explicitly
-universe-indexed category of compactly generated spaces. -/
 abbrev ConvenientSpace := CompactlyGenerated.{u, u}
 
 #check CompactlyGenerated.compactlyGeneratedToTop
 
-/-- The suspension diagram whose `r`th object is the relevant unstable sphere homotopy group. -/
 noncomputable def stableStemDiagram (k : ℕ) : ℕ ⥤ AddCommGrpCat := by
   sorry
 
-/-- The `k`th stable stem is the literal colimit of suspension. -/
 noncomputable def stableStem (k : ℕ) : AddCommGrpCat :=
   colimit (stableStemDiagram k)
 
-/-- The canonical map from an unstable representative to the stable stem. -/
 noncomputable def stableStemι (k r : ℕ) :
     (stableStemDiagram k).obj r ⟶ stableStem k :=
   colimit.ι (stableStemDiagram k) r
 
-/-- The colimit universal property is part of the public API. -/
 noncomputable def stableStemIsColimit (k : ℕ) :
     IsColimit (colimit.cocone (stableStemDiagram k)) :=
   colimit.isColimit (stableStemDiagram k)
 
-/-- The block-inclusion diagram defining stable homotopy of `SO`. -/
 noncomputable def stableSOHomotopyDiagram (k : ℕ) : ℕ ⥤ AddCommGrpCat := by
   sorry
 
 noncomputable def stableSOHomotopy (k : ℕ) : AddCommGrpCat :=
   colimit (stableSOHomotopyDiagram k)
 
-/-- Stable `J`, induced by the compatible finite orthogonal actions on spheres. -/
 noncomputable def stableJ (k : ℕ) : stableSOHomotopy k ⟶ stableStem k := by
   sorry
 
-/-- These are consequences of the full Bott cycle, not isolated inputs. -/
 theorem stableSOHomotopy_five_subsingleton : Subsingleton (stableSOHomotopy 5) := by
   sorry
 
 theorem stableSOHomotopy_six_subsingleton : Subsingleton (stableSOHomotopy 6) := by
   sorry
 
-/-! ## A small smooth-manifold skeleton -/
+end TauCetiRoadmap.HomotopySpheres
+
+/-! ## Exact-shape orientation supplier -/
+
+namespace Manifold
+
+variable {E H : Type*} [NormedAddCommGroup E] [NormedSpace ℝ E] [TopologicalSpace H]
+  (I : ModelWithCorners ℝ E H)
+
+def signedOrientation {ι : Type*} (ε : ℤˣ)
+    (orient : _root_.Orientation ℝ E ι) : _root_.Orientation ℝ E ι :=
+  Units.map (Int.castRingHom ℝ).toMonoidHom ε • orient
+
+noncomputable def tangentCoordChangeEquiv
+    {M : Type*} [TopologicalSpace M] [ChartedSpace H M] [IsManifold I 1 M]
+    (x y z : M) : E ≃ₗ[ℝ] E := by
+  sorry
+
+/-- A lift of a manifold orientation with continuous, chart-compatible signs. -/
+structure OrientationLift (M : Type*) [TopologicalSpace M] [ChartedSpace H M]
+    [IsManifold I 1 M] [FiniteDimensional ℝ E] (ι : Type*) [Fintype ι]
+    [Fact (Fintype.card ι = Module.finrank ℝ E)] where
+  modelOrientation : _root_.Orientation ℝ E ι
+  chartSign : M → M → ℤˣ
+  continuousOn_chartSign : ∀ x, ContinuousOn (chartSign x) (chartAt H x).source
+  chartSign_eq_one_of_notMem : ∀ x z, z ∉ (chartAt H x).source → chartSign x z = 1
+  compatible : ∀ x y z, z ∈ (chartAt H x).source → z ∈ (chartAt H y).source →
+    _root_.Orientation.map ι (tangentCoordChangeEquiv I x y z)
+        (signedOrientation (chartSign x z) modelOrientation) =
+      signedOrientation (chartSign y z) modelOrientation
+
+noncomputable instance OrientationLift.instSMul
+    {M : Type*} [TopologicalSpace M] [ChartedSpace H M] [IsManifold I 1 M]
+    [FiniteDimensional ℝ E] {ι : Type*} [Fintype ι]
+    [Fact (Fintype.card ι = Module.finrank ℝ E)] :
+    SMul ℤˣ (OrientationLift I M ι) := by
+  sorry
+
+noncomputable instance OrientationLift.instMulAction
+    {M : Type*} [TopologicalSpace M] [ChartedSpace H M] [IsManifold I 1 M]
+    [FiniteDimensional ℝ E] {ι : Type*} [Fintype ι]
+    [Fact (Fintype.card ι = Module.finrank ℝ E)] :
+    MulAction ℤˣ (OrientationLift I M ι) := by
+  sorry
+
+/-- A manifold orientation is the orbit of compatible lifts under simultaneous reversal. -/
+abbrev Orientation (M : Type*) [TopologicalSpace M] [ChartedSpace H M]
+    [IsManifold I 1 M] [FiniteDimensional ℝ E] (ι : Type*) [Fintype ι]
+    [Fact (Fintype.card ι = Module.finrank ℝ E)] :=
+  MulAction.orbitRel.Quotient ℤˣ (OrientationLift I M ι)
+
+namespace Orientation
+
+noncomputable def orientationAt
+    {M : Type*} [TopologicalSpace M] [ChartedSpace H M] [IsManifold I 1 M]
+    [FiniteDimensional ℝ E] {ι : Type*} [Fintype ι]
+    [Fact (Fintype.card ι = Module.finrank ℝ E)]
+    (o : Orientation I M ι) (x : M) : _root_.Orientation ℝ E ι := by
+  sorry
+
+def Agrees
+    {M : Type*} [TopologicalSpace M] [ChartedSpace H M] [IsManifold I 1 M]
+    [FiniteDimensional ℝ E] {ι : Type*} [Fintype ι]
+    [Fact (Fintype.card ι = Module.finrank ℝ E)]
+    (o₀ o₁ : Orientation I M ι) : Prop :=
+  ∀ x, orientationAt I o₀ x = orientationAt I o₁ x
+
+noncomputable instance
+    {M : Type*} [TopologicalSpace M] [ChartedSpace H M] [IsManifold I 1 M]
+    [FiniteDimensional ℝ E] {ι : Type*} [Fintype ι]
+    [Fact (Fintype.card ι = Module.finrank ℝ E)] :
+    InvolutiveNeg (Orientation I M ι) := by
+  sorry
+
+end Orientation
+
+def Diffeomorph.PreservesOrientation
+    {E' H' M N : Type*} [NormedAddCommGroup E'] [NormedSpace ℝ E']
+    [TopologicalSpace H'] (I' : ModelWithCorners ℝ E' H')
+    [TopologicalSpace M] [TopologicalSpace N] [ChartedSpace H M] [ChartedSpace H' N]
+    [IsManifold I ∞ M] [IsManifold I' ∞ N] [FiniteDimensional ℝ E]
+    [FiniteDimensional ℝ E'] {ι : Type*} [Fintype ι]
+    [Fact (Fintype.card ι = Module.finrank ℝ E)]
+    [Fact (Fintype.card ι = Module.finrank ℝ E')]
+    (f : M ≃ₘ⟮I, I'⟯ N) (oM : Orientation I M ι) (oN : Orientation I' N ι) : Prop :=
+  ∀ x, _root_.Orientation.map ι
+      (f.mfderivToContinuousLinearEquiv (by simp) x).toLinearEquiv
+        (Orientation.orientationAt I oM x) =
+    Orientation.orientationAt I' oN (f x)
+
+end Manifold
+
+/-! ## Shared collared geometry -/
+
+namespace TauCetiRoadmap.GeometricTopology
 
 private abbrev ModelSpace (n : ℕ) := EuclideanSpace ℝ (Fin n)
+
+private noncomputable instance modelSpaceRankFact (n : ℕ) :
+    Fact (Fintype.card (Fin n) = Module.finrank ℝ (ModelSpace n)) :=
+  ⟨by simp [ModelSpace]⟩
+
+private noncomputable abbrev SmoothModel (n : ℕ) :=
+  modelWithCornersSelf ℝ (ModelSpace n)
+
+def CollarSource (B : Type*) : Set (unitInterval × B) :=
+  {p : unitInterval × B | (p.1 : ℝ) < 1}
+
+noncomputable def CollarOpen (B : Type*) [TopologicalSpace B] :
+    TopologicalSpace.Opens (unitInterval × B) :=
+  ⟨CollarSource B, by sorry⟩
+
+theorem zero_mem_collarSource {B : Type*} (b : B) :
+    (0, b) ∈ CollarSource B := by
+  simp [CollarSource]
+
+noncomputable def collarDerivativeEquiv
+    {n : ℕ} {H M B : Type*} [TopologicalSpace H]
+    (I : ModelWithCorners ℝ (ModelSpace n) H) [TopologicalSpace M]
+    [ChartedSpace H M] [IsManifold I ∞ M] [TopologicalSpace B]
+    [ChartedSpace (ModelSpace (n - 1)) B]
+    [IsManifold (SmoothModel (n - 1)) ∞ B]
+    (collar : PartialDiffeomorph
+      ((𝓡∂ 1).prod (SmoothModel (n - 1))) I (unitInterval × B) M ∞)
+    (p : unitInterval × B) (_hp : p ∈ collar.source) :
+    (ModelSpace 1 × ModelSpace (n - 1)) ≃ₗ[ℝ] ModelSpace n := by
+  sorry
+
+noncomputable def outwardNormalBoundaryOrientation {n : ℕ}
+    (_o : _root_.Orientation ℝ (ModelSpace (n - 1)) (Fin (n - 1))) :
+    _root_.Orientation ℝ (ModelSpace 1 × ModelSpace (n - 1)) (Fin n) := by
+  sorry
+
+/-- The outward-normal-first rule ties the boundary orientation to the ambient one. -/
+def CollarInducesBoundaryOrientation
+    {n : ℕ} {H M B : Type*} [TopologicalSpace H]
+    (I : ModelWithCorners ℝ (ModelSpace n) H) [TopologicalSpace M]
+    [ChartedSpace H M] [IsManifold I ∞ M] [TopologicalSpace B]
+    [ChartedSpace (ModelSpace (n - 1)) B]
+    [IsManifold (SmoothModel (n - 1)) ∞ B]
+    (ambientOrientation : Manifold.Orientation I M (Fin n))
+    (boundaryOrientation : Manifold.Orientation
+      (SmoothModel (n - 1)) B (Fin (n - 1)))
+    (collar : PartialDiffeomorph
+      ((𝓡∂ 1).prod (SmoothModel (n - 1))) I (unitInterval × B) M ∞)
+    (collarSource_eq : collar.source = CollarSource B) : Prop :=
+  ∀ b, _root_.Orientation.map (Fin n)
+      (collarDerivativeEquiv I collar (0, b) (by
+        rw [collarSource_eq]
+        exact zero_mem_collarSource b))
+      (outwardNormalBoundaryOrientation
+        (Manifold.Orientation.orientationAt (SmoothModel (n - 1)) boundaryOrientation b)) =
+    Manifold.Orientation.orientationAt I ambientOrientation (collar (0, b))
+
+/-- A compact connected oriented manifold with its actual boundary and a half-open collar. -/
+structure CollaredOrientedManifold (n : ℕ) where
+  H : Type
+  [modelTopology : TopologicalSpace H]
+  model : ModelWithCorners ℝ (ModelSpace n) H
+  M : Type
+  [topology : TopologicalSpace M]
+  [charted : ChartedSpace H M]
+  [manifold : IsManifold model ∞ M]
+  [t2 : T2Space M]
+  [secondCountable : SecondCountableTopology M]
+  [compact : CompactSpace M]
+  [connected : ConnectedSpace M]
+  orientation : Manifold.Orientation model M (Fin n)
+  B : Type
+  [boundaryTopology : TopologicalSpace B]
+  [boundaryCharted : ChartedSpace (ModelSpace (n - 1)) B]
+  [boundaryManifold : IsManifold (SmoothModel (n - 1)) ∞ B]
+  [intrinsicBoundaryCharted :
+    ChartedSpace (ModelSpace (n - 1)) {x : M // x ∈ model.boundary M}]
+  [intrinsicBoundaryManifold :
+    IsManifold (SmoothModel (n - 1)) ∞ {x : M // x ∈ model.boundary M}]
+  boundaryOrientation : Manifold.Orientation (SmoothModel (n - 1)) B (Fin (n - 1))
+  boundaryIdentification :
+    B ≃ₘ⟮SmoothModel (n - 1), SmoothModel (n - 1)⟯ {x : M // x ∈ model.boundary M}
+  collarNeighbourhood : Set M
+  collarNeighbourhood_open : IsOpen collarNeighbourhood
+  boundary_subset_collarNeighbourhood : model.boundary M ⊆ collarNeighbourhood
+  collar : PartialDiffeomorph
+    ((𝓡∂ 1).prod (SmoothModel (n - 1))) model (unitInterval × B) M ∞
+  collar_source : collar.source = CollarSource B
+  collar_target : collar.target = collarNeighbourhood
+  collar_zero : ∀ b, collar (0, b) = boundaryIdentification b
+  collar_meets_boundary_iff : ∀ t b, (t, b) ∈ CollarSource B →
+    (collar (t, b) : M) ∈ model.boundary M ↔ t = 0
+  ambient_induces_boundary :
+    CollarInducesBoundaryOrientation model orientation boundaryOrientation collar collar_source
+  boundary_nonempty : Nonempty B
+
+attribute [instance] CollaredOrientedManifold.modelTopology
+  CollaredOrientedManifold.topology CollaredOrientedManifold.charted
+  CollaredOrientedManifold.manifold CollaredOrientedManifold.t2
+  CollaredOrientedManifold.secondCountable CollaredOrientedManifold.compact
+  CollaredOrientedManifold.connected CollaredOrientedManifold.boundaryTopology
+  CollaredOrientedManifold.boundaryCharted CollaredOrientedManifold.boundaryManifold
+  CollaredOrientedManifold.intrinsicBoundaryCharted
+  CollaredOrientedManifold.intrinsicBoundaryManifold
+
+/-- A smoothly embedded standard closed disc with an exterior half-open collar. -/
+structure SmoothEmbeddedClosedDisk (n : ℕ) {H M : Type*} [TopologicalSpace H]
+    (I : ModelWithCorners ℝ (ModelSpace n) H) [TopologicalSpace M]
+    [ChartedSpace H M] [IsManifold I ∞ M] where
+  disk : CollaredOrientedManifold n
+  [dimensionPositive : NeZero n]
+  [standardBallCharted :
+    ChartedSpace (EuclideanHalfSpace n) (Metric.closedBall (0 : ModelSpace n) 1)]
+  [standardBallManifold :
+    IsManifold (𝓡∂ n) ∞ (Metric.closedBall (0 : ModelSpace n) 1)]
+  standardBall :
+    disk.M ≃ₘ⟮disk.model, 𝓡∂ n⟯ Metric.closedBall (0 : ModelSpace n) 1
+  embedding : C(disk.M, M)
+  smoothEmbedding : IsSmoothEmbedding disk.model I ∞ embedding
+  range_closed : IsClosed (Set.range embedding)
+  range_ne_univ : Set.range embedding ≠ Set.univ
+  exteriorNeighbourhood : Set M
+  exteriorNeighbourhood_open : IsOpen exteriorNeighbourhood
+  exteriorCollar : PartialDiffeomorph
+    ((𝓡∂ 1).prod (SmoothModel (n - 1))) I (unitInterval × disk.B) M ∞
+  exteriorCollar_source : exteriorCollar.source = CollarSource disk.B
+  exteriorCollar_target : exteriorCollar.target = exteriorNeighbourhood
+  exterior_zero : ∀ b,
+    exteriorCollar (0, b) = embedding (disk.boundaryIdentification b)
+  exterior_positive_disjoint : ∀ t b, (t, b) ∈ CollarSource disk.B → t ≠ 0 →
+    (exteriorCollar (t, b) : M) ∉ Set.range embedding
+
+noncomputable def SmoothEmbeddedClosedDisk.exterior
+    {n : ℕ} {H M : Type*} [TopologicalSpace H]
+    {I : ModelWithCorners ℝ (ModelSpace n) H} [TopologicalSpace M]
+    [ChartedSpace H M] [IsManifold I ∞ M]
+    (D : SmoothEmbeddedClosedDisk (M := M) n I) : TopologicalSpace.Opens M :=
+  ⟨(Set.range D.embedding)ᶜ, D.range_closed.isOpen_compl⟩
+
+end TauCetiRoadmap.GeometricTopology
+
+/-! ## Small atlas, genuine tangent framings, and fillings -/
+
+namespace TauCetiRoadmap.HomotopySpheres
+
+private abbrev ModelSpace (n : ℕ) := EuclideanSpace ℝ (Fin n)
+
+private noncomputable instance modelSpaceRankFact (n : ℕ) :
+    Fact (Fintype.card (Fin n) = Module.finrank ℝ (ModelSpace n)) :=
+  ⟨by simp [ModelSpace]⟩
 
 private noncomputable abbrev SmoothModel (n : ℕ) :=
   modelWithCornersSelf ℝ (ModelSpace n)
@@ -71,468 +305,525 @@ private noncomputable abbrev SmoothModel (n : ℕ) :=
 private abbrev Sphere (n : ℕ) :=
   Metric.sphere (0 : EuclideanSpace ℝ (Fin (n + 1))) 1
 
-/-- A finite atlas code. It is small because its charts and transition maps live on the fixed
-Type-0 model space. The implementation adds the exact cover, inverse, and cocycle laws. -/
+/-- A finite lawful smooth atlas code on the fixed Type-0 model. -/
 structure SmoothAtlasCode (n : ℕ) where
   chartCount : ℕ
-  chart : Fin chartCount → OpenPartialHomeomorph (ModelSpace n) (ModelSpace n)
+  chartDomain : Fin chartCount → Set (ModelSpace n)
+  chartDomain_open : ∀ i, IsOpen (chartDomain i)
+  overlap : Fin chartCount → Fin chartCount → Set (ModelSpace n)
+  overlap_open : ∀ i j, IsOpen (overlap i j)
+  overlap_subset_source : ∀ i j, overlap i j ⊆ chartDomain i
+  self_overlap : ∀ i, overlap i i = chartDomain i
   transition : Fin chartCount → Fin chartCount →
     OpenPartialHomeomorph (ModelSpace n) (ModelSpace n)
+  transition_source : ∀ i j, (transition i j).source = overlap i j
+  transition_target : ∀ i j, (transition i j).target = overlap j i
   transition_mem_groupoid :
     ∀ i j, transition i j ∈ contDiffGroupoid ∞ (SmoothModel n)
+  transition_id : ∀ i x, x ∈ chartDomain i → transition i i x = x
+  transition_inv : ∀ i j x, x ∈ overlap i j → transition j i (transition i j x) = x
+  transition_cocycle : ∀ i j k x, x ∈ overlap i j →
+    transition i j x ∈ overlap j k →
+      x ∈ overlap i k ∧ transition i k x = transition j k (transition i j x)
+  identified : (Σ i, chartDomain i) → (Σ i, chartDomain i) → Prop
+  identified_iff : ∀ i j x y,
+    identified ⟨i, x⟩ ⟨j, y⟩ ↔
+      (x : ModelSpace n) ∈ overlap i j ∧ transition i j x = y
+  identified_refl : ∀ x, identified x x
+  identified_symm : ∀ {x y}, identified x y → identified y x
+  identified_trans : ∀ {x y z}, identified x y → identified y z → identified x z
+  separated : IsClosed {p : (Σ i, chartDomain i) × (Σ i, chartDomain i) |
+    identified p.1 p.2}
 
-/-- Points in the disjoint union of chart domains before imposing transitions. -/
-def SmoothAtlasCode.PrePoint {n : ℕ} (C : SmoothAtlasCode n) :=
-  Σ i, (C.chart i).source
+abbrev SmoothAtlasCode.PrePoint {n : ℕ} (C : SmoothAtlasCode n) :=
+  Σ i, C.chartDomain i
 
-/-- The relation generated by the coded transition maps. -/
-noncomputable def SmoothAtlasCode.gluingSetoid {n : ℕ} (C : SmoothAtlasCode n) :
-    Setoid C.PrePoint := by
-  sorry
+def SmoothAtlasCode.gluingSetoid {n : ℕ} (C : SmoothAtlasCode n) : Setoid C.PrePoint where
+  r := C.identified
+  iseqv :=
+    ⟨fun x ↦ C.identified_refl x,
+      fun {_ _} h ↦ C.identified_symm h,
+      fun {_ _ _} hxy hyz ↦ C.identified_trans hxy hyz⟩
 
-/-- Realization is the actual quotient of the finite atlas code. -/
-def SmoothAtlasCode.Realization {n : ℕ} (C : SmoothAtlasCode n) :=
+abbrev SmoothAtlasCode.Realization {n : ℕ} (C : SmoothAtlasCode n) :=
   Quotient C.gluingSetoid
 
-noncomputable instance {n : ℕ} (C : SmoothAtlasCode n) :
-    TopologicalSpace C.Realization := by
+def SmoothAtlasCode.quotientProjection {n : ℕ} (C : SmoothAtlasCode n) :
+    C.PrePoint → C.Realization :=
+  Quotient.mk C.gluingSetoid
+
+theorem SmoothAtlasCode.quotientProjection_isOpenQuotientMap
+    {n : ℕ} (C : SmoothAtlasCode n) : IsOpenQuotientMap C.quotientProjection := by
   sorry
 
-noncomputable instance {n : ℕ} (C : SmoothAtlasCode n) :
+def SmoothAtlasCode.chartToRealization {n : ℕ} (C : SmoothAtlasCode n)
+    (i : Fin C.chartCount) : C.chartDomain i → C.Realization :=
+  fun x ↦ C.quotientProjection ⟨i, x⟩
+
+theorem SmoothAtlasCode.chartToRealization_isOpenEmbedding
+    {n : ℕ} (C : SmoothAtlasCode n) (i : Fin C.chartCount) :
+    IsOpenEmbedding (C.chartToRealization i) := by
+  sorry
+
+noncomputable def SmoothAtlasCode.realizedChart {n : ℕ} (C : SmoothAtlasCode n)
+    (i : Fin C.chartCount) : OpenPartialHomeomorph C.Realization (ModelSpace n) := by
+  sorry
+
+@[instance_reducible]
+noncomputable def SmoothAtlasCode.realizationChartedSpace
+    {n : ℕ} (C : SmoothAtlasCode n) :
     ChartedSpace (ModelSpace n) C.Realization := by
   sorry
 
-/-- A closed oriented cycle on the small atlas skeleton. The fields are genuine manifold and
-topology conditions on the quotient realization, not asserted group calculations. -/
+attribute [local instance] SmoothAtlasCode.realizationChartedSpace
+
+theorem SmoothAtlasCode.realization_atlas {n : ℕ} (C : SmoothAtlasCode n) :
+    atlas (ModelSpace n) C.Realization = Set.range C.realizedChart := by
+  sorry
+
+theorem SmoothAtlasCode.realized_transition {n : ℕ} (C : SmoothAtlasCode n)
+    (i j : Fin C.chartCount) :
+    (C.realizedChart i).symm ≫ₕ C.realizedChart j = C.transition i j := by
+  sorry
+
 structure SmoothClosedOrientedCycle (n : ℕ) where
   code : SmoothAtlasCode n
   t2 : T2Space code.Realization
   secondCountable : SecondCountableTopology code.Realization
   compact : CompactSpace code.Realization
   manifold : IsManifold (SmoothModel n) ∞ code.Realization
-  orientationAt : code.Realization →
-    _root_.Orientation ℝ (ModelSpace n) (Fin n)
+  orientation : Manifold.Orientation (SmoothModel n) code.Realization (Fin n)
 
 attribute [instance] SmoothClosedOrientedCycle.t2
   SmoothClosedOrientedCycle.secondCountable SmoothClosedOrientedCycle.compact
   SmoothClosedOrientedCycle.manifold
 
-/-- Every compact second-countable smooth manifold has a representative in the small skeleton.
-The proof uses the finite triangulation/handle supplier and retains an actual diffeomorphism. -/
-noncomputable def smoothClosedOrientedCycleCode
-    (n : ℕ) (M : Type u) [TopologicalSpace M] [T2Space M]
-    [SecondCountableTopology M] [CompactSpace M]
-    [ChartedSpace (ModelSpace n) M] [IsManifold (SmoothModel n) ∞ M]
-    (oM : M → _root_.Orientation ℝ (ModelSpace n) (Fin n)) :
-    {C : SmoothClosedOrientedCycle n //
-      Nonempty (M ≃ₘ⟮SmoothModel n, SmoothModel n⟯ C.code.Realization)} := by
-  sorry
+def OrientationPreservingDiffeomorph {n : ℕ} (M : Type u) (N : Type v)
+    [TopologicalSpace M] [TopologicalSpace N] [ChartedSpace (ModelSpace n) M]
+    [ChartedSpace (ModelSpace n) N] [IsManifold (SmoothModel n) ∞ M]
+    [IsManifold (SmoothModel n) ∞ N]
+    (oM : Manifold.Orientation (SmoothModel n) M (Fin n))
+    (oN : Manifold.Orientation (SmoothModel n) N (Fin n)) :=
+  {f : M ≃ₘ⟮SmoothModel n, SmoothModel n⟯ N //
+    Manifold.Diffeomorph.PreservesOrientation (SmoothModel n) (SmoothModel n) f oM oN}
 
-/-! ## Geometric cycle quotients -/
-
-/-- A `Theta_n` cycle is a small oriented manifold code with a sphere marking. -/
 structure HomotopySphereCycle (n : ℕ) extends SmoothClosedOrientedCycle n where
   marking : code.Realization ≃ₕ Sphere n
 
-/-- The relation is oriented h-cobordism on the shared collared carrier. -/
-noncomputable def HomotopySphereCycle.HCobordant (n : ℕ) :
-    HomotopySphereCycle n → HomotopySphereCycle n → Prop := by
+abbrev StabilizedTangentBundle
+    {E H : Type*} [NormedAddCommGroup E] [NormedSpace ℝ E]
+    [TopologicalSpace H] (I : ModelWithCorners ℝ E H)
+    (M : Type*) [TopologicalSpace M] [ChartedSpace H M] (r : ℕ) :=
+  (fun x : M => TangentSpace I x) ×ᵇ Bundle.Trivial M (ModelSpace r)
+
+structure StableTangentFraming
+    {E H : Type*} [NormedAddCommGroup E] [NormedSpace ℝ E]
+    [TopologicalSpace H] (I : ModelWithCorners ℝ E H)
+    (M : Type*) [TopologicalSpace M] [ChartedSpace H M]
+    [IsManifold I ∞ M] (r : ℕ) where
+  trivialization : Bundle.Trivialization (E × ModelSpace r)
+    (Bundle.TotalSpace.proj :
+      Bundle.TotalSpace (E × ModelSpace r) (StabilizedTangentBundle I M r) → M)
+  global : trivialization.baseSet = Set.univ
+  linear : trivialization.IsLinear ℝ
+  memAtlas : MemTrivializationAtlas trivialization
+
+structure TangentFraming
+    {E H : Type*} [NormedAddCommGroup E] [NormedSpace ℝ E]
+    [TopologicalSpace H] (I : ModelWithCorners ℝ E H)
+    (M : Type*) [TopologicalSpace M] [ChartedSpace H M]
+    [IsManifold I ∞ M] where
+  trivialization : Bundle.Trivialization E
+    (Bundle.TotalSpace.proj : TangentBundle I M → M)
+  global : trivialization.baseSet = Set.univ
+  linear : trivialization.IsLinear ℝ
+  memAtlas : MemTrivializationAtlas trivialization
+
+noncomputable def TangentFraming.stabilize
+    {E H M : Type*} [NormedAddCommGroup E] [NormedSpace ℝ E]
+    [TopologicalSpace H] {I : ModelWithCorners ℝ E H}
+    [TopologicalSpace M] [ChartedSpace H M] [IsManifold I ∞ M]
+    (framing : TangentFraming I M) (r : ℕ) : StableTangentFraming I M r := by
   sorry
 
-theorem homotopySphere_hCobordant_equivalence (n : ℕ) :
-    Equivalence (HomotopySphereCycle.HCobordant n) := by
+noncomputable def StableTangentFraming.orientation
+    {E H M : Type*} [NormedAddCommGroup E] [NormedSpace ℝ E]
+    [TopologicalSpace H] {I : ModelWithCorners ℝ E H}
+    [TopologicalSpace M] [ChartedSpace H M] [IsManifold I ∞ M]
+    [FiniteDimensional ℝ E] {ι : Type*} [Fintype ι]
+    [Fact (Fintype.card ι = Module.finrank ℝ E)] {r : ℕ}
+    (_framing : StableTangentFraming I M r) : Manifold.Orientation I M ι := by
   sorry
 
-def HomotopySphereClass (n : ℕ) :=
-  Quotient ⟨HomotopySphereCycle.HCobordant n,
-    homotopySphere_hCobordant_equivalence n⟩
-
-@[instance_reducible]
-noncomputable def homotopySphereClassAddCommGroup (n : ℕ) (hn : 5 ≤ n) :
-    AddCommGroup (HomotopySphereClass n) := by
-  sorry
-
-/-- `Theta_n` is definitionally the geometric h-cobordism quotient. -/
-noncomputable def homotopySphereGroup (n : ℕ) (hn : 5 ≤ n) : AddCommGrpCat :=
-  letI := homotopySphereClassAddCommGroup n hn
-  AddCommGrpCat.of (HomotopySphereClass n)
-
-/-- An arbitrary-universe homotopy sphere maps into the selected small group through its code. -/
-noncomputable def homotopySphereClassOf
-    (n : ℕ) (hn : 5 ≤ n) (M : Type u) [TopologicalSpace M] [T2Space M]
-    [SecondCountableTopology M] [CompactSpace M]
-    [ChartedSpace (ModelSpace n) M] [IsManifold (SmoothModel n) ∞ M]
-    (oM : M → _root_.Orientation ℝ (ModelSpace n) (Fin n))
-    (hM : M ≃ₕ Sphere n) : homotopySphereGroup n hn := by
-  sorry
-
-/-- A chosen stable tangent framing, including the stabilization rank. -/
-structure StableTangentFraming (n : ℕ) (M : Type*) where
-  rank : ℕ
-  frameAt : M →
-    (ModelSpace n × ModelSpace rank) ≃L[ℝ] ModelSpace (n + rank)
-
-/-- An honest tangent framing. -/
-structure TangentFraming (n : ℕ) (M : Type*) where
-  frameAt : M → ModelSpace n ≃L[ℝ] ModelSpace n
-
-noncomputable def TangentFraming.stabilize {n : ℕ} {M : Type*}
-    (framing : TangentFraming n M) (rank : ℕ) : StableTangentFraming n M := by
-  sorry
-
-/-- A framed-bordism cycle uses any closed oriented manifold, not only a homotopy sphere. -/
 structure FramedCycle (n : ℕ) extends SmoothClosedOrientedCycle n where
-  framing : StableTangentFraming n code.Realization
+  stabilizationRank : ℕ
+  framing : StableTangentFraming (SmoothModel n) code.Realization stabilizationRank
+  orientation_agrees : Manifold.Orientation.Agrees (SmoothModel n) orientation
+    (StableTangentFraming.orientation (ι := Fin n) framing)
 
-noncomputable def FramedCycle.Bordant (n : ℕ) :
-    FramedCycle n → FramedCycle n → Prop := by
+abbrev CollaredOrientedFilling :=
+  TauCetiRoadmap.GeometricTopology.CollaredOrientedManifold
+
+noncomputable def HalfOpenCollarDomain {n : ℕ} (W : CollaredOrientedFilling n) :
+    TopologicalSpace.Opens (unitInterval × W.B) :=
+  TauCetiRoadmap.GeometricTopology.CollarOpen W.B
+
+noncomputable def pullbackFramingAlongCollar {n r : ℕ}
+    (W : CollaredOrientedFilling n)
+    (_framing : StableTangentFraming W.model W.M r) :
+    StableTangentFraming ((𝓡∂ 1).prod (SmoothModel (n - 1)))
+      (HalfOpenCollarDomain W) r := by
   sorry
 
-theorem framedBordant_equivalence (n : ℕ) :
-    Equivalence (FramedCycle.Bordant n) := by
+noncomputable def collarProductFraming {n r : ℕ}
+    (W : CollaredOrientedFilling n)
+    (_boundaryFraming : StableTangentFraming (SmoothModel (n - 1)) W.B r) :
+    StableTangentFraming ((𝓡∂ 1).prod (SmoothModel (n - 1)))
+      (HalfOpenCollarDomain W) r := by
   sorry
 
-def FramedBordismClass (n : ℕ) :=
-  Quotient ⟨FramedCycle.Bordant n, framedBordant_equivalence n⟩
+structure StableTangentFraming.IsProductOnCollar {n r : ℕ}
+    (W : CollaredOrientedFilling n)
+    (framing : StableTangentFraming W.model W.M r) where
+  boundaryFraming : StableTangentFraming (SmoothModel (n - 1)) W.B r
+  agrees : (pullbackFramingAlongCollar W framing).trivialization =
+    (collarProductFraming W boundaryFraming).trivialization
 
-noncomputable instance framedBordismClassAddCommGroup (n : ℕ) :
-    AddCommGroup (FramedBordismClass n) := by
-  sorry
-
-noncomputable def framedBordismGroup (n : ℕ) : AddCommGrpCat :=
-  AddCommGrpCat.of (FramedBordismClass n)
-
-/-- Pontryagin--Thom after proving the corrected Thom-space factorization and regular-value
-inverse. -/
-noncomputable def pontryaginThom (n : ℕ) : framedBordismGroup n ≅ stableStem n := by
-  sorry
-
-/-- A representative collapse factorization. For rank `k`, the middle target is the Thom space
-`Σ^k M_+`; only the augmentation has target `S^k`. -/
-structure PontryaginThomFactorization (n k : ℕ) where
-  cycle : FramedCycle n
-  thomSpace : Type
-  [thomTopology : TopologicalSpace thomSpace]
-  collapse : Sphere (n + k) → thomSpace
-  augmentation : thomSpace → Sphere k
-  thomEquivSuspendedBase :
-    Nonempty (thomSpace ≃ₜ OnePoint (cycle.code.Realization × ModelSpace k))
-
-/-- A geometric almost-framed cycle exposes its defect disc and framing off it. -/
-structure AlmostFramedCycle (n : ℕ) extends SmoothClosedOrientedCycle n where
-  defect : Set code.Realization
-  defectHomeomorph : defect ≃ₜ Metric.closedBall (0 : ModelSpace n) 1
-  frameRank : ℕ
-  frameOffDefect : {x : code.Realization // x ∉ defect} →
-    (ModelSpace n × ModelSpace frameRank) ≃L[ℝ] ModelSpace (n + frameRank)
-
-noncomputable def AlmostFramedCycle.Bordant (n : ℕ) :
-    AlmostFramedCycle n → AlmostFramedCycle n → Prop := by
-  sorry
-
-theorem almostFramedBordant_equivalence (n : ℕ) :
-    Equivalence (AlmostFramedCycle.Bordant n) := by
-  sorry
-
-def AlmostFramedBordismClass (n : ℕ) :=
-  Quotient ⟨AlmostFramedCycle.Bordant n, almostFramedBordant_equivalence n⟩
-
-noncomputable instance almostFramedBordismClassAddCommGroup (n : ℕ) :
-    AddCommGroup (AlmostFramedBordismClass n) := by
-  sorry
-
-noncomputable def almostFramedBordismGroup (n : ℕ) : AddCommGrpCat :=
-  AddCommGrpCat.of (AlmostFramedBordismClass n)
-
-/-- A filling remains named stably framed until destabilization supplies an honest framing. -/
 structure StableFramedFillingCycle (n : ℕ) where
-  code : SmoothAtlasCode n
-  boundaryCode : SmoothAtlasCode (n - 1)
-  boundaryMarking : boundaryCode.Realization ≃ₕ Sphere (n - 1)
-  stableFraming : StableTangentFraming n code.Realization
+  filling : CollaredOrientedFilling n
+  boundaryMarking : filling.B ≃ₕ Sphere (n - 1)
+  framingRank : ℕ
+  stableFraming : StableTangentFraming filling.model filling.M framingRank
+  framingOrientation : Manifold.Orientation.Agrees filling.model filling.orientation
+    (StableTangentFraming.orientation (ι := Fin n) stableFraming)
+  productOnCollar : stableFraming.IsProductOnCollar filling
 
-noncomputable def StableFramedFillingCycle.Bordant (n : ℕ) :
-    StableFramedFillingCycle n → StableFramedFillingCycle n → Prop := by
-  sorry
-
-theorem stableFramedFillingBordant_equivalence (n : ℕ) :
-    Equivalence (StableFramedFillingCycle.Bordant n) := by
-  sorry
-
-def StableFramedFillingClass (n : ℕ) :=
-  Quotient ⟨StableFramedFillingCycle.Bordant n,
-    stableFramedFillingBordant_equivalence n⟩
-
-@[instance_reducible]
-noncomputable def stableFramedFillingClassAddCommGroup (n : ℕ) (hn : 5 ≤ n) :
-    AddCommGroup (StableFramedFillingClass n) := by
-  sorry
-
-noncomputable def stableFramedFillingGroup (n : ℕ) (hn : 5 ≤ n) : AddCommGrpCat :=
-  letI := stableFramedFillingClassAddCommGroup n hn
-  AddCommGrpCat.of (StableFramedFillingClass n)
-
-/-! ## Historical carriers and Wall parity -/
-
-/-- The historical `A_n` cycle retains its top cell and stable normal framing. -/
-structure HistoricalAlmostParallelizableCycle (n : ℕ)
-    extends SmoothClosedOrientedCycle n where
-  topCell : Set code.Realization
-  normalFrameRank : ℕ
-  stableNormalFrameOffTopCell : {x : code.Realization // x ∉ topCell} →
-    (ModelSpace n × ModelSpace normalFrameRank) ≃L[ℝ]
-      ModelSpace (n + normalFrameRank)
-
-/-- The historical `P_n` cycle has an honest framing. -/
-structure HistoricalParallelizableFillingCycle (n : ℕ)
-    extends StableFramedFillingCycle n where
-  honestFraming : TangentFraming n code.Realization
-
-/-- The chosen honest framing stabilizes to the original stable framing through a homotopy fixed
-on the boundary collar. This is deliberately weaker than equality of framing data. -/
-noncomputable def StableFramedFillingCycle.StabilizesRelBoundary
+structure StableFramedFillingCycle.StabilizesRelBoundary
     {n : ℕ} (W : StableFramedFillingCycle n)
-    (honest : TangentFraming n W.code.Realization) : Prop := by
-  sorry
+    (honest : TangentFraming W.filling.model W.filling.M) where
+  stabilized : StableTangentFraming W.filling.model W.filling.M W.framingRank
+  stabilized_eq : stabilized.trivialization =
+    (honest.stabilize W.framingRank).trivialization
+  fixedOnCollar :
+    (pullbackFramingAlongCollar W.filling W.stableFraming).trivialization =
+      (pullbackFramingAlongCollar W.filling stabilized).trivialization
 
-/-- The exact stable-to-honest cancellation conclusion for compact connected fillings with
-nonempty boundary, relative to the collar encoded by the implementation. -/
 theorem stableFraming_destabilizes (n : ℕ) (hn : 6 ≤ n)
     (W : StableFramedFillingCycle n) :
-    ∃ honest : TangentFraming n W.code.Realization,
-      W.StabilizesRelBoundary honest := by
+    ∃ honest : TangentFraming W.filling.model W.filling.M,
+      Nonempty (W.StabilizesRelBoundary honest) := by
   sorry
 
-noncomputable def historicalAlmostParallelizableSetoid (n : ℕ) :
-    Setoid (HistoricalAlmostParallelizableCycle n) := by
+/-! ## Embedded defects and canonical open complements -/
+
+noncomputable def DefectCollarDomain
+    {n : ℕ} {H M : Type*} [TopologicalSpace H]
+    {I : ModelWithCorners ℝ (ModelSpace n) H}
+    [TopologicalSpace M] [ChartedSpace H M] [IsManifold I ∞ M]
+    (D : TauCetiRoadmap.GeometricTopology.SmoothEmbeddedClosedDisk (M := M) n I) :
+    TopologicalSpace.Opens (unitInterval × D.disk.B) :=
+  ⟨{p | p ∈ TauCetiRoadmap.GeometricTopology.CollarSource D.disk.B ∧ p.1 ≠ 0},
+    by sorry⟩
+
+noncomputable def pullbackFrameToDefectCollar
+    {n r : ℕ} {H M : Type*} [TopologicalSpace H]
+    {I : ModelWithCorners ℝ (ModelSpace n) H}
+    [TopologicalSpace M] [ChartedSpace H M] [IsManifold I ∞ M]
+    (D : TauCetiRoadmap.GeometricTopology.SmoothEmbeddedClosedDisk (M := M) n I)
+    (_framing : StableTangentFraming I D.exterior r) :
+    StableTangentFraming ((𝓡∂ 1).prod (SmoothModel (n - 1)))
+      (DefectCollarDomain D) r := by
   sorry
 
-noncomputable def historicalParallelizableFillingSetoid (n : ℕ) :
-    Setoid (HistoricalParallelizableFillingCycle n) := by
+noncomputable def defectCollarProductFraming
+    {n r : ℕ} {H M : Type*} [TopologicalSpace H]
+    {I : ModelWithCorners ℝ (ModelSpace n) H}
+    [TopologicalSpace M] [ChartedSpace H M] [IsManifold I ∞ M]
+    (D : TauCetiRoadmap.GeometricTopology.SmoothEmbeddedClosedDisk (M := M) n I)
+    (_boundaryFraming : StableTangentFraming (SmoothModel (n - 1)) D.disk.B r) :
+    StableTangentFraming ((𝓡∂ 1).prod (SmoothModel (n - 1)))
+      (DefectCollarDomain D) r := by
   sorry
 
-def HistoricalAlmostParallelizableClass (n : ℕ) :=
-  Quotient (historicalAlmostParallelizableSetoid n)
+structure StableTangentFraming.IsProductNearDefect
+    {n r : ℕ} {H M : Type*} [TopologicalSpace H]
+    {I : ModelWithCorners ℝ (ModelSpace n) H}
+    [TopologicalSpace M] [ChartedSpace H M] [IsManifold I ∞ M]
+    (D : TauCetiRoadmap.GeometricTopology.SmoothEmbeddedClosedDisk (M := M) n I)
+    (framing : StableTangentFraming I D.exterior r) where
+  boundaryFraming : StableTangentFraming (SmoothModel (n - 1)) D.disk.B r
+  agrees : (pullbackFrameToDefectCollar D framing).trivialization =
+    (defectCollarProductFraming D boundaryFraming).trivialization
 
-def HistoricalParallelizableFillingClass (n : ℕ) :=
-  Quotient (historicalParallelizableFillingSetoid n)
+structure AlmostFramedCycle (n : ℕ) extends SmoothClosedOrientedCycle n where
+  defect : TauCetiRoadmap.GeometricTopology.SmoothEmbeddedClosedDisk
+    (M := code.Realization) n (SmoothModel n)
+  frameRank : ℕ
+  frameOffDefect : StableTangentFraming (SmoothModel n) defect.exterior frameRank
+  productNearDefect : frameOffDefect.IsProductNearDefect defect
 
-noncomputable instance historicalAlmostParallelizableClassAddCommGroup (n : ℕ) :
-    AddCommGroup (HistoricalAlmostParallelizableClass n) := by
+/-! ## Pointed Pontryagin--Thom data -/
+
+structure SmoothEuclideanEmbedding
+    (n k : ℕ) (M : Type*) [TopologicalSpace M]
+    [ChartedSpace (ModelSpace n) M] [IsManifold (SmoothModel n) ∞ M] where
+  map : C(M, ModelSpace (n + k))
+  smoothEmbedding : IsSmoothEmbedding (SmoothModel n) (SmoothModel (n + k)) ∞ map
+
+abbrev NormalFiber
+    {n k : ℕ} {M : Type*} [TopologicalSpace M]
+    [ChartedSpace (ModelSpace n) M] [IsManifold (SmoothModel n) ∞ M]
+    (e : SmoothEuclideanEmbedding n k M) (x : M) :=
+  TangentSpace (SmoothModel (n + k)) (e.map x) ⧸
+    LinearMap.range (mfderiv (SmoothModel n) (SmoothModel (n + k)) e.map x).toLinearMap
+
+noncomputable def euclideanNormalPrebundle
+    {n k : ℕ} {M : Type*} [TopologicalSpace M]
+    [ChartedSpace (ModelSpace n) M] [IsManifold (SmoothModel n) ∞ M]
+    (e : SmoothEuclideanEmbedding n k M) :
+    VectorPrebundle ℝ (ModelSpace k) (NormalFiber e) := by
   sorry
 
-@[instance_reducible]
-noncomputable def historicalParallelizableFillingClassAddCommGroup
-    (n : ℕ) (hn : 5 ≤ n) :
-    AddCommGroup (HistoricalParallelizableFillingClass n) := by
+noncomputable instance normalTotalSpaceTopology
+    {n k : ℕ} {M : Type*} [TopologicalSpace M]
+    [ChartedSpace (ModelSpace n) M] [IsManifold (SmoothModel n) ∞ M]
+    (e : SmoothEuclideanEmbedding n k M) :
+    TopologicalSpace (Bundle.TotalSpace (ModelSpace k) (NormalFiber e)) :=
+  (euclideanNormalPrebundle e).totalSpaceTopology
+
+noncomputable instance normalFiberBundle
+    {n k : ℕ} {M : Type*} [TopologicalSpace M]
+    [ChartedSpace (ModelSpace n) M] [IsManifold (SmoothModel n) ∞ M]
+    (e : SmoothEuclideanEmbedding n k M) :
+    FiberBundle (ModelSpace k) (NormalFiber e) :=
+  (euclideanNormalPrebundle e).toFiberBundle
+
+noncomputable instance normalVectorBundle
+    {n k : ℕ} {M : Type*} [TopologicalSpace M]
+    [ChartedSpace (ModelSpace n) M] [IsManifold (SmoothModel n) ∞ M]
+    (e : SmoothEuclideanEmbedding n k M) :
+    VectorBundle ℝ (ModelSpace k) (NormalFiber e) :=
+  (euclideanNormalPrebundle e).toVectorBundle
+
+noncomputable instance normalContMDiffVectorBundle
+    {n k : ℕ} {M : Type*} [TopologicalSpace M]
+    [ChartedSpace (ModelSpace n) M] [IsManifold (SmoothModel n) ∞ M]
+    (e : SmoothEuclideanEmbedding n k M) :
+    ContMDiffVectorBundle ∞ (ModelSpace k) (NormalFiber e) (SmoothModel n) := by
   sorry
 
-noncomputable def historicalAlmostParallelizableGroup (n : ℕ) : AddCommGrpCat :=
-  AddCommGrpCat.of (HistoricalAlmostParallelizableClass n)
+structure StableNormalFraming
+    (n k : ℕ) (M : Type*) [TopologicalSpace M]
+    [ChartedSpace (ModelSpace n) M] [IsManifold (SmoothModel n) ∞ M] where
+  embedding : SmoothEuclideanEmbedding n k M
+  trivialization : Bundle.Trivialization (ModelSpace k)
+    (Bundle.TotalSpace.proj :
+      Bundle.TotalSpace (ModelSpace k) (NormalFiber embedding) → M)
+  global : trivialization.baseSet = Set.univ
+  linear : trivialization.IsLinear ℝ
+  memAtlas : MemTrivializationAtlas trivialization
 
-noncomputable def historicalParallelizableFillingGroup (n : ℕ) (hn : 5 ≤ n) :
-    AddCommGrpCat :=
-  letI := historicalParallelizableFillingClassAddCommGroup n hn
-  AddCommGrpCat.of (HistoricalParallelizableFillingClass n)
+structure SmoothTubularNeighborhood
+    {n k : ℕ} {M : Type*} [TopologicalSpace M]
+    [ChartedSpace (ModelSpace n) M] [IsManifold (SmoothModel n) ∞ M]
+    (e : SmoothEuclideanEmbedding n k M) where
+  discDomain : TopologicalSpace.Opens
+    (Bundle.TotalSpace (ModelSpace k) (NormalFiber e))
+  zero_mem : ∀ x,
+    (⟨x, 0⟩ : Bundle.TotalSpace (ModelSpace k) (NormalFiber e)) ∈ discDomain
+  neighbourhood : TopologicalSpace.Opens (ModelSpace (n + k))
+  tubular : C(discDomain, neighbourhood)
+  smoothEmbedding : IsSmoothEmbedding
+    ((SmoothModel n).prod (SmoothModel k)) (SmoothModel (n + k)) ∞ tubular
+  surjective : Function.Surjective tubular
+  zeroSection : ∀ x,
+    (tubular ⟨⟨x, 0⟩, zero_mem x⟩ : ModelSpace (n + k)) = e.map x
 
-/-- The convenient and historical `A_n` carriers are compared by an explicit group isomorphism. -/
-noncomputable def almostFramedIsoHistorical (n : ℕ) :
-    almostFramedBordismGroup n ≅ historicalAlmostParallelizableGroup n := by
+noncomputable def tangentFramingOfNormal
+    {n k : ℕ} {M : Type*} [TopologicalSpace M]
+    [ChartedSpace (ModelSpace n) M] [IsManifold (SmoothModel n) ∞ M]
+    (_normal : StableNormalFraming n k M) :
+    StableTangentFraming (SmoothModel n) M k := by
   sorry
 
-/-- The convenient stable filling and historical honest `P_n` carriers are explicitly compared. -/
-noncomputable def stableFillingIsoHistorical (n : ℕ) (hn : 6 ≤ n) :
-    stableFramedFillingGroup n (by omega) ≅
-      historicalParallelizableFillingGroup n (by omega) := by
+abbrev PointedConvenientSpace :=
+  CategoryTheory.Under (CompactlyGenerated.of PUnit)
+
+abbrev PointedConvenientMap (X Y : PointedConvenientSpace) := X ⟶ Y
+
+abbrev PointedConvenientIso (X Y : PointedConvenientSpace) := X ≅ Y
+
+noncomputable def pointedSphereCG (n : ℕ) : PointedConvenientSpace := by
   sorry
 
-noncomputable def almostFramedToHistorical (n : ℕ) :
-    almostFramedBordismGroup n ⟶ historicalAlmostParallelizableGroup n :=
-  (almostFramedIsoHistorical n).hom
+noncomputable def normalThomCG
+    {n k : ℕ} {M : Type*} [TopologicalSpace M]
+    [ChartedSpace (ModelSpace n) M] [IsManifold (SmoothModel n) ∞ M]
+    (_e : SmoothEuclideanEmbedding n k M) : PointedConvenientSpace := by
+  sorry
 
-noncomputable def historicalToAlmostFramed (n : ℕ) :
-    historicalAlmostParallelizableGroup n ⟶ almostFramedBordismGroup n :=
-  (almostFramedIsoHistorical n).inv
+noncomputable def suspendedBaseCG
+    (k : ℕ) {M : Type*} [TopologicalSpace M] : PointedConvenientSpace := by
+  sorry
 
-theorem almostFramed_historical_inverse (n : ℕ) :
-    almostFramedToHistorical n ≫ historicalToAlmostFramed n = 𝟙 _ := by
-  simp [almostFramedToHistorical, historicalToAlmostFramed]
+noncomputable def tubularCollapse
+    {n k : ℕ} {M : Type*} [TopologicalSpace M]
+    [ChartedSpace (ModelSpace n) M] [IsManifold (SmoothModel n) ∞ M]
+    {e : SmoothEuclideanEmbedding n k M} (_tube : SmoothTubularNeighborhood e) :
+    PointedConvenientMap (pointedSphereCG (n + k)) (normalThomCG e) := by
+  sorry
 
-theorem historical_almostFramed_inverse (n : ℕ) :
-    historicalToAlmostFramed n ≫ almostFramedToHistorical n = 𝟙 _ := by
-  simp [almostFramedToHistorical, historicalToAlmostFramed]
+noncomputable def suspendedAugmentation
+    (k : ℕ) {M : Type*} [TopologicalSpace M] :
+    PointedConvenientMap (suspendedBaseCG k (M := M)) (pointedSphereCG k) := by
+  sorry
 
-noncomputable def stableFillingToHistorical (n : ℕ) (hn : 6 ≤ n) :
-    stableFramedFillingGroup n (by omega) ⟶
-      historicalParallelizableFillingGroup n (by omega) :=
-  (stableFillingIsoHistorical n hn).hom
+structure PontryaginThomFactorization (n : ℕ) where
+  cycle : FramedCycle n
+  normalFraming :
+    StableNormalFraming n cycle.stabilizationRank cycle.code.Realization
+  tubularNeighbourhood : SmoothTubularNeighborhood normalFraming.embedding
+  thomEquivSuspendedBase :
+    PointedConvenientIso (normalThomCG normalFraming.embedding)
+      (suspendedBaseCG cycle.stabilizationRank (M := cycle.code.Realization))
+  tangentNormalCompatibility :
+    (tangentFramingOfNormal normalFraming).trivialization = cycle.framing.trivialization
 
-noncomputable def historicalToStableFilling (n : ℕ) (hn : 6 ≤ n) :
-    historicalParallelizableFillingGroup n (by omega) ⟶
-      stableFramedFillingGroup n (by omega) :=
-  (stableFillingIsoHistorical n hn).inv
+noncomputable def PontryaginThomFactorization.collapse
+    {n : ℕ} (P : PontryaginThomFactorization n) :
+    PointedConvenientMap (pointedSphereCG (n + P.cycle.stabilizationRank))
+      (normalThomCG P.normalFraming.embedding) :=
+  tubularCollapse P.tubularNeighbourhood
 
-theorem stableFilling_historical_inverse (n : ℕ) (hn : 6 ≤ n) :
-    stableFillingToHistorical n hn ≫ historicalToStableFilling n hn = 𝟙 _ := by
-  simp [stableFillingToHistorical, historicalToStableFilling]
+noncomputable def PontryaginThomFactorization.augmentation
+    {n : ℕ} (P : PontryaginThomFactorization n) :
+    PointedConvenientMap (normalThomCG P.normalFraming.embedding)
+      (pointedSphereCG P.cycle.stabilizationRank) :=
+  P.thomEquivSuspendedBase.hom ≫ suspendedAugmentation P.cycle.stabilizationRank
 
-theorem historical_stableFilling_inverse (n : ℕ) (hn : 6 ≤ n) :
-    historicalToStableFilling n hn ≫ stableFillingToHistorical n hn = 𝟙 _ := by
-  simp [stableFillingToHistorical, historicalToStableFilling]
+/-! ## Genuine Wall forms and formations -/
 
-/-- Even-dimensional Wall data are finite integral matrices with a quadratic refinement. -/
+abbrev WallLattice (rank : ℕ) := Fin rank → ℤ
+
+abbrev WallQuadraticValue (q : ℕ) := ZMod (if Even q then 0 else 2)
+
 structure EvenWallForm (q : ℕ) where
   rank : ℕ
-  pairing : Matrix (Fin rank) (Fin rank) ℤ
-  quadratic : Fin rank → ℤ
-  unimodular : IsUnit pairing.det
+  pairing : LinearMap.BilinForm ℤ (WallLattice rank)
+  quadratic : WallLattice rank → WallQuadraticValue q
+  pairing_symmetry : ∀ x y,
+    pairing x y = (-1 : ℤ) ^ q * pairing y x
+  quadratic_zero : quadratic 0 = 0
+  quadratic_add : ∀ x y,
+    quadratic (x + y) =
+      quadratic x + quadratic y + (pairing x y : WallQuadraticValue q)
+  quadratic_smul : ∀ (a : ℤ) x,
+    quadratic (a • x) = (a : WallQuadraticValue q) ^ 2 * quadratic x
+  diagonal : ∀ x, (pairing x x : WallQuadraticValue q) =
+    quadratic x + ((-1 : ℤ) ^ q : WallQuadraticValue q) * quadratic x
+  unimodular : Function.Bijective pairing
 
-/-- Odd-dimensional Wall data are formations, with two displayed lagrangian bases. -/
+structure EvenWallForm.Lagrangian {q : ℕ} (form : EvenWallForm q) where
+  carrier : Submodule ℤ (WallLattice form.rank)
+  isotropic : ∀ x ∈ carrier, ∀ y ∈ carrier, form.pairing x y = 0
+  quadratic_zero : ∀ x ∈ carrier, form.quadratic x = 0
+  self_orthogonal : form.pairing.orthogonal carrier = carrier
+  directSummand : ∃ complement, IsCompl carrier complement
+
 structure OddWallFormation (q : ℕ) where
   form : EvenWallForm q
-  lagrangianRank : ℕ
-  firstLagrangian : Matrix (Fin form.rank) (Fin lagrangianRank) ℤ
-  secondLagrangian : Matrix (Fin form.rank) (Fin lagrangianRank) ℤ
+  firstLagrangian : form.Lagrangian
+  secondLagrangian : form.Lagrangian
 
-/-- The obstruction carrier distinguishes even forms from odd formations by construction. -/
 inductive WallSurgeryDatum : ℕ → Type
   | even (q : ℕ) : EvenWallForm q → WallSurgeryDatum (2 * q)
   | odd (q : ℕ) : OddWallFormation q → WallSurgeryDatum (2 * q + 1)
 
-noncomputable def wallStableEquivalence (n : ℕ) :
-    Setoid (WallSurgeryDatum n) := by
+structure EvenWallForm.Isometry {q : ℕ} (F G : EvenWallForm q) where
+  toLinearEquiv : WallLattice F.rank ≃ₗ[ℤ] WallLattice G.rank
+  pairing_eq : ∀ x y, G.pairing (toLinearEquiv x) (toLinearEquiv y) = F.pairing x y
+  quadratic_eq : ∀ x, G.quadratic (toLinearEquiv x) = F.quadratic x
+
+structure OddWallFormation.Isometry {q : ℕ} (F G : OddWallFormation q) where
+  formIsometry : F.form.Isometry G.form
+  first_eq : Submodule.map formIsometry.toLinearEquiv.toLinearMap
+    F.firstLagrangian.carrier = G.firstLagrangian.carrier
+  second_eq : Submodule.map formIsometry.toLinearEquiv.toLinearMap
+    F.secondLagrangian.carrier = G.secondLagrangian.carrier
+
+noncomputable def EvenWallForm.orthogonalSum
+    {q : ℕ} (F G : EvenWallForm q) : EvenWallForm q := by
   sorry
 
-def WallSurgeryClass (n : ℕ) := Quotient (wallStableEquivalence n)
-
-noncomputable instance wallSurgeryClassAddCommGroup (n : ℕ) :
-    AddCommGroup (WallSurgeryClass n) := by
+noncomputable def hyperbolicWallForm (q : ℕ) : EvenWallForm q := by
   sorry
 
-noncomputable def wallSurgeryObstructionGroup (n : ℕ) : AddCommGrpCat :=
-  AddCommGrpCat.of (WallSurgeryClass n)
-
-/-- Delete the defect-disc interior. -/
-noncomputable def almostFramedToFilling (n : ℕ) (hn : 5 ≤ n) :
-    almostFramedBordismGroup n ⟶ stableFramedFillingGroup n hn := by
+noncomputable def OddWallFormation.hyperbolicSum
+    {q : ℕ} (F G : OddWallFormation q) : OddWallFormation q := by
   sorry
 
-/-- The boundary map uses the actual boundary marking. -/
-noncomputable def fillingBoundary (n : ℕ) (hn : 6 ≤ n) :
-    stableFramedFillingGroup n (by omega) ⟶ homotopySphereGroup (n - 1) (by omega) := by
+noncomputable def hyperbolicWallFormation (q : ℕ) : OddWallFormation q := by
   sorry
 
-/-- The historical defect map is obtained only after both carrier comparisons. -/
-noncomputable def historicalAlmostFramedToFilling (n : ℕ) (hn : 6 ≤ n) :
-    historicalAlmostParallelizableGroup n ⟶
-      historicalParallelizableFillingGroup n (by omega) :=
-  historicalToAlmostFramed n ≫ almostFramedToFilling n (by omega) ≫
-    stableFillingToHistorical n hn
+structure OddWallFormation.ElementaryModification
+    {q : ℕ} (F G : OddWallFormation q) where
+  formIsometry : F.form.Isometry G.form
+  first_eq : Submodule.map formIsometry.toLinearEquiv.toLinearMap
+    F.firstLagrangian.carrier = G.firstLagrangian.carrier
+  vector : WallLattice F.form.rank
+  vector_mem : vector ∈ F.firstLagrangian.carrier
+  coefficient : ℤ
+  transvection : WallLattice F.form.rank →ₗ[ℤ] WallLattice F.form.rank
+  transvection_apply : ∀ x, transvection x =
+    x + (coefficient * F.form.pairing x vector) • vector
+  transvection_bijective : Function.Bijective transvection
+  second_eq : Submodule.map transvection F.secondLagrangian.carrier =
+    Submodule.comap formIsometry.toLinearEquiv.toLinearMap G.secondLagrangian.carrier
 
-theorem almostFramedToFilling_comparison (n : ℕ) (hn : 6 ≤ n) :
-    almostFramedToHistorical n ≫ historicalAlmostFramedToFilling n hn =
-      almostFramedToFilling n (by omega) ≫ stableFillingToHistorical n hn := by
-  simp [historicalAlmostFramedToFilling, almostFramedToHistorical,
-    historicalToAlmostFramed]
+inductive WallSurgeryDatum.StablyEquivalent :
+    {n : ℕ} → WallSurgeryDatum n → WallSurgeryDatum n → Prop
+  | refl {n} (X : WallSurgeryDatum n) : StablyEquivalent X X
+  | symm {n} {X Y : WallSurgeryDatum n} :
+      StablyEquivalent X Y → StablyEquivalent Y X
+  | trans {n} {X Y Z : WallSurgeryDatum n} :
+      StablyEquivalent X Y → StablyEquivalent Y Z → StablyEquivalent X Z
+  | evenIsometry {q} {F G : EvenWallForm q} :
+      F.Isometry G → StablyEquivalent (.even q F) (.even q G)
+  | oddIsometry {q} {F G : OddWallFormation q} :
+      F.Isometry G → StablyEquivalent (.odd q F) (.odd q G)
+  | evenHyperbolic {q} (F : EvenWallForm q) :
+      StablyEquivalent (.even q F)
+        (.even q (F.orthogonalSum (hyperbolicWallForm q)))
+  | oddHyperbolic {q} (F : OddWallFormation q) :
+      StablyEquivalent (.odd q F)
+        (.odd q (F.hyperbolicSum (hyperbolicWallFormation q)))
+  | oddElementary {q} {F G : OddWallFormation q} :
+      F.ElementaryModification G → StablyEquivalent (.odd q F) (.odd q G)
 
-/-- The historical boundary map is transported from the collared geometric boundary map. -/
-noncomputable def historicalFillingBoundary (n : ℕ) (hn : 6 ≤ n) :
-    historicalParallelizableFillingGroup n (by omega) ⟶
-      homotopySphereGroup (n - 1) (by omega) :=
-  historicalToStableFilling n hn ≫ fillingBoundary n hn
+def wallStableEquivalence (n : ℕ) : Setoid (WallSurgeryDatum n) where
+  r := WallSurgeryDatum.StablyEquivalent
+  iseqv :=
+    ⟨fun X ↦ WallSurgeryDatum.StablyEquivalent.refl X,
+      fun {_ _} h ↦ WallSurgeryDatum.StablyEquivalent.symm h,
+      fun {_ _ _} h₀ h₁ ↦ WallSurgeryDatum.StablyEquivalent.trans h₀ h₁⟩
 
-theorem fillingBoundary_comparison (n : ℕ) (hn : 6 ≤ n) :
-    stableFillingToHistorical n hn ≫ historicalFillingBoundary n hn =
-      fillingBoundary n hn := by
-  simp [historicalFillingBoundary, stableFillingToHistorical,
-    historicalToStableFilling]
+def WallSurgeryClass (n : ℕ) :=
+  Quotient (wallStableEquivalence n)
 
-/-! ## The normalized sixth-stem representative -/
-
-/-- `ν²` is the stabilization of `ν₄ ∘ Σ³ν₄ : S¹⁰ → S⁴`. -/
-noncomputable def nuSquared : stableStem 6 := by
-  sorry
-
-theorem two_nuSquared : 2 • nuSquared = 0 := by
-  sorry
-
-theorem nuSquared_ne_zero : nuSquared ≠ 0 := by
-  sorry
-
-noncomputable def sixthStableStemEquiv : stableStem 6 ≃+ ZMod 2 := by
-  sorry
-
-@[simp]
-theorem sixthStableStemEquiv_nuSquared : sixthStableStemEquiv nuSquared = 1 := by
-  sorry
-
-/-- The framed regular-value cycle of the fixed unstable representative. -/
-noncomputable def nuSquaredFramedCycle : FramedCycle 6 := by
-  sorry
-
-theorem nuSquaredFramedCycle_class :
-    (pontryaginThom 6).hom (Quotient.mk _ nuSquaredFramedCycle) = nuSquared := by
-  sorry
-
-noncomputable def kervaireInvariantSix : stableStem 6 ⟶ AddCommGrpCat.of (ZMod 2) := by
-  sorry
-
-theorem kervaireInvariantSix_nuSquared : kervaireInvariantSix nuSquared = 1 := by
-  sorry
-
-/-! ## Exactness and oriented recognition -/
-
-noncomputable def homotopySphereToAlmostFramed (n : ℕ) (hn : 5 ≤ n) :
-    homotopySphereGroup n hn ⟶ almostFramedBordismGroup n := by
-  sorry
-
-noncomputable def homotopySphereToHistoricalAlmostFramed (n : ℕ) (hn : 5 ≤ n) :
-    homotopySphereGroup n hn ⟶ historicalAlmostParallelizableGroup n :=
-  homotopySphereToAlmostFramed n hn ≫ almostFramedToHistorical n
-
-theorem homotopySphereToAlmostFramed_comparison (n : ℕ) (hn : 5 ≤ n) :
-    homotopySphereToAlmostFramed n hn ≫ almostFramedToHistorical n =
-      homotopySphereToHistoricalAlmostFramed n hn := rfl
-
-theorem exact_homotopySphere_almostFramed_filling (n : ℕ) (hn : 6 ≤ n) :
-    Function.Exact (homotopySphereToAlmostFramed n (by omega))
-      (almostFramedToFilling n (by omega)) := by
-  sorry
-
-theorem homotopySphereGroup_six_subsingleton :
-    Subsingleton (homotopySphereGroup 6 (by omega)) := by
-  sorry
+/-! ## Oriented six-dimensional recognition -/
 
 private abbrev SixSphere := Sphere 6
 
 private noncomputable abbrev SixModel := SmoothModel 6
 
-/-- A diffeomorphism together with the derivative equation expressing orientation preservation. -/
-def OrientationPreservingDiffeomorph (M : Type u) (N : Type v) [TopologicalSpace M]
-    [TopologicalSpace N] [ChartedSpace (ModelSpace 6) M] [ChartedSpace (ModelSpace 6) N]
-    (oM : M → _root_.Orientation ℝ (ModelSpace 6) (Fin 6))
-    (oN : N → _root_.Orientation ℝ (ModelSpace 6) (Fin 6)) :=
-  {f : M ≃ₘ⟮SixModel, SixModel⟯ N // ∀ x,
-    _root_.Orientation.map (Fin 6)
-      (f.mfderivToContinuousLinearEquiv (by simp) x).toLinearEquiv (oM x) = oN (f x)}
-
-/-- The orientation-preserving recognition theorem. The arguments are the pointwise views of the
-orientations supplied by the shared `Manifold.Orientation` API. -/
-theorem smoothPoincareSix_oriented (M : Type u) [TopologicalSpace M] [T2Space M]
+theorem smoothPoincareSix_oriented
+    (M : Type u) [TopologicalSpace M] [T2Space M]
     [SecondCountableTopology M] [CompactSpace M]
     [ChartedSpace (ModelSpace 6) M] [IsManifold SixModel ∞ M]
-    (oM : M → _root_.Orientation ℝ (ModelSpace 6) (Fin 6))
-    (oS : SixSphere → _root_.Orientation ℝ (ModelSpace 6) (Fin 6))
+    (oM : Manifold.Orientation SixModel M (Fin 6))
+    (oS : Manifold.Orientation SixModel SixSphere (Fin 6))
     (_h : M ≃ₕ SixSphere) :
     Nonempty (OrientationPreservingDiffeomorph M SixSphere oM oS) := by
-  sorry
-
-/-- Forgetting orientations recovers the ordinary recognition corollary. -/
-theorem smoothPoincareSix (M : Type u) [TopologicalSpace M] [T2Space M]
-    [SecondCountableTopology M] [CompactSpace M]
-    [ChartedSpace (ModelSpace 6) M] [IsManifold SixModel ∞ M]
-    (_h : M ≃ₕ SixSphere) :
-    Nonempty (M ≃ₘ⟮SixModel, SixModel⟯ SixSphere) := by
   sorry
 
 end TauCetiRoadmap.HomotopySpheres
