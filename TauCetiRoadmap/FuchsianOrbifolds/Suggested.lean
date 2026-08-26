@@ -2,6 +2,7 @@ import Mathlib.Analysis.Complex.UpperHalfPlane.FixedPoints
 import Mathlib.Analysis.Complex.UpperHalfPlane.Manifold
 import Mathlib.Analysis.Complex.UpperHalfPlane.Measure
 import Mathlib.Analysis.Complex.UpperHalfPlane.ProperAction
+import Mathlib.Geometry.Manifold.Diffeomorph
 import Mathlib.Geometry.Manifold.Instances.Quotient
 import Mathlib.LinearAlgebra.Matrix.ProjectiveSpecialLinearGroup
 import Mathlib.Topology.Compactification.OnePoint.ProjectiveLine
@@ -11,11 +12,12 @@ import Mathlib.Topology.Compactification.OnePoint.ProjectiveLine
 
 **This file is not the roadmap and is not exhaustive.** The definitive document is
 `README.md`. These declarations pin the effective projective action, the standard orbit
-quotient and free locus, invariant-function descent, and the cusp-coordinate convention.
+quotient and free locus, invariant-function descent, primitive cusp data, the compactification
+carrier, and the compact-Riemann-surface degree API owned by this roadmap.
 
-The compactified quotient, elliptic quotient charts, local multiplicity, and degree of a
-holomorphic map are roadmap targets whose public APIs do not yet exist at the dependency pin.
-They are specified in the markdown rather than represented by empty `Prop` wrappers.
+Elliptic quotient charts and the topology and atlas on the displayed compactification carrier
+remain roadmap targets. They are specified in the markdown rather than represented by empty
+`Prop` wrappers.
 -/
 
 namespace TauCetiRoadmap.FuchsianOrbifolds
@@ -52,6 +54,17 @@ theorem continuous_pslAction : Continuous fun p : PSL₂R × ℍ ↦ pslAction p
 with `[DiscreteTopology Γ]`, not a record duplicating either datum. -/
 @[instance_reducible]
 noncomputable def pslSubgroupMulAction (Γ : Subgroup PSL₂R) : MulAction Γ ℍ := by
+  sorry
+
+/-- The effective projective action on the ideal boundary `P¹(R) = OnePoint R`. It is obtained
+from the projective action rather than by choosing matrix representatives. -/
+noncomputable def pslBoundaryAction : PSL₂R →* Equiv.Perm (OnePoint ℝ) := by
+  sorry
+
+/-- Restriction of the canonical boundary action to a projective subgroup. -/
+@[instance_reducible]
+noncomputable def pslBoundarySubgroupMulAction (Γ : Subgroup PSL₂R) :
+    MulAction Γ (OnePoint ℝ) := by
   sorry
 
 /-- The trivial-stabilizer locus for the effective subgroup action. -/
@@ -109,15 +122,76 @@ theorem descendInvariant_quotientMk {Γ Y : Type*} [Group Γ] [MulAction Γ ℍ]
 
 /-! ## Choice-dependent cusp data and coordinates -/
 
-/-- Normalized data at a cusp. The scaling and positive stabilizer generator determine the width;
-the width is not attached to the bare cusp. -/
+/-- Parabolicity in the effective projective group. The implementation is obtained by descending
+Mathlib's matrix classification and is independent of a lift to `SL(2,R)`. -/
+def IsParabolic (g : PSL₂R) : Prop :=
+  ∃ lift : SL₂R,
+    QuotientGroup.mk' (Subgroup.center SL₂R) lift = g ∧
+      (Matrix.SpecialLinearGroup.toGL lift).IsParabolic
+
+/-- A boundary point is a cusp when a nontrivial parabolic element of the subgroup fixes it. -/
+def IsCuspPoint (Γ : Subgroup PSL₂R) (c : OnePoint ℝ) : Prop :=
+  ∃ g : Γ, g ≠ 1 ∧ IsParabolic g ∧ pslBoundaryAction g c = c
+
+/-- The full subgroup stabilizer of a boundary point. -/
+noncomputable def cuspStabilizer (Γ : Subgroup PSL₂R) (c : OnePoint ℝ) : Subgroup Γ :=
+  letI := pslBoundarySubgroupMulAction Γ
+  MulAction.stabilizer Γ c
+
+/-- The orbit relation on the projective boundary for the effective subgroup action. -/
+noncomputable def boundaryOrbitRel (Γ : Subgroup PSL₂R) : Setoid (OnePoint ℝ) :=
+  letI := pslBoundarySubgroupMulAction Γ
+  MulAction.orbitRel Γ (OnePoint ℝ)
+
+/-- Boundary orbits before restricting to parabolic fixed points. -/
+abbrev BoundaryOrbit (Γ : Subgroup PSL₂R) := Quotient (boundaryOrbitRel Γ)
+
+/-- Being a cusp is invariant under the subgroup action and therefore descends to boundary
+orbits. -/
+def IsCuspOrbit (Γ : Subgroup PSL₂R) (C : BoundaryOrbit Γ) : Prop :=
+  ∃ c : OnePoint ℝ, IsCuspPoint Γ c ∧ Quotient.mk (boundaryOrbitRel Γ) c = C
+
+theorem isCuspOrbit_quotientMk {Γ : Subgroup PSL₂R} (c : OnePoint ℝ) :
+    IsCuspOrbit Γ (Quotient.mk (boundaryOrbitRel Γ) c) ↔ IsCuspPoint Γ c := by
+  sorry
+
+/-- The actual cusp-orbit carrier adjoined in the compactification. -/
+abbrev CuspOrbit (Γ : Subgroup PSL₂R) := {C : BoundaryOrbit Γ // IsCuspOrbit Γ C}
+
+/-- Normalized data at an actual cusp representative. The selected element generates the full
+stabilizer, the scaling sends the cusp to infinity, and the generator becomes translation by the
+positive width. Thus a proper power of the primitive generator cannot masquerade as cusp data. -/
 structure CuspDatum (Γ : Subgroup PSL₂R) where
+  cusp : OnePoint ℝ
+  isCusp : IsCuspPoint Γ cusp
   scaling : PSL₂R
+  scaling_cusp : pslBoundaryAction scaling cusp = OnePoint.infty
   positiveGenerator : Γ
   width : ℝ
   width_pos : 0 < width
+  zpowers_generator : Subgroup.zpowers positiveGenerator = cuspStabilizer Γ cusp
   conjugates_generator : ∀ z : ℍ,
     pslAction scaling (pslAction positiveGenerator z) = width +ᵥ pslAction scaling z
+
+/-- The cusp orbit underlying normalized cusp data. -/
+noncomputable def CuspDatum.orbit {Γ : Subgroup PSL₂R} (D : CuspDatum Γ) : CuspOrbit Γ :=
+  ⟨Quotient.mk (boundaryOrbitRel Γ) D.cusp,
+    (isCuspOrbit_quotientMk (Γ := Γ) D.cusp).2 D.isCusp⟩
+
+/-- Membership in the full cusp stabilizer is exactly being an integral power of the selected
+positive generator. -/
+theorem CuspDatum.mem_stabilizer_iff {Γ : Subgroup PSL₂R} (D : CuspDatum Γ) (g : Γ) :
+    g ∈ cuspStabilizer Γ D.cusp ↔ ∃ n : ℤ, g = D.positiveGenerator ^ n := by
+  sorry
+
+/-- After scaling, the full stabilizer is exactly the translation group `width * Z`; the selected
+generator corresponds to the positive translation `+width`. -/
+theorem CuspDatum.conjugates_stabilizer_iff {Γ : Subgroup PSL₂R} (D : CuspDatum Γ) (g : Γ) :
+    g ∈ cuspStabilizer Γ D.cusp ↔
+      ∃ n : ℤ, g = D.positiveGenerator ^ n ∧ ∀ z : ℍ,
+        pslAction D.scaling (pslAction g z) =
+          ((n : ℝ) * D.width) +ᵥ pslAction D.scaling z := by
+  sorry
 
 /-- The q-coordinate associated to a positive cusp width `w`. -/
 noncomputable def cuspCoordinate (w : ℝ) (z : ℍ) : ℂ :=
@@ -135,6 +209,13 @@ theorem cuspCoordinate_ne_zero (w : ℝ) (z : ℍ) : cuspCoordinate w z ≠ 0 :=
 /-- The q-coordinate associated to all of the normalized cusp datum. -/
 noncomputable def CuspDatum.coordinate {Γ : Subgroup PSL₂R} (D : CuspDatum Γ) (z : ℍ) : ℂ :=
   cuspCoordinate D.width (pslAction D.scaling z)
+
+/-- The q-coordinate descends under every element of the full cusp stabilizer, not only under the
+selected generator. -/
+theorem CuspDatum.coordinate_eq_of_mem_stabilizer {Γ : Subgroup PSL₂R} (D : CuspDatum Γ)
+    (g : Γ) (hg : g ∈ cuspStabilizer Γ D.cusp) (z : ℍ) :
+    D.coordinate (pslAction g z) = D.coordinate z := by
+  sorry
 
 /-- Under `σ' = aσ+b`, width scales by `a` and q-coordinates differ by the displayed nonzero
 constant. This is the transition map used to prove independence of compactification. -/
@@ -174,10 +255,32 @@ theorem cyclicQuotientCoordinate_eq_zero {m : ℕ} (hm : 0 < m) (z : ℂ) :
 
 /-! ## Compactification carrier -/
 
-/-- The compactified coarse quotient is constructed from the orbit quotient and cusp-orbit set;
-it is not identified with a classified surface by definition. -/
-noncomputable def CompactifiedQuotient (Γ : Subgroup PSL₂R) [DiscreteTopology Γ] : Type := by
-  sorry
+/-- The effective coarse orbit relation on the upper half-plane. -/
+noncomputable def coarseOrbitRel (Γ : Subgroup PSL₂R) : Setoid ℍ :=
+  letI := pslSubgroupMulAction Γ
+  MulAction.orbitRel Γ ℍ
+
+/-- The coarse quotient before adjoining cusps. -/
+abbrev CoarseQuotient (Γ : Subgroup PSL₂R) := Quotient (coarseOrbitRel Γ)
+
+/-- The compactification carrier is visibly the disjoint sum of the coarse orbit quotient and one
+point for each cusp orbit. Its topology glues punctured cusp neighbourhoods across these
+constructors; the carrier is not an arbitrary type or a classified surface. -/
+inductive CompactifiedQuotient (Γ : Subgroup PSL₂R) where
+  | ofQuotient (point : CoarseQuotient Γ)
+  | ofCusp (cusp : CuspOrbit Γ)
+
+/-- The compactification carrier has exactly the promised sum construction. -/
+def CompactifiedQuotient.equivSum {Γ : Subgroup PSL₂R} :
+    CompactifiedQuotient Γ ≃ CoarseQuotient Γ ⊕ CuspOrbit Γ where
+  toFun
+    | .ofQuotient point => Sum.inl point
+    | .ofCusp cusp => Sum.inr cusp
+  invFun
+    | Sum.inl point => .ofQuotient point
+    | Sum.inr cusp => .ofCusp cusp
+  left_inv point := by cases point <;> rfl
+  right_inv point := by cases point <;> rfl
 
 noncomputable instance compactifiedTopologicalSpace (Γ : Subgroup PSL₂R)
     [DiscreteTopology Γ] : TopologicalSpace (CompactifiedQuotient Γ) := by
@@ -201,3 +304,99 @@ Riemann sphere. No target here installs a sphere atlas on the quotient by assump
 -/
 
 end TauCetiRoadmap.FuchsianOrbifolds
+
+/-! ## Generic compact-Riemann-surface degree API owned by this roadmap
+
+These declarations target `TauCeti.Analysis.Complex.RiemannSurface.Degree`. They use genuine maps,
+finite fibres, local multiplicities, and divisors rather than records carrying their desired
+conclusions as fields.
+-/
+
+namespace RiemannSurface
+
+open scoped ContDiff Manifold
+
+/-- A nonconstant holomorphic map with finite fibres. For connected compact Riemann surfaces,
+this is the map carrier used by local multiplicity and degree. -/
+structure FiniteHolomorphicMap (X Y : Type*) [TopologicalSpace X] [ChartedSpace ℂ X]
+    [TopologicalSpace Y] [ChartedSpace ℂ Y] where
+  toFun : X → Y
+  holomorphic : MDiff toFun
+  nonconstant : ∃ x x', toFun x ≠ toFun x'
+  finite_fiber : ∀ y, {x | toFun x = y}.Finite
+
+instance {X Y : Type*} [TopologicalSpace X] [ChartedSpace ℂ X] [TopologicalSpace Y]
+    [ChartedSpace ℂ Y] : CoeFun (FiniteHolomorphicMap X Y) fun _ ↦ X → Y :=
+  ⟨FiniteHolomorphicMap.toFun⟩
+
+section CompactSurfaces
+
+variable {X Y Z : Type*}
+variable [TopologicalSpace X] [ChartedSpace ℂ X] [T2Space X] [CompactSpace X]
+  [ConnectedSpace X] [IsManifold 𝓘(ℂ, ℂ) ∞ X]
+variable [TopologicalSpace Y] [ChartedSpace ℂ Y] [T2Space Y] [CompactSpace Y]
+  [ConnectedSpace Y] [IsManifold 𝓘(ℂ, ℂ) ∞ Y]
+variable [TopologicalSpace Z] [ChartedSpace ℂ Z] [T2Space Z] [CompactSpace Z]
+  [ConnectedSpace Z] [IsManifold 𝓘(ℂ, ℂ) ∞ Z]
+
+/-- Composition stays in the finite nonconstant holomorphic-map carrier. -/
+noncomputable def FiniteHolomorphicMap.comp (g : FiniteHolomorphicMap Y Z)
+    (f : FiniteHolomorphicMap X Y) : FiniteHolomorphicMap X Z := by
+  sorry
+
+/-- The positive local multiplicity of a finite holomorphic map at a point. -/
+noncomputable def localMultiplicity (f : FiniteHolomorphicMap X Y) (x : X) : ℕ := by
+  sorry
+
+theorem localMultiplicity_pos (f : FiniteHolomorphicMap X Y) (x : X) :
+    0 < localMultiplicity f x := by
+  sorry
+
+/-- The fibre-independent sum of local multiplicities. -/
+noncomputable def degree (f : FiniteHolomorphicMap X Y) : ℕ := by
+  sorry
+
+theorem degree_eq_fiber_sum (f : FiniteHolomorphicMap X Y) (y : Y) :
+    degree f = ∑ x ∈ (f.finite_fiber y).toFinset, localMultiplicity f x := by
+  sorry
+
+theorem localMultiplicity_comp (g : FiniteHolomorphicMap Y Z)
+    (f : FiniteHolomorphicMap X Y) (x : X) :
+    localMultiplicity (g.comp f) x = localMultiplicity g (f x) * localMultiplicity f x := by
+  sorry
+
+theorem degree_comp (g : FiniteHolomorphicMap Y Z) (f : FiniteHolomorphicMap X Y) :
+    degree (g.comp f) = degree g * degree f := by
+  sorry
+
+/-- A degree-one finite holomorphic map is a biholomorphism, not merely a homeomorphism. -/
+noncomputable def biholomorph_of_degree_eq_one (f : FiniteHolomorphicMap X Y)
+    (hf : degree f = 1) : X ≃ₘ⟮𝓘(ℂ, ℂ), 𝓘(ℂ, ℂ)⟯ Y := by
+  sorry
+
+/-- Divisors are integral finite formal sums of points. -/
+abbrev Divisor (X : Type*) := X →₀ ℤ
+
+/-- Pullback weights each point by the map's local multiplicity. -/
+noncomputable def divisor_pullback (f : FiniteHolomorphicMap X Y) :
+    Divisor Y →+ Divisor X := by
+  sorry
+
+/-- Analytic genus of a connected compact Riemann surface. -/
+noncomputable def genus (X : Type*) [TopologicalSpace X] [ChartedSpace ℂ X] [T2Space X]
+    [CompactSpace X] [ConnectedSpace X] [IsManifold 𝓘(ℂ, ℂ) ∞ X] : ℕ := by
+  sorry
+
+/-- Degree of the ramification divisor `sum_x (e_x - 1)[x]`. -/
+noncomputable def ramificationDegree (f : FiniteHolomorphicMap X Y) : ℕ := by
+  sorry
+
+/-- Riemann--Hurwitz in terms of the degree and the ramification divisor. -/
+theorem riemannHurwitz (f : FiniteHolomorphicMap X Y) :
+    2 * (genus X : ℤ) - 2 =
+      (degree f : ℤ) * (2 * (genus Y : ℤ) - 2) + (ramificationDegree f : ℤ) := by
+  sorry
+
+end CompactSurfaces
+
+end RiemannSurface
