@@ -211,9 +211,7 @@ theorem finiteCover_transfer_push (R : Type u) [CommRing R]
 /-- A regular deck action; simple transitivity is stated on each fibre. -/
 structure RegularDeckAction {E B : TopCat.{u}} (D : FiniteCover E B)
     (G : Type u) [Group G] where
-  deck : G → C(E, E)
-  deck_one : deck 1 = ContinuousMap.id E
-  deck_mul : ∀ g h, deck (g * h) = (deck g).comp (deck h)
+  deck : G →* Homeomorph E E
   commutes : ∀ g x, D.p (deck g x) = D.p x
   simplyTransitive : ∀ {x y : E}, D.p x = D.p y → ∃! g, deck g x = y
 
@@ -224,7 +222,7 @@ theorem finiteCover_push_transfer_regular (R : Type u) [CommRing R]
       finiteCoverTransfer R M D =
         ∑ g : G,
             ((AlgebraicTopology.singularChainComplexFunctor (ModuleCat.{u} R)).obj M).map
-            (TopCat.ofHom (A.deck g)) := by
+            (TopCat.ofHom ⟨A.deck g, (A.deck g).continuous_toFun⟩) := by
   sorry
 
 /-- An `R[G]`-module expressed without introducing a second module category. -/
@@ -318,20 +316,66 @@ structure NDRPairData (X : TopPair.{u}) where
   fixed : ∀ (t : unitInterval) (a : X.snd), H (t, X.map a) = X.map a
   at_one : ∀ x, u x < 1 → H (1, x) ∈ Set.range X.map
 
-/-- Relative homotopy groups use the same based-cube model as Mathlib's `HomotopyGroup`. -/
-noncomputable def relativeHomotopyGroup (n : ℕ) (X : TopPair.{u}) : ModuleCat.{u} ℤ := by
+/-- Relative homotopy in degrees at least two is group-valued. In particular, the degree-two
+group is not assumed commutative. The implementation uses the same based-cube model as Mathlib's
+`HomotopyGroup`. -/
+noncomputable def relativeHomotopyGroup (n : ℕ) (_hn : 2 ≤ n)
+    (X : TopPair.{u}) : GrpCat.{u} := by
   sorry
 
-noncomputable def relativeHurewicz (n : ℕ) (X : TopPair.{u}) :
-    relativeHomotopyGroup n X ⟶
+/-- The integral module attached to the abelianization of the relative homotopy group. This is
+the natural source of Hurewicz before any commutativity theorem. -/
+noncomputable def relativeHomotopyAbelianization (n : ℕ) (hn : 2 ≤ n)
+    (X : TopPair.{u}) : ModuleCat.{u} ℤ := by
+  sorry
+
+/-- The quotient map from relative homotopy to its abelianization, displayed on underlying
+carriers so that the general group-valued source is not silently strengthened. -/
+noncomputable def relativeHomotopyToAbelianization (n : ℕ) (hn : 2 ≤ n)
+    (X : TopPair.{u}) :
+    relativeHomotopyGroup n hn X → relativeHomotopyAbelianization n hn X := by
+  sorry
+
+/-- From degree three onward, relative homotopy itself has its canonical integral-module
+structure. -/
+noncomputable def relativeHomotopyModule (n : ℕ) (_hn : 3 ≤ n)
+    (X : TopPair.{u}) : ModuleCat.{u} ℤ := by
+  sorry
+
+/-- In the stable relative range, the module carrier agrees with the abelianization carrier. -/
+noncomputable def relativeHomotopyModuleIsoAbelianization (n : ℕ) (hn : 3 ≤ n)
+    (X : TopPair.{u}) :
+    relativeHomotopyModule n hn X ≅ relativeHomotopyAbelianization n (by omega) X := by
+  sorry
+
+/-- Relative Hurewicz is defined on the abelianization in every degree at least two. -/
+noncomputable def relativeHurewicz (n : ℕ) (hn : 2 ≤ n) (X : TopPair.{u}) :
+    relativeHomotopyAbelianization n hn X ⟶
       (relativeSingularHomology ℤ n).obj (ModuleCat.of ℤ ℤ) |>.obj X := by
+  sorry
+
+/-- At degree two, simple connectivity and relative one-connectivity force the generally
+nonabelian relative group to be abelian. -/
+theorem relativeHomotopyGroup_two_commutative (X : TopPair.{u})
+    (_hNDR : NDRPairData X)
+    [SimplyConnectedSpace X.fst] [SimplyConnectedSpace X.snd] :
+    ∀ a b : relativeHomotopyGroup 2 (by omega) X, a * b = b * a := by
+  sorry
+
+/-- Consequently the quotient to the degree-two abelianization is bijective; commutativity is a
+theorem under the Hurewicz hypotheses, not part of the general carrier. -/
+theorem relativeHomotopyToAbelianization_two_bijective (X : TopPair.{u})
+    (_hNDR : NDRPairData X)
+    [SimplyConnectedSpace X.fst] [SimplyConnectedSpace X.snd] :
+    Function.Bijective (relativeHomotopyToAbelianization 2 (by omega) X) := by
   sorry
 
 theorem relativeHurewicz_isIso (n : ℕ) (hn : 2 ≤ n) (X : TopPair.{u})
     (_hNDR : NDRPairData X)
     [SimplyConnectedSpace X.fst] [SimplyConnectedSpace X.snd]
-    (_hvanish : ∀ i < n, Subsingleton (relativeHomotopyGroup i X)) :
-    IsIso (relativeHurewicz n X) := by
+    (_hvanish : ∀ i, 2 ≤ i → i < n →
+      Subsingleton (relativeHomotopyGroup i (by omega) X)) :
+    IsIso (relativeHurewicz n hn X) := by
   sorry
 
 /-! ## Finite CW Euler characteristic -/

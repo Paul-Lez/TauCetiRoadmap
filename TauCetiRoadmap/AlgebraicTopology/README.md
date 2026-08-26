@@ -358,6 +358,10 @@ and geometric topology's smooth-triangulation result for the manifold corollarie
 1. Extend cubical `HomotopyGroup` with pointed maps, functoriality, basepoint change, relative
    homotopy groups, and the long exact sequence of a based pair.  State relative groups for NDR
    pairs/cofibrations, rather than attaching them to arbitrary inclusions without hypotheses.
+   Keep the low-degree algebra honest: use pointed-set and group carriers in the ranges where
+   relative homotopy is not abelian, and expose a `ModuleCat Z` carrier only in degrees at least
+   three.  In particular, `pi_2(X,A)` is group-valued in general; its abelianization, not the
+   unmodified group, is the module-valued source available without connectivity assumptions.
 2. Following #42435, construct homotopy groups of Kan simplicial sets, prove
    `TopCat.toSSet.obj X` is Kan, and compare these groups naturally with cubical homotopy groups.
    Prove compatibility with induced maps, boundary maps, and basepoint change.
@@ -366,7 +370,9 @@ and geometric topology's smooth-triangulation result for the manifold corollarie
 4. Prove relative Hurewicz for a based cofibration/NDR pair.  If `A` and `X` are simply connected
    and `pi_i(X,A)=0` for `i<n`, prove `H_i(X,A;Z)=0` below `n` and that relative Hurewicz is an
    isomorphism in degree `n`.  Derive the exact isomorphism and surjectivity range for
-   `H_i(A)->H_i(X)` from the pair sequence.
+   `H_i(A)->H_i(X)` from the pair sequence.  In degree two, first derive commutativity of
+   `pi_2(X,A)` from these connectivity hypotheses, prove that the map to its abelianization is an
+   isomorphism, and only then identify it with relative homology.
 5. Prove Whitehead's theorem for CW complexes using cellular approximation and skeletal
    induction.  Combine relative Hurewicz with the mapping cylinder to prove homological
    Whitehead for simply connected CW complexes, then extend both results to spaces of CW type.
@@ -425,6 +431,9 @@ these arrows by assuming a downstream comparison theorem as input.
 - Homological Whitehead produces a homotopy inverse to the given homology equivalence between
   simply connected CW-type spaces; it does not merely assert that some unrelated equivalence
   exists.
+- The proposed relative-homotopy API does not make `pi_2(X,A)` a `Z`-module in general.  Its
+  degree-two Hurewicz theorem derives the needed commutativity from connectivity, while the direct
+  module-valued carrier starts in degree three.
 
 ## References
 
