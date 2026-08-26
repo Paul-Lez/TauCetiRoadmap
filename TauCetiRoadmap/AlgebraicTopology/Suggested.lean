@@ -359,7 +359,7 @@ nonabelian relative group to be abelian. -/
 theorem relativeHomotopyGroup_two_commutative (X : TopPair.{u})
     (_hNDR : NDRPairData X)
     [SimplyConnectedSpace X.fst] [SimplyConnectedSpace X.snd] :
-    ∀ a b : relativeHomotopyGroup 2 (by omega) X, a * b = b * a := by
+    ∀ a b : relativeHomotopyGroup 2 (Nat.le_refl 2) X, a * b = b * a := by
   sorry
 
 /-- Consequently the quotient to the degree-two abelianization is bijective; commutativity is a
@@ -373,8 +373,8 @@ theorem relativeHomotopyToAbelianization_two_bijective (X : TopPair.{u})
 theorem relativeHurewicz_isIso (n : ℕ) (hn : 2 ≤ n) (X : TopPair.{u})
     (_hNDR : NDRPairData X)
     [SimplyConnectedSpace X.fst] [SimplyConnectedSpace X.snd]
-    (_hvanish : ∀ i, 2 ≤ i → i < n →
-      Subsingleton (relativeHomotopyGroup i (by omega) X)) :
+    (_hvanish : ∀ i (hi : 2 ≤ i), i < n →
+      Subsingleton (relativeHomotopyGroup i hi X)) :
     IsIso (relativeHurewicz n hn X) := by
   sorry
 
