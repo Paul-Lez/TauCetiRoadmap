@@ -20,7 +20,9 @@ Suggested homes: `TauCeti/Analysis/Complex/Fuchsian/` for groups, polygons, and 
 
 The scope is orientation-preserving Fuchsian groups acting on the upper half-plane, with special
 attention to cofinite groups, finite elliptic stabilizers, cusp compactification, triangle
-groups, orbifold fundamental groups, and descent of invariant meromorphic functions.
+groups, polygon presentations, and descent of invariant meromorphic functions. It proves the
+standard presentation of the acting Fuchsian group; it does not introduce a general orbifold
+groupoid or orbifold fundamental-group carrier.
 
 Teichmüller theory, general Kleinian groups, higher-dimensional locally symmetric spaces,
 automorphic representations, and the classification of all two-dimensional orbifolds are
@@ -37,16 +39,18 @@ The roadmap is complete when Tau Ceti proves the following.
    structure.  At an elliptic point of stabilizer order `m`, a linearizing coordinate identifies
    the local quotient with `z |-> z^m`; the quotient surface remains smooth and the quotient map
    has ramification index `m`.
-3. Parabolic fixed points, cusps, widths, precisely invariant horodiscs, and q-coordinates are
-   constructed intrinsically.  For a cofinite group there are finitely many cusp orbits.
+3. Parabolic fixed points, cusps, normalized cusp data, precisely invariant horodiscs, and
+   q-coordinates are constructed. Cusp width belongs to the chosen normalized scaling datum rather
+   than to the cusp alone. For a cofinite group there are finitely many cusp orbits.
 4. Adjoining those cusp orbits to the coarse quotient gives a compact Hausdorff
    second-countable Riemann surface.  The inclusion of the uncompactified quotient is open, and
    the q-coordinate gives every cusp chart.
 5. Invariant holomorphic and meromorphic functions descend through the quotient and extend
    across cusps under exact q-expansion or growth hypotheses.  Local orders upstairs and
    downstairs account for elliptic ramification and cusp widths.
-6. Finite holomorphic maps between compact connected Riemann surfaces have a map-level degree
-   theory, and a degree-one map is a biholomorphism.
+6. The exact compact-Riemann-surface degree and Riemann--Hurwitz API from the modular-forms roadmap
+   is consumed; this roadmap proves its Fuchsian quotient, elliptic, cusp, and finite-index
+   applications.
 7. Fundamental polygons and the Poincaré polygon theorem produce the expected presentations,
    orbifold signatures, genus formula, and triangle-group examples.
 8. The level-one modular quotient is constructed and compactified before any identification
@@ -74,12 +78,21 @@ The roadmap is complete when Tau Ceti proves the following.
 - **The modular-forms roadmap owns modular forms and functions before descent, including the
   normalized level-one `j`-function, modular invariance, q-expansion, and exact elliptic orders;
   it also owns congruence-subgroup arithmetic, Riemann--Roch applications, and dimension
-  formulas.**  This roadmap owns the generic Fuchsian quotient and cusp-compactification
-  substrate.  The level-one example consumes the stated `j` results and does not reconstruct
-  modular forms.
+  formulas.** It also owns the generic local-multiplicity, degree, degree-one, divisor-pullback,
+  and Riemann--Hurwitz declarations for compact Riemann surfaces in its compact-surface layer.
+  This roadmap owns the generic Fuchsian quotient and cusp-compactification substrate and consumes
+  those exact map declarations for its applications. The level-one example does not reconstruct
+  modular forms or a competing degree theory.
 - **The algebraic-curves roadmap owns algebraic curves and their function fields.**  This
   roadmap constructs analytic Riemann surfaces.  It proves no GAGA equivalence and creates no
   algebraic curve by declaration.
+
+The shared supplier module is `TauCeti.Analysis.Complex.RiemannSurface.Degree`. Its public
+contract is `RiemannSurface.localMultiplicity`, `RiemannSurface.degree`,
+`RiemannSurface.degree_comp`, `RiemannSurface.biholomorph_of_degree_eq_one`,
+`RiemannSurface.divisor_pullback`, and `RiemannSurface.riemannHurwitz`, all on the compact-surface
+and holomorphic-map carriers used by the modular-forms roadmap. This roadmap imports those names
+before implementing Layer 5; prose adapters do not discharge the dependency.
 
 ## Pinned conventions
 
@@ -91,22 +104,26 @@ These conventions prevent silent inversions and non-effective actions.
   a central element that fixes every point.
 - A Fuchsian group is a `Subgroup PSL(2,R)` with the inherited topology and a proof of
   discreteness.  Proper discontinuity is obtained as a theorem or typeclass from that input.
-- Hyperbolic area on `UpperHalfPlane` is the measure with density `y⁻² dx dy`, identified with
-  the Riemannian volume of the hyperbolic metric and proved invariant under `PSL(2,R)`.  The
-  covolume of a Fuchsian group is the area of a measurable fundamental domain, proved independent
-  of that domain.  A group is cofinite exactly when this covolume is finite.
+- Hyperbolic area on `UpperHalfPlane` is Mathlib's existing `UpperHalfPlane.volume`, whose density
+  is `y⁻² dx dy`; consume its local-finiteness and `GL(2,ℝ)`-invariance theorems. This roadmap
+  identifies it with Riemannian volume, defines the covolume of a Fuchsian group from a measurable
+  fundamental domain, and proves independence of that domain. A group is cofinite exactly when
+  this covolume is finite.
 - Quotients are `MulAction.orbitRel.Quotient`; projections are the ordinary quotient maps.  The
   free-locus projection is a covering and local biholomorphism.  The full coarse quotient is not
   falsely claimed to be a covering at elliptic points.
 - Stabilizers are `MulAction.stabilizer Γ z`.  Elliptic order is the finite cardinality of that
   subgroup, proved cyclic from the derivative action in a local disc coordinate.
 - A cusp is an orbit of a parabolic fixed point in Mathlib's boundary carrier `OnePoint ℝ`.
-  Width is the positive
-  translation length after an explicitly normalized conjugation taking the cusp to infinity.
-  Changing that conjugation has a proved effect on the q-coordinate.
-- The normalized cusp coordinate is `q(z)=exp(2*pi*i*z/w)` for positive width `w`.  Positive
-  translation by `w` fixes `q`.  Meridians are counterclockwise-positive around `q=0`; prove the
-  associated deck-generator convention and its orientation-reversal law.
+  A cusp datum consists of a chosen projective scaling `σ` taking the cusp to infinity, a chosen
+  positive generator of the conjugated stabilizer, its translation width `w > 0`, and the proof of
+  that translation formula. Width is not an invariant of the bare cusp. Replacing `σ` by
+  `z ↦ a σ(z)+b`, with `a>0`, sends `w` to `a w` and multiplies the q-coordinate by
+  `exp(2πib/(aw))`; the compactified complex structure is independent of this choice.
+- The coordinate attached to cusp datum `(σ,w)` is
+  `q(z)=exp(2*pi*i*σ(z)/w)`. Its selected positive generator fixes `q`. Meridians are
+  counterclockwise-positive around `q=0`; prove the associated deck-generator convention and its
+  orientation-reversal law.
 - Elliptic charts use a coordinate centered at the fixed point in which a generator acts by a
   primitive `m`th root of unity.  The quotient coordinate is `u=z^m`.  Ramification order is
   defined from this map-level local normal form.
@@ -116,8 +133,9 @@ These conventions prevent silent inversions and non-effective actions.
 - Orbifold signature is derived from the genus of the compactification, the list of elliptic
   stabilizer orders, and the number of cusp orbits.  Public theorems continue to expose those
   underlying objects.
-- A finite holomorphic map's degree is the sum of local multiplicities over a fibre, proved
-  independent of the chosen regular value.  Degree is not a field supplied to a map record.
+- A finite holomorphic map's local multiplicity, degree, divisor pullback, degree-one theorem, and
+  Riemann--Hurwitz formula use the exact shared declarations owned by the modular-forms roadmap.
+  Degree is not a field supplied to a map record.
 - `P^1` is the Riemann sphere supplied by the complex-manifolds roadmap.  A quotient becomes
   `P^1` only through a named biholomorphism proved after the quotient has been compactified.
 
@@ -133,8 +151,10 @@ The development starts from the following material.
   and Mathlib's charted-space construction for free properly discontinuous quotients.
 - Mathlib's complex analytic functions, isolated zeros, removable singularities, power series,
   exponential, winding and argument principles, and one-point compactification.
-- Mathlib's measure, integration, change-of-variables, and Riemannian-volume APIs; this roadmap
-  constructs the invariant hyperbolic area measure and quotient covolume from them.
+- `Mathlib.Analysis.Complex.UpperHalfPlane.Measure`, including
+  `UpperHalfPlane.volume_def`, local finiteness, and the `GL(2,ℝ)` invariant-measure instance. This
+  roadmap constructs only the Riemannian-volume comparison, measurable-fundamental-domain
+  covolume, its independence, and Gauss--Bonnet applications.
 - The complex-manifolds roadmap's Riemann sphere, complex quotient theorem, atlas gluing, and
   holomorphic local-diffeomorphism/descent APIs.
 - The universal-covers roadmap's covering and deck-transformation results.
@@ -147,9 +167,10 @@ The development starts from the following material.
 1. Equip `PSL(2,R)` with the quotient topology from `SL(2,R)` and prove it is a Hausdorff
    second-countable topological group.  Relate the quotient map to Mathlib's algebraic quotient
    by the center.
-2. Factor the `SL(2,R)` Möbius action through the center to a named monoid homomorphism
-   `PSL(2,R) -> Equiv.Perm UpperHalfPlane`.  Prove the factor is well defined, continuous,
-   faithful, and acts by biholomorphisms.
+2. Construct the canonical homomorphism `PSL(2,R) → PGL(2,R)` and restrict Mathlib's existing
+   projective Möbius action along it. Prove compatibility with the `SL(2,R)` action, faithfulness,
+   joint continuity of `PSL(2,R) × UpperHalfPlane → UpperHalfPlane`, and that every element acts by
+   a biholomorphism. Do not export an unrelated permutation action as a second public action.
 3. Prove that a discrete subgroup `Γ <= PSL(2,R)` acts properly discontinuously.  Relate this
    theorem to Mathlib's result for discrete subgroups of `SL(2,R)` through projective lifts,
    without forcing a choice of lift into the public interface.
@@ -185,26 +206,29 @@ The development starts from the following material.
 
 ## Layer 2: hyperbolic polygons and cofinite groups
 
-1. Construct the hyperbolic area form and its associated measure on `UpperHalfPlane`; prove the
-   density formula `y⁻² dx dy`, local finiteness, and invariance under the effective projective
-   action.  Define measurable fundamental domains, prove their areas agree, define covolume and
+1. Consume Mathlib's invariant `UpperHalfPlane.volume`. Compare it with hyperbolic Riemannian
+   volume, define measurable fundamental domains, prove their areas agree, define covolume and
    cofiniteness, and derive the Gauss--Bonnet area formula for finite hyperbolic polygons.
 2. Develop geodesics, half-planes, convex hyperbolic polygons, sides, vertices, side pairings,
    cycles, and angles using Mathlib's upper-half-plane metric and topology.  Prove the local
    finiteness facts required for translated polygons.
-3. Prove the Poincaré polygon theorem for a finite-sided polygon with explicit side-pairing,
-   cycle, angle, and no-overlap hypotheses.  Construct the generated discrete subgroup,
-   fundamental-set theorem, and group presentation.
-4. Prove the converse finite-area polygon theorem for a cofinite Fuchsian group and the
-   equivalence between finite hyperbolic covolume and a finite-sided fundamental polygon with
-   finitely many ideal vertices.
+3. Define the input to the Poincaré polygon theorem by separate hypotheses: geodesic
+   finite-sidedness; an orientation-reversing fixed-point-free involution on sides; projective
+   side-pairing transformations; the exact side-identification law; vertex cycles and angle sums;
+   ideal-vertex parabolic cycles; and translated-interior no-overlap plus local finiteness. Prove
+   the theorem from these hypotheses, including discreteness, the fundamental-set theorem, and the
+   presentation.
+4. Prove the converse from a non-elementary finite-covolume group and a Dirichlet centre with
+   trivial stabilizer. Construct the finite-sided Dirichlet polygon, its locally finite translates,
+   ideal vertices, side pairings, and cycles before deriving the equivalence with cofiniteness.
 5. Extract elliptic cycles, parabolic cycles, cusp orbits, genus, and the standard presentation
    from the polygon.  Prove the relation between orientation of the boundary word and orientation
    of meridians in the quotient.
-6. Construct hyperbolic triangle groups from polygon reflections and their
-   orientation-preserving subgroups.  For parameters satisfying the hyperbolic inequality,
-   prove discreteness, faithfulness of the presentation, the elliptic orders, and the number of
-   cusps.  Treat `(p,q,infinity)` as one theorem family rather than separate hard-coded groups.
+6. Introduce a finite-or-cusp parameter with constructors `elliptic m` carrying `2 ≤ m` and
+   `cusp`; its reciprocal is `1/m` and `0`, respectively. Construct hyperbolic triangle groups from
+   polygon reflections for triples satisfying the typed inequality that the reciprocal sum is
+   less than one. Prove discreteness, faithfulness of the presentation, elliptic orders, and cusp
+   count in one theorem family; `(p,q,cusp)` is not untyped infinity notation.
 
 **Source spine:** Beardon, Chapters 9--11; Katok, Chapters 3--4; Stillwell, Chapter 5.
 
@@ -212,15 +236,17 @@ The development starts from the following material.
 
 1. Classify parabolic elements and their unique boundary fixed points.  Define cusp orbits in
    `OnePoint ℝ` and prove finiteness for cofinite groups.
-2. For each cusp, choose and normalize a projective transformation taking it to infinity.
-   Prove that its stabilizer is infinite cyclic modulo the effective action and has a unique
-   positive width `w`.
+2. For each cusp, construct a cusp datum: choose a projective transformation `σ` taking it to
+   infinity, orient the infinite cyclic stabilizer, select its positive generator, and record the
+   resulting translation width `w > 0`. Prove uniqueness only relative to this normalized datum.
 3. Construct sufficiently high horodiscs which are precisely invariant under the cusp
    stabilizer.  Prove distinct cusp-orbit horodiscs have disjoint images after shrinking and that
    the complement of their images in a finite-area fundamental polygon is compact.
-4. Define `q(z)=exp(2*pi*i*z/w)`.  Prove invariance under translation by `w`, identify the
-   punctured-disc quotient biholomorphically, prove `q -> 0` along the cusp, and calculate the
-   effect of changing the normalized cusp representative.
+4. Define `q(z)=exp(2*pi*i*σ(z)/w)`. Prove invariance under the selected generator, identify the
+   punctured-disc quotient biholomorphically, and prove `q → 0` along the cusp. For a second datum
+   `σ'=aσ+b`, prove `w'=aw` and
+   `q'=exp(2πib/(aw))q`, then prove that this nonzero scalar change gives the same compactified
+   complex structure.
 5. Prove the Laurent/q-expansion criterion: an invariant holomorphic function descends on the
    punctured cusp; boundedness gives a removable singularity, polynomial exponential growth gives
    a pole of controlled order, and decay gives a zero of controlled order.
@@ -239,8 +265,10 @@ The construction order in this layer is normative.
 3. Extend the quotient atlas with the q-coordinate at every new point.  Verify transitions with
    free and elliptic charts, then prove `ChartedSpace` and `IsManifold 𝓘(ℂ, ℂ) ∞`.
 4. Prove that the original quotient is an open dense submanifold and that the compactifying
-   points are exactly the complement.  Prove functoriality for conjugate groups and finite-index
-   subgroup inclusions.
+   points are exactly the complement. Prove functoriality for conjugate groups. For every
+   finite-index inclusion `Γ' ≤ Γ`, extend the quotient map to cusps and prove that compatible data
+   give `e_cusp = w_{Γ'}/w_Γ ∈ ℕ`. Compute elliptic ramification from stabilizer indices,
+   prove multiplicativity in subgroup towers, and prove the fibre-cardinality and degree formulas.
 5. Derive the orbifold signature from the compact surface, elliptic stabilizer orders, and cusp
    set.  Prove the orbifold Euler-characteristic and area formula, including all factors of
    `2*pi` and the effective `PSL` convention.
@@ -249,23 +277,20 @@ No step identifies the carrier with `P^1`, a torus, or another classified surfac
 
 **Source spine:** Katok, Chapter 4; Diamond--Shurman, §§2.4--2.5; Forster, §§18--19.
 
-## Layer 5: maps, ramification, and degree
+## Layer 5: Fuchsian applications of the shared degree API
 
 1. Prove that a `Γ`-invariant holomorphic or meromorphic function descends uniquely to the
    coarse quotient.  Combine the elliptic local-order formula and cusp q-expansion criterion to
    extend it to the compactification.
-2. Develop local multiplicity for nonconstant holomorphic maps of Riemann surfaces from the
-   local power-series normal form.  Prove positivity, multiplicativity under composition, and
-   discreteness of branch points.
-3. For a nonconstant holomorphic map between compact connected Riemann surfaces, prove that each
-   fibre is finite and that the sum of local multiplicities is independent of the target point.
-   Define degree from this common sum and prove functoriality.
-4. Prove that degree one implies bijectivity and a holomorphic inverse, hence a biholomorphism.
-   Prove the corresponding divisor pullback and local-order statements consumed by modular
-   functions.
-5. Prove Riemann--Hurwitz at the map level.  Coordinate its declaration shape with the
-   modular-forms compact-Riemann-surface development, and use one shared theorem family rather
-   than creating competing degree and ramification APIs.
+2. Import the modular-forms compact-Riemann-surface declarations for local multiplicity, degree,
+   multiplicativity, the degree-one biholomorphism theorem, divisor pullback, and Riemann--Hurwitz.
+   `Suggested.lean` checks these exact names once that supplier module lands; no local aliases or
+   parallel carriers are introduced.
+3. Apply those declarations to finite-index compactified quotient maps. Reprove neither generic
+   fibre finiteness nor independence of the degree sum; identify the local multiplicities with the
+   cusp-width and elliptic-stabilizer ratios from Layer 4.
+4. Derive the Fuchsian Riemann--Hurwitz and orbifold Euler-characteristic formulas, with the chosen
+   effective-action and orientation conventions explicit.
 
 **Source spine:** Forster, §§10, 17, and 19; Miranda, Chapter III §§3--4; Farkas--Kra,
 Chapter II §4.
@@ -300,12 +325,12 @@ q-expansion, and exact elliptic orders.
 | L2 polygons and presentations | L0, conformal mapping | L3--L4, L6 |
 | L3 cusps and q-coordinates | L0, L2 | L4--L6 |
 | L4 compactification | L1--L3 | L5--L6 |
-| L5 degree theory | complex analysis, compact Riemann surfaces | L6 |
+| L5 degree applications | modular-forms compact-surface degree API, L4 | L6 |
 | L6 level-one example | L0--L5, modular forms | normalized `X(1) ≃ P^1` |
 
 L1 and L2 can proceed in parallel after L0.  The local q-coordinate calculation in L3 can
-proceed while the global polygon results are completed.  L5's local multiplicity theory can
-proceed independently; its global fibre-counting theorem uses compact Riemann surfaces from L4.
+proceed while the global polygon results are completed. Layer 5 begins after the shared generic
+degree supplier and Layer 4 are available.
 
 ## Acceptance checks
 
@@ -316,16 +341,18 @@ proceed independently; its global fibre-counting theorem uses compact Riemann su
   covering point.
 - A cyclic rotation of a disc yields a smooth disc quotient with ramification index equal to the
   group order.
-- A width-`w` parabolic translation has q-coordinate invariant under `z |-> z+w`; reversing the
-  meridian convention has an explicit proved effect rather than a silent inverse.
+- A cusp datum of width `w` has q-coordinate invariant under its positive generator; replacing
+  `σ` by `aσ+b` changes `w` and `q` by the exact formulas above but not the compactified atlas.
+- Mathlib's upper-half-plane volume is imported and compared with hyperbolic volume; no second
+  invariant measure is constructed.
 - A finite-sided cofinite polygon produces a compact surface after one point is adjoined for each
   cusp orbit, with compactness proved from a truncated fundamental polygon.
-- The triangle-group theorem handles all hyperbolic `(p,q,infinity)` parameters from one API and
-  derives the presentation and signature from side pairings.
+- The triangle-group theorem uses the typed finite-or-cusp parameter and derives the presentation
+  and signature from side pairings.
 - Invariant functions descend through `MulAction.orbitRel.Quotient`; no choice-based quotient
   section occurs in the public construction.
-- Local orders downstairs multiply by elliptic stabilizer order on pullback.  Cusp orders use the
-  normalized q-coordinate and cusp width.
+- Local orders downstairs multiply by elliptic stabilizer order on pullback. Cusp orders use the
+  q-coordinate and width from a chosen compatible cusp datum and are proved independent of it.
 - The level-one compact quotient is a compact Riemann surface before the normalized `j`-function
   is descended.  The proof of `X(1) ≃ P^1` passes through the theorem that the descended map has
   degree one.
