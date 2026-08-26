@@ -84,13 +84,17 @@ The roadmap is complete when Tau Ceti supplies all of the following.
 These conventions are acceptance conditions.
 
 - An integral lattice is a finite free `Z`-module `N`, a finite-dimensional real vector space
-  `N_R`, and an injective additive map `N -> N_R` whose real span is all of `N_R`.
+  `N_R`, an additive map `i : N -> N_R`, and an `R`-linear equivalence
+  `R tensor[Z] N ≃ N_R` sending `1 tensor n` to `i(n)`. Injectivity, discreteness, spanning, and
+  equality of the integral and real ranks are consequences. An injective dense map with full
+  real span is not accepted as a lattice.
 - A toric cone is a Mathlib `PointedCone R N_R` satisfying finite generation, generation by
   finitely many lattice vectors, and `ConvexCone.Salient`. Salience is the condition
   `sigma inter (-sigma) = {0}`; Mathlib's name `PointedCone` alone does not assert it.
 - Rays are one-dimensional Mathlib faces. Their primitive lattice generators are derived by an
   existence-and-uniqueness theorem. A cone record does not store an arbitrary generator list.
-- Regularity means that all primitive ray generators of a cone occur in one integral basis.
+- Regularity includes the toric-cone hypothesis and says that all primitive ray generators occur
+  in one integral basis. It is never a standalone property of an irrational or nonsalient cone.
   The analytic layer consumes such a basis and proves independence from its choice.
 - A fan is a finite set of toric cones, closed under faces, whose pairwise intersections are
   faces of both cones. A fan morphism is an integral lattice map, its compatible real-linear map,
@@ -110,8 +114,9 @@ These conventions are acceptance conditions.
 - Global algebraic complex points mean scheme morphisms `Spec C -> X`, not the underlying
   prime-ideal space of `X`.
 - The toric boundary is a finite ray-indexed family of closed embedded complex hypersurfaces.
-  Its simple-normal-crossings conclusion is the proved local coordinate-hyperplane normal form;
-  it is not a Boolean field in a boundary record.
+  Its simple-normal-crossings conclusion is a complex local biholomorphism, represented by a
+  complex `PartialDiffeomorph`, under which the components are coordinate hyperplanes. A merely
+  topological `PartialHomeomorph` does not establish this conclusion.
 - Properness is stated only for finite fans. For every target cone `tau`, the inverse image of
   `tau` under the real-linear map equals the support of the source cones mapped into `tau`.
 
@@ -136,17 +141,19 @@ At the dependency pin, the following anchors already exist.
 This layer closes the algebraic prerequisite chain. Each item has an exact carrier and feeds the
 representative declarations in `Suggested.lean`.
 
-1. Define the integral-lattice predicate and scalar-extension comparison. Prove injectivity,
-   finite rank, equality of integral and real ranks, and naturality under integral linear maps.
+1. Define the integral-lattice predicate by an `R`-linear equivalence
+   `R tensor[Z] N ≃ N_R` whose restriction to `1 tensor N` is the chosen lattice map. Derive
+   injectivity, discreteness, spanning, equality of integral and real ranks, and naturality under
+   integral linear maps.
 2. Define `IsToricCone i sigma` on a Mathlib `PointedCone` by finite generation, lattice
    rationality, and salience. Prove preservation under faces, intersections, products, injective
    integral maps, and lattice equivalences.
 3. Define rays as one-dimensional Mathlib faces. Prove existence and uniqueness of the primitive
    generator of every ray, finiteness of the ray type, generation of the cone by its primitive
    rays, and naturality under lattice equivalences.
-4. Define regularity by extension of all primitive ray generators to an integral basis. Prove
-   regular cones are simplicial and that faces and products of regular cones are regular. Pin the
-   block form relating two extending bases.
+4. Define regularity as the conjunction of `IsToricCone` with the existence of an integral basis
+   containing every primitive ray generator. Prove regular cones are simplicial and that faces
+   and products of regular cones are regular. Pin the block form relating two extending bases.
 5. Define a finite fan as a finite set of toric cones closed under faces with pairwise
    intersections a face of each. Define support, completeness, open subfans, products,
    subdivisions, and fan morphisms. Prove identity, composition, and support functoriality.
@@ -175,8 +182,10 @@ Toric modules named above.
    independence from chosen generators.
 3. Define typed mixed exponent data for maps
    `C^k x (C^*)^l -> C^k' x (C^*)^l'`. Prove preservation of the invertible-coordinate locus,
-   holomorphy there, identity, composition, products, Jacobian formulas, and biholomorphicity for
-   the appropriate unimodular block matrices.
+   holomorphy there, identity, composition **on that locus**, products, Jacobian formulas, and
+   biholomorphicity for the appropriate unimodular block matrices. No composition theorem is
+   stated on ambient points with a zero torus coordinate, where integer-power conventions break
+   exponent arithmetic.
 4. Prove that localization along a face gives an open complex subspace and a biholomorphism onto
    its image. Verify the cocycle equations for successive face inclusions.
 
@@ -226,8 +235,9 @@ Toric modules named above.
    finite union of these components is exactly the complement of the dense torus and that every
    component has reduced multiplicity one.
 4. At every point, construct a regular affine chart, the finite set of boundary components
-   through the point, and an injection from those components to coordinate indices. Prove that a
-   point of the chart lies in a component exactly when the corresponding coordinate vanishes.
+   through the point, and an injection from those components to coordinate indices. Make this a
+   complex local biholomorphism and prove that a point of the chart lies in a component exactly
+   when the corresponding holomorphic coordinate vanishes.
 5. Deduce transversality and the intersection formula indexed by cones. Prove naturality under
    fan isomorphisms, products, and open subfans.
 
@@ -283,6 +293,9 @@ can proceed in parallel. L4 and L5 can proceed independently after L3. L6 joins 
 
 ## Acceptance checks
 
+- The map `ℤ² -> ℝ`, `(a,b) |-> a + √2 b`, is rejected as an integral lattice even though it
+  is injective and has full real span. It cannot produce two competing primitive generators of
+  the same ray.
 - The full line in a rank-one real lattice is a Mathlib `PointedCone` but fails the toric-cone
   salience predicate. Its dual semigroup gives a point; it is never accepted as the cone of an
   affine toric curve with a dense one-dimensional torus.
@@ -291,7 +304,8 @@ can proceed in parallel. L4 and L5 can proceed independently after L3. L6 joins 
 - A rank-`n` regular cone of dimension `k` produces a chart biholomorphic to
   `C^k x (C^*)^(n-k)`. Two extending bases give the same atlas.
 - A mixed monomial with a negative exponent in a noninvertible source coordinate is rejected by
-  its type. Identity and composition agree with matrix block composition.
+  its type. Identity and composition agree with matrix block composition on `mixedChartDomain`;
+  no equality is claimed at ambient points with zero torus coordinates.
 - The fan with only the zero cone produces the coordinate-free complex torus. A basis identifies
   it with `(C^*)^n`, and changing basis acts by the corresponding Laurent monomial map.
 - The standard complete fan produces complex projective space with its standard affine charts;
@@ -300,8 +314,9 @@ can proceed in parallel. L4 and L5 can proceed independently after L3. L6 joins 
   formulas.
 - A star subdivision gives the expected proper toric map through the finite-fan support
   criterion.
-- The boundary is proved to be a finite ray-indexed family of closed embedded hypersurfaces with
-  the coordinate-hyperplane local normal form. Merely storing an SNC assertion is insufficient.
+- The boundary is proved to be a finite ray-indexed family of closed embedded complex
+  hypersurfaces through a holomorphic coordinate-hyperplane local normal form. A
+  `PartialHomeomorph` or a stored SNC assertion is insufficient.
 - The global comparison starts from `Hom(Spec C, X_Sigma)`, agrees on every affine chart and
   overlap, and is natural for toric maps. An unrelated homeomorphism of final carriers is
   insufficient.

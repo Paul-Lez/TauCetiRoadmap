@@ -19,6 +19,7 @@ namespace TauCetiRoadmap.AnalyticToricGeometry
 open AlgebraicGeometry CategoryTheory Topology
 open scoped BigOperators
 open scoped ContDiff Manifold
+open scoped TensorProduct
 
 universe u
 
@@ -29,11 +30,12 @@ section AlgebraicSupplier
 variable {N V : Type u} [AddCommGroup N] [Module ℤ N] [Module.Free ℤ N] [Module.Finite ℤ N]
   [AddCommGroup V] [Module ℝ V] [FiniteDimensional ℝ V]
 
-/-- An integral lattice in a real vector space. This records only the embedding and spanning
-property; cones remain Mathlib `PointedCone`s in the ambient space. -/
-structure IsIntegralLattice (i : N →+ V) : Prop where
-  injective : Function.Injective i
-  span_eq_top : Submodule.span ℝ (Set.range i) = ⊤
+/-- Full integral-lattice data in a real vector space. The scalar-extension equivalence rules out
+dense injective images such as `ℤ² → ℝ`, `(a,b) ↦ a + √2 b`; cones remain Mathlib
+`PointedCone`s in the ambient space. -/
+def IsIntegralLattice (i : N →+ V) : Prop :=
+  ∃ scalarExtension : TensorProduct ℤ ℝ N ≃ₗ[ℝ] V,
+    ∀ n : N, scalarExtension ((1 : ℝ) ⊗ₜ[ℤ] n) = i n
 
 /-- Rationality of a cone means generation by finitely many lattice vectors. -/
 def IsLatticeRational (i : N →+ V) (sigma : PointedCone ℝ V) : Prop :=
@@ -63,11 +65,14 @@ theorem IsToricCone.existsUnique_primitiveGenerator {i : N →+ V}
     ∃! v : N, IsPrimitiveGenerator i rho v := by
   sorry
 
-/-- Regularity means that the primitive ray generators occur in one integral basis. -/
+/-- A regular cone is a toric cone whose primitive ray generators occur in one integral basis.
+Carrying the toric-cone hypothesis prevents regularity from holding vacuously for an irrational
+or nonsalient cone. -/
 def IsRegularCone (i : N →+ V) (sigma : PointedCone ℝ V) : Prop :=
-  ∃ (b : Module.Basis (Fin (Module.finrank ℤ N)) ℤ N)
-      (j : ToricRay sigma ↪ Fin (Module.finrank ℤ N)),
-    ∀ rho, IsPrimitiveGenerator i rho (b (j rho))
+  IsToricCone i sigma ∧
+    ∃ (basis : Module.Basis (Fin (Module.finrank ℤ N)) ℤ N)
+        (rayIndex : ToricRay sigma ↪ Fin (Module.finrank ℤ N)),
+      ∀ rho, IsPrimitiveGenerator i rho (basis (rayIndex rho))
 
 /-- A finite fan on the shared Mathlib cone carrier. -/
 structure Fan (i : N →+ V) where
@@ -219,7 +224,7 @@ noncomputable def MixedExponent.comp {k l k' l' k'' l'' : ℕ}
 
 theorem mixedMonomialMap_comp {k l k' l' k'' l'' : ℕ}
     (B : MixedExponent k' l' k'' l'') (A : MixedExponent k l k' l')
-    (z : (Fin k → ℂ) × (Fin l → ℂ)) :
+    (z : (Fin k → ℂ) × (Fin l → ℂ)) (hz : z ∈ mixedChartDomain k l) :
     mixedMonomialMap (B.comp A) z = mixedMonomialMap B (mixedMonomialMap A z) := by
   sorry
 
@@ -288,12 +293,16 @@ theorem boundaryComponent_isClosed (Sigma : Fan i) (rho : FanRay Sigma) :
     IsClosed (boundaryComponent Sigma rho) := by
   sorry
 
-/-- The toric boundary has the simple-normal-crossings coordinate-hyperplane normal form. -/
+/-- The toric boundary has the holomorphic simple-normal-crossings coordinate-hyperplane normal
+form. A complex `PartialDiffeomorph`, rather than a bare `PartialHomeomorph`, makes each component
+a complex hypersurface and makes the displayed coordinates holomorphic. -/
 theorem boundary_local_normalForm (Sigma : Fan i) (hSigma : Sigma.IsRegular)
     (x : AnalyticRealization Sigma) :
+    letI := analyticChartedSpace Sigma hSigma
     ∃ (s : Set (FanRay Sigma)) (_hs : s.Finite)
       (j : s ↪ Fin (Module.finrank ℤ N))
-      (e : PartialHomeomorph (AnalyticRealization Sigma) (ToricModel (N := N))),
+      (e : PartialDiffeomorph 𝓘(ℂ, ToricModel (N := N)) 𝓘(ℂ, ToricModel (N := N))
+        (AnalyticRealization Sigma) (ToricModel (N := N)) ∞),
       x ∈ e.source ∧
         ∀ y ∈ e.source, ∀ rho,
           y ∈ boundaryComponent Sigma rho ↔
