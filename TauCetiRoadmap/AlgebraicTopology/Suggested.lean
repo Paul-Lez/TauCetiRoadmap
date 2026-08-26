@@ -336,6 +336,23 @@ theorem relativeHurewicz_isIso (n : ℕ) (hn : 2 ≤ n) (X : TopPair.{u})
 
 /-! ## Finite CW Euler characteristic -/
 
+/-- A concrete finite CW model for a space. The topology and CW witnesses belong to the model
+carrier, and the original space is connected to it by an actual homotopy equivalence. -/
+structure FiniteCWTypeModel (M : Type u) [TopologicalSpace M] where
+  X : Type u
+  topology : TopologicalSpace X
+  cw : letI := topology; CWComplex (Set.univ : Set X)
+  finite : letI := topology; letI := cw; CWComplex.Finite (Set.univ : Set X)
+  homotopyEquiv : letI := topology; M ≃ₕ X
+
+/-- A compact Hausdorff second-countable smooth manifold has a concrete finite CW model. -/
+noncomputable def compactManifoldFiniteCWType (n : ℕ)
+    (M : Type u) [TopologicalSpace M] [T2Space M] [SecondCountableTopology M]
+    [CompactSpace M] [ChartedSpace (EuclideanSpace ℝ (Fin n)) M]
+    [IsManifold (modelWithCornersSelf ℝ (EuclideanSpace ℝ (Fin n))) ∞ M] :
+    FiniteCWTypeModel M := by
+  sorry
+
 /-- Euler characteristic of a chosen finite CW structure. The roadmap proves that this agrees
 with alternating homology rank and is invariant under homotopy equivalence. -/
 noncomputable def finiteCWEulerCharacteristic (X : Type*) [TopologicalSpace X]
