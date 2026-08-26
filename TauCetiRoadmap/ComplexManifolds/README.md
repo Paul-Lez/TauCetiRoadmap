@@ -19,18 +19,22 @@ every object it introduces.
    along a real continuous linear equivalence. Holomorphic maps and biholomorphisms become smooth
    maps and diffeomorphisms, and the construction commutes with products, open subspaces, and
    restrictions.
-2. Mathlib's carrier `OnePoint ℂ` has a named two-chart complex atlas for the Riemann sphere, with
+2. Its complex atlas induces the canonical orientation of the underlying real manifold in the
+   orientation carrier shared with the Heegaard Floer roadmap. This orientation is functorial for
+   biholomorphisms and compatible with products, open submanifolds, realification, and recharting.
+3. Mathlib's carrier `OnePoint ℂ` has a named two-chart complex atlas for the Riemann sphere, with
    compactness and separation inherited from its existing topology.
-3. Using Mathlib's quotient-manifold structure for free properly discontinuous actions, the orbit
+4. Using Mathlib's quotient-manifold structure for free properly discontinuous actions, the orbit
    projection for a biholomorphic action is a local biholomorphism, and invariant holomorphic maps
    and sections descend with the expected universal property.
-4. Compatible manifold atlases on the pieces of `TopCat.GlueData` give its existing glued carrier
+5. Compatible manifold atlases on the pieces of `TopCat.GlueData` give its existing glued carrier
    a smooth or complex atlas. The canonical inclusions are open local diffeomorphisms, and the
    construction is unique and functorial.
-5. Holomorphic vector bundles, especially line bundles, can be built from holomorphic transition
+6. Holomorphic vector bundles with a fixed finite-dimensional complex fibre, especially line
+   bundles, can be built from holomorphic transition
    cocycles and manipulated through pullback, dual, tensor product, determinant, normal, and
    canonical-bundle constructions.
-6. Finite open gluings have reusable Hausdorff, second-countability, connectedness, and proper-map
+7. Finite open gluings have reusable Hausdorff, second-countability, connectedness, and proper-map
    criteria strong enough to establish global instances from local data.
 
 The roadmap owns boundaryless atlas mechanics, the local-diffeomorphism and descent API extending
@@ -56,7 +60,10 @@ cohomology; or Riemann--Roch.
   boundaryless structure-groupoid atlases is owned here.
 - The [Heegaard Floer roadmap](../HeegaardFloer/README.md) owns the orientation API and general
   almost-complex and pseudoholomorphic analysis. This roadmap proves that a complex atlas has its
-  canonical real orientation and supplies integrable atlas constructions.
+  canonical real orientation in that exact carrier and supplies integrable atlas constructions.
+  The bridge theorem is an equivalence between the chartwise complex orientation defined here and
+  the Heegaard Floer orientation represented by the positive component of real frames; this
+  roadmap does not introduce a second orientation carrier.
 - The [conformal-mapping roadmap](../ConformalMapping/README.md) owns one-variable analytic
   theorems such as Riemann mapping and Schwarz reflection. It consumes the Riemann-sphere manifold
   and transport interfaces from this roadmap.
@@ -70,7 +77,7 @@ current dependency pin; an open Mathlib change determines API shape, never wheth
 
 ## Mathlib inventory and target shape
 
-Consume the following existing interfaces directly.
+At the repository pin, consume the following existing interfaces directly.
 
 - `ChartedSpace`, `ModelWithCorners`, `StructureGroupoid`, `HasGroupoid`, `contDiffGroupoid`,
   `Structomorph`, `ContMDiff`, `Diffeomorph`, and `IsLocalDiffeomorph` from
@@ -91,16 +98,29 @@ Consume the following existing interfaces directly.
 - `OnePoint ℂ` and `OnePoint.equivProjectivization`, including the existing homogeneous-coordinate
   formulas. No topology or charted space is placed on a second projective-line carrier.
 
-Two open Mathlib pull requests fix the intended form of missing interfaces.
+The following interfaces are not at the pin and have a fixed supplier or local-mirror policy.
 
 - The active [mathlib4#40727](https://github.com/leanprover-community/mathlib4/pull/40727) owns the
   `IsManifold` theorem for properly discontinuous quotients. Its `IsManifold` construction, local
   inverses, and transition-map API are the selected upstream shape. At a dependency pin predating
-  that API, Tau Ceti mirrors the same declarations locally, then replaces the mirror with imports
-  on a dependency update. Tau Ceti adds the local-diffeomorphism and descent API around that shape.
+  that API, Tau Ceti mirrors precisely `orbitRel.Quotient.localInverseAt`,
+  `localInverseAt_apply_mk`, `localInverseAt_symm_trans_eqOn_smul`,
+  `exists_smul_mem_localInverseAt_target`, `transitionMap`, `transitionMap_eqOn_smul`,
+  `transitionMap_locally_smul`, and `MulAction.isManifold_quotient_of_contMDiffSMul` under a
+  temporary internal namespace, then deletes the mirror and imports the Mathlib module on a
+  dependency update. Tau Ceti does not mirror `MulAction.instChartedSpaceQuotient` or the
+  covering-map, open-quotient, Hausdorff, second-countability, and connectedness results, which are
+  already at the pin. The genuinely new targets here are local biholomorphy and descent of
+  invariant holomorphic maps, sections, and bundle morphisms.
 - [mathlib4#42847](https://github.com/leanprover-community/mathlib4/pull/42847) develops transport
   of charted spaces and structure groupoids along homeomorphisms. Atlas transport and
-  realification follow that design, with local implementations at the dependency pin.
+  realification follow that design. Before it reaches the dependency pin, Tau Ceti locally mirrors
+  the declarations from its `Mathlib.Geometry.Manifold.PullbackGroupoid` module:
+  `Homeomorph.pullbackChartedSpace`, `_chartAt`, `_atlas`,
+  `transOpenPartialHomeomorph_mem_pullbackChartedSpace_atlas`, `pullback_symm_trans`,
+  `pullback_hasGroupoid`, and `pullbackStructomorph`. Realification, canonical complex orientation,
+  compatible open gluing, and holomorphic bundle structures remain genuinely new Tau Ceti
+  declarations.
 
 ## Encoding conventions
 
@@ -147,7 +167,29 @@ The source spine is Kobayashi--Nomizu, *Foundations of Differential Geometry*, V
 Chapter I, for atlases and compatible transformations, together with Huybrechts,
 *Complex Geometry*, Chapter 1, for complex manifolds and their underlying real manifolds.
 
-## Milestone 2: the Riemann sphere
+## Milestone 2: the canonical real orientation
+
+Use the orientation carrier and positive-frame convention owned by the Heegaard Floer roadmap.
+For a finite-dimensional complex model `E`, regard an ordered complex basis as the ordered real
+basis `(e₁, i e₁, ..., eₙ, i eₙ)`.
+
+1. Prove that two complex bases determine the same component of the real frame space because the
+   real determinant of a complex-linear equivalence is positive. This constructs the canonical
+   real orientation of `E` without choosing a basis.
+2. Transport the model orientation through every complex chart. Prove on overlaps that complex
+   derivatives preserve it, and hence construct the orientation of the realified manifold in the
+   shared orientation carrier. Prove independence from the atlas representative.
+3. Prove compatibility with restriction to open submanifolds, products using the stated ordered
+   product convention, restriction of scalars, and recharting along complex and real continuous
+   linear equivalences. State the sign incurred by permuting product factors.
+4. Prove that every biholomorphism preserves the canonical orientation. Identify this predicate
+   literally with the orientation-preserving-map predicate from the Heegaard Floer API, rather
+   than through an adapter or a second orientation definition.
+
+Bott--Tu, *Differential Forms in Algebraic Topology*, Section 1, supplies the complex-orientation
+convention; the shared Lean carrier and comparison theorem come from the Heegaard Floer roadmap.
+
+## Milestone 3: the Riemann sphere
 
 On Mathlib's existing carrier `OnePoint ℂ`, construct a named two-chart complex atlas.
 
@@ -163,7 +205,7 @@ On Mathlib's existing carrier `OnePoint ℂ`, construct a named two-chart comple
 Forster, *Lectures on Riemann Surfaces*, Sections 1--2, supplies the two-chart source and the
 holomorphic transition calculation.
 
-## Milestone 3: smooth and complex quotients
+## Milestone 4: smooth and complex quotients
 
 Fix a group `G` acting freely and properly discontinuously on a manifold `M`.
 
@@ -193,7 +235,7 @@ Lee, *Introduction to Smooth Manifolds*, supplies the free proper-action quotien
 Forster, Sections 4--5, supplies the analytic-covering and holomorphic descent pattern. The
 Mathlib pull request above is normative for Lean-level names and carriers.
 
-## Milestone 4: compatible open gluing
+## Milestone 5: compatible open gluing
 
 Let `D : TopCat.GlueData` and give every piece `D.U i` a charted-space structure for one model
 and structure groupoid.
@@ -215,12 +257,15 @@ and structure groupoid.
 The topology is already encoded by `TopCat.GlueData`; Lee's atlas-gluing arguments and
 Kobayashi--Nomizu's pseudogroup formulation supply the manifold proof spine.
 
-## Milestone 5: finite-gluing topology and proper maps
+## Milestone 6: finite-gluing topology and proper maps
 
 1. For a finite index type, prove second countability of the glued carrier from second-countable
    pieces.
-2. Give a closed-graph or closed-equivalence-relation criterion which proves the glued carrier is
-   Hausdorff, and show how the criterion reduces to pairwise overlap data in a finite gluing.
+2. Let `X = Σ i, D.U i`, and let `R ⊆ X × X` be the equivalence relation generated by every
+   overlap identification, including composites through other pieces. Prove that the quotient is
+   Hausdorff when `X` is Hausdorff, the quotient map is open, and `R` is closed in `X × X`.
+   Separately give checkable finite-overlap hypotheses which prove closedness of this *generated*
+   relation; closedness of the individual overlap graphs is not used as a substitute.
 3. Prove connectedness from connected pieces whose nonempty-overlap graph is connected.
 4. Prove that properness is local on the target for continuous maps to a Hausdorff space, using
    finite closed refinements over compact subsets. Deduce that a proper map to a compact target has
@@ -231,24 +276,46 @@ Kobayashi--Nomizu's pseudogroup formulation supply the manifold proof spine.
 Bourbaki, *General Topology*, Chapter I, supplies the quotient-separation and proper-map
 criteria; the formal statements remain in Mathlib's topology vocabulary.
 
-## Milestone 6: holomorphic vector and line bundles
+6. As a regression test, glue two copies of `ℂ` along `ℂˣ` by the identity. Compute the generated
+   relation, prove that it is not closed at the two origins, and show that the resulting doubled
+   origin fails the Hausdorff criterion.
 
-1. Starting with a complex base and a family of complex normed vector spaces, extend
-   `VectorBundleCore` and `ContMDiffVectorBundle` with the theorem that holomorphic transition
-   functions produce a holomorphic vector bundle. Prove the converse description in local
-   trivializations.
-2. Prove cocycle gluing, change of trivialization, bundle equivalence, pullback, direct sum, dual,
+## Milestone 7: holomorphic vector and line bundles
+
+Fix a finite-dimensional complex normed space `F` once and for all. A holomorphic vector bundle is
+an existing `VectorBundle ℂ F E` whose Mathlib bundle trivializations have holomorphic transition
+maps into `F →L[ℂ] F`. This is a property/mixin on the existing bundle, analogous to
+`ContMDiffVectorBundle ∞ F E 𝓘(ℂ, EB)`; it is not a new total-space or fibre carrier. The bundle
+charts induce the named complex atlas on `TotalSpace F E`, and a morphism is an existing bundle
+map whose fibre maps are complex-linear and whose total map is holomorphic.
+
+1. Define the holomorphic-transition mixin on `VectorBundleCore ℂ B F ι` and on an existing
+   `VectorBundle ℂ F E`. Prove that it implies the existing `ContMDiffVectorBundle` instance,
+   constructs the total-space complex atlas, makes the projection holomorphic, and is equivalent
+   to holomorphy in all bundle trivializations. Keep `FiniteDimensional ℂ F` visible in every
+   finite-rank theorem.
+2. Prove cocycle gluing, change of trivialization, holomorphic bundle equivalence, pullback, direct sum, dual,
    tensor product, tensor powers, exterior powers, and determinant. Supply identity, composition,
-   and naturality lemmas for each operation.
+   and naturality lemmas for each operation. The determinant has fixed fibre
+   `⋀^(finrank_ℂ F) F`, or the equivalent standard top-exterior-power carrier selected once for the
+   API; its rank hypothesis is explicit.
 3. Develop the rank-one specialization without a second line-bundle carrier. Prove the
    trivial-bundle criterion by a nowhere-zero holomorphic section and identify cocycle
    isomorphisms with holomorphic bundle equivalences.
-4. For a smooth complex hypersurface, construct its normal holomorphic line bundle from transverse
-   charts and identify its transition cocycle. Construct the holomorphic cotangent bundle,
-   determinant bundle, and canonical line bundle from the same general API.
-5. Prove that finite-order transition characters induce torsion tensor powers and give criteria
-   for exact order. Keep these as bundle isomorphism statements, not as numerical fields of a
-   divisor record.
+4. For a closed embedded complex submanifold `i : Z → M` of complex codimension one, prove that
+   `tangentMap i` is complex-linear and injective, that its image is a complex vector subbundle,
+   and that the quotient `i* TM / TZ` is a rank-one complex bundle. Construct its holomorphic
+   structure from transverse complex charts and prove that this quotient-bundle model agrees with
+   the transition-cocycle model. A merely real-smooth hypersurface does not satisfy this theorem.
+5. Construct the holomorphic cotangent bundle, its finite-rank determinant, and the canonical line
+   bundle from the same general API, with the chosen dual and top-exterior-power conventions stated
+   in the declarations.
+6. For a character of a finite deck group, prove that its order bounds the tensor order of the
+   associated line bundle. Prove exact order only when the character-to-Picard homomorphism is
+   injective. Supply the standard sufficient theorem for a connected compact covering complex
+   manifold: every invertible holomorphic function upstairs is constant, so triviality of an
+   associated bundle forces the character to be trivial. Keep these as bundle isomorphism
+   statements, not numerical fields of a divisor record.
 
 Huybrechts, *Complex Geometry*, Chapters 1--2, supplies the analytic vector-bundle and canonical-
 bundle development; Steenrod, *The Topology of Fibre Bundles*, supplies the transition-function
@@ -256,10 +323,11 @@ and change-of-trivialization spine.
 
 ## Dependency order
 
-Milestones 1 and 2 start from Mathlib. Milestone 3 uses Milestone 1. Milestone 4 uses Milestone 1
-and Mathlib's `TopCat.GlueData`. Milestone 5 uses Milestone 4's canonical maps only for its gluing
-applications and can develop its general topology in parallel. Milestone 6 uses Milestones 1 and
-4.
+Milestones 1 and 3 start from Mathlib. Milestone 2 uses Milestone 1 and the exact orientation carrier
+from the Heegaard Floer roadmap. Milestone 4 uses Milestone 1 and the Mathlib-owned quotient shape.
+Milestone 5 uses Milestone 1 and `TopCat.GlueData`. Milestone 6 uses Milestone 5's canonical maps
+only for its gluing applications and can develop its general topology in parallel. Milestone 7 uses
+Milestones 1 and 5; its hypersurface and canonical-bundle targets also use Milestone 2.
 
 ## Acceptance checks
 
@@ -276,6 +344,10 @@ applications and can develop its general topology in parallel. Milestone 6 uses 
   theorem, and every canonical inclusion is an open local biholomorphism.
 - A cocycle for a trivial line bundle and a nontrivial finite-order character both pass through
   the same holomorphic-line-bundle constructor.
+- Gluing two copies of `ℂ` along `ℂˣ` produces the doubled origin; its generated equivalence
+  relation is not closed and the Hausdorff theorem rejects it.
+- The complex orientation constructed from charts is definitionally in the shared orientation
+  carrier, and every biholomorphism satisfies its orientation-preserving predicate.
 - Two atlases transported to the same carrier remain available as named values without creating
   competing unrestricted global instances.
 

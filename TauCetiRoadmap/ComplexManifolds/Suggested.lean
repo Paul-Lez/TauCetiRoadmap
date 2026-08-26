@@ -2,6 +2,7 @@ import Mathlib.Analysis.Complex.Basic
 import Mathlib.Geometry.Manifold.Instances.Quotient
 import Mathlib.Geometry.Manifold.LocalDiffeomorph
 import Mathlib.Geometry.Manifold.VectorBundle.Pullback
+import Mathlib.LinearAlgebra.Complex.Orientation
 import Mathlib.Topology.Compactification.OnePoint.ProjectiveLine
 import Mathlib.Topology.Gluing
 
@@ -54,6 +55,23 @@ theorem pullback_isManifold {𝕜 E H M N : Type*} {n : ℕ∞} [NontriviallyNor
     @IsManifold 𝕜 _ E _ _ H _ I n M _ (pullbackChartedSpace e) := by
   sorry
 
+/-! ## Restriction of scalars and canonical orientation -/
+
+/-- Complex differentiability implies smoothness for the realified models on the same carriers. -/
+theorem contMDiff_real_of_complex {E F M N : Type*} [NormedAddCommGroup E]
+    [NormedSpace ℂ E] [NormedAddCommGroup F] [NormedSpace ℂ F] [TopologicalSpace M]
+    [TopologicalSpace N] [ChartedSpace E M] [ChartedSpace F N]
+    (f : M → N) (hf : ContMDiff 𝓘(ℂ, E) 𝓘(ℂ, F) ∞ f) :
+    ContMDiff 𝓘(ℝ, E) 𝓘(ℝ, F) ∞ f := by
+  sorry
+
+/-- The canonical orientation of a finite-dimensional complex model, expressed in Mathlib's
+existing real `Orientation` carrier. The manifold construction transports this through charts and
+then compares it literally with the shared manifold-orientation API. -/
+noncomputable def complexModelOrientation (E : Type*) [NormedAddCommGroup E] [NormedSpace ℂ E]
+    [FiniteDimensional ℂ E] : Orientation ℝ E (Fin (2 * Module.finrank ℂ E)) := by
+  sorry
+
 /-! ## The Riemann sphere on `OnePoint ℂ` -/
 
 /-- The two-chart complex atlas on Mathlib's existing one-point compactification. -/
@@ -86,5 +104,50 @@ theorem quotientMk_isLocalBiholomorph
   sorry
 
 end ComplexQuotient
+
+/-! ## Compatible open gluing -/
+
+/-- The architecture-defining gluing target keeps `TopCat.GlueData.glued`. Compatibility is stated
+as complex differentiability of the actual transition maps, not hidden in a replacement carrier. -/
+@[instance_reducible]
+noncomputable def gluedChartedSpace {E H : Type*} [NormedAddCommGroup E] [NormedSpace ℂ E]
+    [TopologicalSpace H] (I : ModelWithCorners ℂ E H) (D : TopCat.GlueData)
+    [∀ i, ChartedSpace H (D.U i)] [∀ i, ChartedSpace H (D.V i)]
+    (_compat : ∀ i j, ContMDiff I I ∞ (D.t i j)) :
+    ChartedSpace H D.toGlueData.glued := by
+  sorry
+
+/-- Hausdorffness is controlled by the closedness of the full equivalence relation `D.Rel` on
+the disjoint union, not by separate closed-graph tests for the generating overlaps. -/
+theorem glued_t2Space_of_isClosed_rel (D : TopCat.GlueData)
+    [∀ i, T2Space (D.U i)]
+    (_hrel : IsClosed {p : (Σ i, D.U i) × (Σ i, D.U i) | D.Rel p.1 p.2}) :
+    T2Space D.toGlueData.glued := by
+  sorry
+
+/-! ## Holomorphic vector bundles -/
+
+/-- A holomorphic vector bundle uses Mathlib's existing fixed-fibre vector-bundle carrier. Over a
+complex model its transition maps are holomorphic exactly when it is a complex `C^∞` vector
+bundle. Finite-rank operations add `[FiniteDimensional ℂ F]` at their declarations. -/
+abbrev HolomorphicVectorBundle {EB HB B F : Type*} [NormedAddCommGroup EB] [NormedSpace ℂ EB]
+    [TopologicalSpace HB] (IB : ModelWithCorners ℂ EB HB) [TopologicalSpace B]
+    [ChartedSpace HB B] [NormedAddCommGroup F] [NormedSpace ℂ F]
+    (V : B → Type*) [∀ x, AddCommMonoid (V x)] [∀ x, Module ℂ (V x)]
+    [∀ x, TopologicalSpace (V x)] [TopologicalSpace (Bundle.TotalSpace F V)] [FiberBundle F V]
+    [VectorBundle ℂ F V] : Prop :=
+  ContMDiffVectorBundle ∞ F V IB
+
+/-- The normal fibre of a complex submanifold is the quotient by the image of its complex-linear
+differential. The roadmap promotes this fibrewise construction to a holomorphic quotient bundle. -/
+abbrev complexNormalFiber {E : Type*} [NormedAddCommGroup E] [NormedSpace ℂ E]
+    (T : Submodule ℂ E) := E ⧸ T
+
+/-- Injectivity of the character-to-Picard map is the public hypothesis which upgrades divisibility
+of the associated bundle's tensor order to exactness. -/
+theorem associatedBundle_hasExactOrder_of_injective {C P : Type*} [Group C] [Group P]
+    (associated : C →* P) (hassociated : Function.Injective associated) (χ : C) (m : ℕ)
+    (hm : orderOf χ = m) : orderOf (associated χ) = m := by
+  sorry
 
 end TauCetiRoadmap.ComplexManifolds
