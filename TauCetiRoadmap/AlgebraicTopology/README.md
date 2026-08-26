@@ -30,8 +30,8 @@ stated coefficient generality.
    homology is naturally isomorphic to singular homology.  Cofibration, mapping-cylinder,
    cellular-approximation, and skeletal-induction APIs make those comparisons usable.
 4. Mapping tori, finite covers, finite open covers, and fibre bundles have reusable chain-level
-   tools: Wang and transfer sequences, Kunneth and torus calculations, and a finite-open-cover
-   Čech double complex with its spectral sequence.
+   tools: Wang and transfer sequences, coefficient-sensitive Kunneth theorems, Cartan--Leray and
+   Serre spectral sequences, torus calculations, and a finite-open-cover Čech double complex.
 5. Singular cohomology, cup and cap products, integral fundamental classes, Poincare and
    Poincare--Lefschetz duality, and Euler characteristic are available in their standard
    functorial forms.
@@ -74,9 +74,11 @@ These choices are part of the specification.
 - **Keep maps visible.**  Every induced map is the image of a continuous map, a pair map, or a
   chain map.  A result expressed only as unrelated equivalences in each degree is incomplete.
 - **Work at natural coefficient generality.**  Singular chains and relative homology take a
-  coefficient object in the appropriate preadditive category.  Module-valued corollaries state
-  the ring and module hypotheses they use.  Integral specialization occurs only where
-  orientations, torsion, degree, or Euler characteristic require it.
+   coefficient object in the appropriate preadditive category.  Module-valued corollaries state
+   the ring and module hypotheses they use.  Field isomorphisms, PID or hereditary-ring short
+   exact sequences, and general-ring spectral sequences are separate theorems.  Integral
+   specialization occurs only where orientations, torsion, degree, or Euler characteristic
+   require it.
 - **Use groupoids before groups.**  Van Kampen is first a colimit theorem for the fundamental
   groupoid on a set of basepoints.  The familiar based group theorem is derived under explicit
   path-connectedness hypotheses.  Disconnected intersections never acquire arbitrary paths.
@@ -235,22 +237,44 @@ skeleta and their colimit maps rather than a parallel cell-filtration record.
 This stage consumes Stages 2--4.
 
 1. Construct the Alexander--Whitney and Eilenberg--Zilber maps for singular chains, the shuffle
-   map, and the chain homotopies proving they are inverse up to homotopy.  Derive the homological
-   cross product and Kunneth theorem with the exact `Tor` term and flatness hypotheses.
+   map, and the chain homotopies proving they are inverse up to homotopy.  Over every commutative
+   ring `R`, construct the first-quadrant Kunneth spectral sequence
+   `E^2_(p,q) = directSum_(i+j=q) Tor^R_p(H_i(X;R),H_j(Y;R))` converging naturally to
+   `H_(p+q)(X times Y;R)`.  Prove convergence from the bounded-below, degreewise-free singular
+   chain complexes.  For a field `k`, prove that the cross product gives
+   `directSum_(i+j=n) H_i(X;k) tensor H_j(Y;k) ~= H_n(X times Y;k)`.  For a PID, and more
+   generally a hereditary commutative coefficient ring, prove the natural short exact sequence
+   from that tensor sum to product homology and then to
+   `directSum_(i+j=n-1) Tor^R_1(H_i(X;R),H_j(Y;R))`; prove that it splits, and record that no
+   splitting is natural.  State and prove the general-ring collapse corollaries under explicit
+   flatness or projectivity hypotheses.
 2. Derive the Wang long exact sequence for a mapping torus from a mapping-cone model.  Identify
    its endomorphism as `id - f_*`, and prove naturality under commuting squares of monodromies.
-3. For a finite covering, construct transfer on chains by summing lifts.  Prove
-   `p_* transfer = degree * id`, identify invariants and coinvariants under a regular deck action,
-   and prove compatibility with composition of finite covers.
+3. For a finite covering with connected base and constant fibre cardinality `d`, construct transfer
+   on chains by summing lifts and prove `p_* transfer = d * id`.  For a regular cover with finite
+   deck group `G`, also prove `transfer p_* = sum_(g in G) g_*` and identify the quotient chain
+   complex `C_*(E;R)_G` naturally with `C_*(B;R)`.  Construct the Cartan--Leray spectral sequence
+   `E^2_(p,q) = H_p(G;H_q(E;R))` converging to `H_(p+q)(B;R)`.  Only when `|G|` is invertible in
+   `R`, or under a separately stated exactness hypothesis, derive the coinvariant isomorphism and
+   the transfer identification with invariants.  For a nonregular finite cover, encode the sheets
+   by the permutation local system and prove transfer and composition through that system.  For a
+   disconnected base, state every formula componentwise using the locally constant fibre
+   cardinality instead of a single global degree.
 4. Calculate homology of finite products of circles as exterior powers, naturally under integer
    matrices acting on the first homology.  This is a theorem about the product and Kunneth maps,
    not a separately declared answer for a torus.
-5. For a fibre bundle `F -> E -> B` with finite-CW base, filter the total space by inverse images
-   of the base skeleta.  Construct the homology Serre spectral sequence with the monodromy local
-   coefficient system `H_q(F;R)`, prove naturality under bundle maps and convergence under the
-   stated boundedness and finite-type hypotheses, and identify
-   `E^2_(p,q) = H_p(B; H_q(F;R))`.  Recover the product calculation under trivial monodromy and
-   derive Euler-characteristic multiplicativity when base and fibre have finite CW type.
+5. Define the Serre-fibration carrier by its lifting property for discs and construct its pullback
+   and map-of-fibrations APIs.  Prove that the projection of Mathlib's locally trivial
+   `FiberBundle` over a paracompact base has this lifting property; every theorem starting from a
+   `FiberBundle` uses that bridge explicitly.  For a Serre fibration `F -> E -> B` over a
+   path-connected finite CW base, filter the total space by inverse images of the base skeleta.
+   Construct the first-quadrant homology Serre spectral sequence with monodromy local system
+   `H_q(F;R)` and identify `E^2_(p,q) = H_p(B;H_q(F;R))`.  The finite skeletal filtration gives
+   strong convergence; state the bounded-below and exhaustive-filtration hypotheses in the
+   corresponding infinite-CW theorem.  Prove naturality under maps of fibrations.  Give a
+   componentwise version for a disconnected base, recover the product calculation under trivial
+   monodromy, and derive Euler-characteristic multiplicativity when base and fibre have finite CW
+   type.
 6. For an ordered finite open cover, construct the double complex
    `directSum_(i_0<...<i_p) C_q(U_(i_0...i_p);R)`.  Define the alternating Cech differential by
    dropping one index and the vertical singular differential with the total-complex sign.
@@ -270,22 +294,40 @@ This stage consumes Stage 2 and the product maps of Stage 5.  Its manifold state
 consume the orientation-and-degree API owned by Heegaard Floer and the boundary/collar
 conventions owned by geometric topology.
 
+Every manifold theorem in this stage uses a finite-dimensional Mathlib manifold carrier with
+Hausdorffness, second countability or the resulting paracompactness, and the chosen boundary model
+stated explicitly.  A global fundamental class assumes compactness.  A conclusion identifying top
+homology with one copy of the coefficient ring also assumes connectedness.
+
 1. Define absolute and relative singular cochains by applying `Hom` to singular chains.  Extend
    the construction to Stage 2's local coefficient systems and their duals.  Prove functoriality,
-   the long exact sequence, homotopy invariance, additivity, constant-system comparison, and the
-   universal coefficient short exact sequence with naturality and splitting consequences.
+   the long exact sequence, homotopy invariance, additivity, and constant-system comparison.  For
+   integral coefficients, and more generally over a PID or hereditary ring, prove the natural
+   short exact sequence
+   `0 -> Ext^1_R(H_(n-1)(X;R),M) -> H^n(X;M) -> Hom_R(H_n(X;R),M) -> 0`; prove that it splits and
+   that the splitting is not natural.  Over a general commutative ring, construct the spectral
+   sequence `E_2^(p,q) = Ext^p_R(H_q(X;R),M)` converging to `H^(p+q)(X;M)`, and derive collapse
+   theorems only from displayed projectivity or injectivity hypotheses.
 2. Use Alexander--Whitney to define cup products and Eilenberg--Zilber to compare them with cross
    products.  Define cap products, including tensor pairings of local coefficient systems, and
    prove naturality, associativity, the unit law, graded signs, and the boundary formula.
-3. Construct local orientation classes and the orientation local system.  For an oriented compact
-   manifold, construct the integral fundamental class, prove uniqueness under the chosen
-   orientation, and identify its boundary with the induced boundary orientation.
-4. Prove Poincare duality by cap product for closed oriented manifolds and
-   Poincare--Lefschetz duality for compact oriented manifolds with boundary.  Include coefficients
-   in a field and in the orientation local system, then derive the integral orientable form.
-5. Derive top-degree homology, the homological characterization and duality formulas for the
-   shared manifold degree, intersection pairings, torsion linking, and universal-coefficient
-   consequences through the natural duality maps.  Do not define a competing degree invariant.
+3. Construct local orientation classes and the orientation local system.  For a compact manifold
+   with a chosen orientation, construct the integral fundamental class, prove uniqueness under
+   that orientation, and identify its boundary with the orientation induced by the shared collar
+   API.
+4. First prove Poincare duality by cap product with the orientation local system for compact
+   boundaryless manifolds.  Prove the Poincare--Lefschetz form for compact manifolds with boundary,
+   using the same local system and the shared boundary model.  Then derive the field-coefficient
+   and integral orientable corollaries.  State connectedness in the corollary identifying top
+   homology with the coefficient ring.
+5. Derive the homological characterization and duality formulas for the shared manifold degree and
+   the intersection pairing.  For a closed connected oriented `n`-manifold of finite CW type,
+   construct the nonsingular torsion linking pairing
+   `Tor H_i(M;Z) times Tor H_(n-i-1)(M;Z) -> AddCircle (1 : ℚ)`.  Prove finiteness of the torsion
+   groups, naturality under orientation-preserving diffeomorphisms, and the symmetry law
+   `lambda_i(x,y) = (-1)^((i+1)(n-i)) lambda_(n-i-1)(y,x)` with the pinned cap-product sign.
+   Derive universal-coefficient consequences through the natural duality maps, and do not define a
+   competing degree invariant.
 
 The proof spine is Hatcher Sections 3.1--3.3 for cohomology operations and duality, and Dold,
 *Lectures on Algebraic Topology*, Chapters VII--VIII for natural products and local coefficients.
@@ -365,12 +407,19 @@ these arrows by assuming a downstream comparison theorem as input.
   not supplied as an unrelated exact sequence.
 - The cellular differential of a two-cell attachment of degree `m` is multiplication by `m`,
   and cellular homology compares naturally with singular homology.
-- Transfer for a degree-`d` finite cover satisfies `p_* transfer = d * id`, including degree
-  zero, and the torus calculation is natural under integer matrices.
-- The Serre spectral sequence exposes the monodromy local system, specializes to the product
-  calculation for trivial monodromy, and proves finite-CW bundle Euler multiplicativity.
+- The field, PID or hereditary-ring, and general-ring Kunneth and universal-coefficient theorems
+  have distinct statements; neither short exact sequence is advertised over an arbitrary ring.
+- Transfer for a constant-degree-`d` finite cover satisfies `p_* transfer = d * id` on chains and
+  on homology, including the induced map on `H_0`.  A regular cover also satisfies the deck-sum
+  formula and has the stated Cartan--Leray spectral sequence; the torus calculation is natural
+  under integer matrices.
+- The Serre spectral sequence starts from an explicit Serre fibration, exposes the monodromy local
+  system, is natural under maps of fibrations, specializes to the product calculation for trivial
+  monodromy, and proves finite-CW bundle Euler multiplicativity.
 - Poincare--Lefschetz duality uses the boundary orientation from the shared manifold API and
   produces the correct sign in the cap-product boundary formula.
+- Torsion linking has complementary degrees, target `AddCircle (1 : ℚ)`, the displayed symmetry
+  sign, and nonsingularity under the stated finite-generation hypotheses.
 - Euler characteristic gives the standard values on spheres, tori, and complex projective
   spaces and proves both additivity and finite-cover multiplicativity from earlier maps.
 - Homological Whitehead produces a homotopy inverse to the given homology equivalence between
@@ -393,3 +442,7 @@ these arrows by assuming a downstream comparison theorem as input.
   Mathematics 54 (1951), 425--505, for the homology spectral sequence of a fibration.
 - John McCleary, *A User's Guide to Spectral Sequences*, 2nd ed., Cambridge University Press,
   2001, Chapters 1--2.
+- Charles Weibel, *An Introduction to Homological Algebra*, Cambridge University Press, 1994,
+  Chapters 3 and 5, for `Tor`, `Ext`, and the Kunneth and universal-coefficient spectral sequences.
+- Kenneth Brown, *Cohomology of Groups*, Springer GTM 87, 1982, Chapter VII, for the
+  Cartan--Leray spectral sequence and transfer comparison.
