@@ -25,9 +25,9 @@ The roadmap is complete when Tau Ceti proves all of the following.
    submersion charts, monodromy, marked homology, and natural base change. Smooth local triviality
    and holomorphic isotriviality are separate theorems with their own hypotheses.
 4. A finite cyclic affine action has a complete algebraic API: the iterate formula, the norm-sum
-   order condition on the torus, translation-conjugacy classes in `H¹(C_m,T)`, their integral
-   connecting classes in `H²(C_m,Λ)`, and an exact fixed-point and freeness criterion for every
-   nonidentity power.
+   criterion for period dividing `m`, a separate exact-order criterion, translation-conjugacy
+   classes in the additive group `H¹(C_m,T)`, the connecting homomorphism and equivalence with
+   `H²(C_m,Λ)`, and an exact fixed-point and freeness criterion for every nonidentity power.
 5. Cyclic affine actions over a rotated disc produce holomorphic multiple fibres and logarithmic
    transforms while retaining the varying lattice. Their multiplicity, normal-bundle character,
    canonical character, punctured-disc gauges, and change-of-choice laws are proved.
@@ -109,6 +109,16 @@ manifolds roadmap and replace it by imports when available.
   A choice of basis yields coordinate lemmas, not a second matrix-valued representation.
 - A logarithmic transform retains the varying period family. Replacing it by a product with one
   fixed torus is not an admissible intermediate API.
+- The cyclic cohomology calculation uses an abstract additive automorphism `A_T : T ≃+ T`. The
+  analytic quotient constructor instead takes a complex-linear equivalence
+  `A_E : E ≃L[ℂ] E` preserving `Λ` in both directions and proves that its descended additive
+  automorphism of `T` is biholomorphic; equivalently, it may take an additive torus automorphism
+  together with holomorphy of it and its inverse. A lattice automorphism or additive torus
+  automorphism alone is not analytic input.
+- Say **`m`-periodic** or **of order dividing `m`** when only the `m`-th power is known to be the
+  identity. Say **of exact order `m`** only after excluding every smaller positive power.
+  Likewise `T[m]` denotes the `m`-torsion subgroup, not the subset of elements of exact order
+  `m`.
 - Clockwise and counterclockwise meridians are separate conventions. Once one is selected, prove
   that reversing it inverts monodromy and negates additive twist data.
 
@@ -189,10 +199,11 @@ their application to period-lattice families.
 
 ## Milestone 4: cyclic affine algebra on a torus
 
-Let `T = E/Λ`, let the lattice automorphism induce `A_T : T ≃+ T`, and fix `m > 0`. The public
-translation parameter is `t : T`; an element of `Λ` is zero in `T` and cannot parameterize the
-affine geometry. Order and freeness hypotheses are theorem arguments, not fields whose intended
-consequences are assumed.
+Let `T = E/Λ`, let `A_T : T ≃+ T` be an additive automorphism, and fix `m > 0`. This milestone is
+abstract additive algebra: `A_T` is not assumed holomorphic. The public translation parameter is
+`t : T`; an element of `Λ` is zero in `T` and cannot parameterize the affine geometry. Period,
+exact-order, and freeness hypotheses are theorem arguments, not fields whose intended consequences
+are assumed.
 
 ### Torus-level affine algebra
 
@@ -202,14 +213,19 @@ consequences are assumed.
    `affine(A_T,t)^k(x) = A_T^k x + N_{A,k}(t)`.
 
 2. Under `A_T^m = 1`, prove that the affine generator has `m`-th power equal to the identity
-   exactly when `N_{A,m}(t) = 0` in `T`. Prove the divisor and exact-order criteria before deriving
-   an action of `ZMod m`.
-3. Prove that conjugation by translation sends `t` to `t + (1-A_T)b`. Classify order-`m`
-   translation-conjugacy classes by the literal quotient
+   exactly when `N_{A,m}(t) = 0` in `T`; these conditions give order dividing `m`. Prove that it
+   has exact order `m` exactly when, in addition, for every `0 < k < m` either `A_T^k ≠ 1` or
+   `N_{A,k}(t) ≠ 0`. Derive an action of `ZMod m` from periodicity without calling it faithful;
+   faithfulness follows from the exact-order theorem.
+3. Prove that conjugation by translation sends `t` to `t + (1-A_T)b`. Classify `m`-periodic
+   translation-conjugacy classes by the literal additive-group quotient
 
    `H¹(C_m,T) = ker (N_A : T → T) / range (1-A_T : T → T)`.
 
-   Prove identity, change-of-representative, functoriality, and restriction maps in this carrier.
+   Implement `ker N_A` and `range(1-A_T)` as additive subgroups and `H¹` as their
+   `QuotientAddGroup`, so its `AddCommGroup` structure, quotient homomorphism, induction principle,
+   and lift theorem are available. Prove identity, change-of-representative, functoriality, and
+   restriction homomorphisms in this carrier.
 4. Prove
 
    `affine(A_T,t)^k` has a fixed point
@@ -225,12 +241,17 @@ consequences are assumed.
 
    `δ(t) ∈ Λ^A / N_A Λ = H²(C_m,Λ)`.
 
-   Prove that the connecting homomorphism induced by `0 → Λ → E → T → 0` identifies this class
-   with the torus `H¹` class; use the vanishing of positive-degree finite-group cohomology of the
-   real vector space `E`. For normalized data `t = v/m` with `v ∈ Λ^A`, compute `δ(t)` explicitly.
+   Construct the connecting additive homomorphism
+   `δ : H¹(C_m,T) →+ H²(C_m,Λ)` induced by the equivariant short exact sequence
+   `0 → Λ → E → T → 0`. Use the vanishing of positive-degree finite-group cohomology of the
+   real vector space `E` to construct an `AddEquiv` between these two carriers, and prove that
+   its forward map is `δ`. For normalized data `t = v/m` with `v ∈ Λ^A`, compute `δ(t)`
+   explicitly.
 6. Prove functoriality under equivariant homomorphisms, products, restriction to subgroups, and
-   base change for both cohomology carriers. As the decisive regression test, when `A_T = 1`, prove
-   that the order-`m` translations are `T[m] ≃ Λ/mΛ`; a lattice cokernel of `A-1` must not appear.
+   base change for both cohomology carriers, with the connecting homomorphism natural in these
+   maps. As the decisive regression test, when `A_T = 1`, prove that the `m`-periodic translations
+   form the `m`-torsion subgroup and that `T[m] ≃+ Λ/mΛ`; a lattice cokernel of `A-1` must not
+   appear. State any exact-order subset only after adding the exact-order criterion from Step 2.
 
 Brown, *Cohomology of Groups*, Chapter VI, Section 2, supplies the cyclic norm, invariants,
 coinvariants, and periodic cohomology spine. The fixed-point criterion follows directly from the
@@ -239,11 +260,17 @@ affine iterate equation and is proved in the torus quotient, not asserted as a f
 ## Milestone 5: cyclic quotients and multiple fibres
 
 Let `D` be a complex disc with a rotation `r` of exact order `m`, and let a varying torus family
-over `D` carry compatible period monodromy and affine translation data from Milestone 4.
+over `D` carry compatible period monodromy and affine translation data from Milestone 4. In
+addition to the additive class, fix a complex-linear equivalence `A_E : E ≃L[ℂ] E` preserving
+the period lattice in both directions and inducing `A_T`, or supply the equivalent
+biholomorphic additive automorphism of each torus fibre.
 
-1. Construct the generator on the total torus family, prove it biholomorphic, and prove its
-   `m`-th power is the identity from `A ^ m = 1` and the translation norm equation. Use the exact
-   fixed-point criterion to prove that the action is free.
+1. Construct the generator on the total torus family and prove it biholomorphic from the
+   complex-linearity and lattice-preservation hypotheses, not merely from the additive
+   automorphism `A_T`. Prove its `m`-th power is the identity from `A_E ^ m = 1` (hence
+   `A_T ^ m = 1`) and the translation norm equation. Use the exact fixed-point criterion to prove
+   that the action is free; the exact order of the base rotation makes the total generator have
+   exact order `m`.
 2. Take the standard complex quotient and descend the base map `z ↦ z^m`. Prove this map is a
    holomorphic submersion away from the central fibre and has a multiple central fibre of
    multiplicity exactly `m`.
@@ -303,12 +330,20 @@ with the complex-manifolds and geometric-topology gluing APIs.
 - The fibre over `y` is identified with the standard orbit quotient by
   `LinearMap.range (Π y)`, not with a tagged complex-torus type.
 - A cyclic action cannot be constructed from `A ^ m = 1` without the translation norm equation.
+- The abstract `H¹/H²` calculation accepts `A_T : T ≃+ T`, but the analytic cyclic quotient does
+  not accept that alone: it consumes a complex-linear lift preserving the lattice or an explicitly
+  biholomorphic additive torus automorphism.
+- The equations `A_T^m = 1` and `N_{A,m}(t)=0` prove only order dividing `m`. Exact order uses the
+  no-smaller-power criterion, and `T[m]` is consistently called the `m`-torsion subgroup.
 - The iterate theorem computes every power on `T`, translation conjugacy changes the twist by
   `(1-A_T)b`, and the normalized class lies in `ker N_A / range(1-A_T)`. Its integral connecting
-  class lies in `Λ^A/N_AΛ`.
+  class lies in `Λ^A/N_AΛ`. The first quotient is an `AddCommGroup`; the connecting map is an
+  additive homomorphism and the vanishing theorem supplies an `AddEquiv` to the second quotient.
 - For composite `m`, freeness checks every `0 < k < m` using
   `cyclicNorm A k t ∉ range(1-A^k)`. A proposition which checks only the generator is rejected.
-- When `A = 1`, the classification specializes to `T[m] ≃ Λ/mΛ`; it does not specialize to `Λ`.
+- When `A = 1`, the classification specializes to the additive equivalence
+  `T[m] ≃+ Λ/mΛ`; it does not specialize to `Λ` or claim that every `m`-torsion point has exact
+  order `m`.
 - A varying elliptic family with nonconstant period ratio has submersion charts but is not thereby
   declared holomorphically locally trivial with one fixed elliptic-curve fibre.
 - The cyclic quotient retains the varying period lattice and proves the local equation
