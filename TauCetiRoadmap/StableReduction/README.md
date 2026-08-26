@@ -164,7 +164,9 @@ hypotheses.
   integral closure itself is always a DVR, and do not choose an extension of the valuation
   without recording it. A `FiniteDVRExtension R K` packages the field extension, integral
   closure, chosen maximal ideal and localization, fraction-field identification, and
-  domination data; common refinement includes compatible embeddings into a third package.
+  domination data. Its algebra structures, localization equivalence, and embeddings into the
+  extension field must form the stated scalar towers and commuting squares; common refinement
+  includes compatible embeddings into a third package.
 - **Universal constructions commute canonically.** Base change of chosen pullbacks,
   relative `Proj`, stabilization, and forgetting markings commute up to specified canonical
   isomorphisms, not literal equality. State universal properties that make these
@@ -176,10 +178,9 @@ hypotheses.
 
 ## Inventory: what Mathlib and Tau Ceti already give us
 
-This inventory was checked on 2026-08-03 against Tau Ceti commit
-`373eee14f6209add708eddd85923d14ec0a128ee` and the Mathlib commit pinned by that Tau Ceti
-checkout, `30696563acb0596ab44d272bc5dfee96b2e72263`; this roadmap repository itself builds
-against Mathlib commit `9caeba1000ef8f302920981f4a08651d325abc81`.
+This inventory was checked on 2026-08-26 against Tau Ceti commit
+`e8af08d0aeda4012832880bd56edfc88af061691` and the Mathlib commit pinned by that Tau Ceti
+checkout and this roadmap repository, `05ae0103f49b1ad1248f6039bbbad43d8aeb52a9`.
 
 ### Consume from Mathlib
 
@@ -187,10 +188,12 @@ against Mathlib commit `9caeba1000ef8f302920981f4a08651d325abc81`.
   in particular `Scheme.Hom.fiber`, the morphism to `Spec κ(s)`, and compatibility of
   fibres with pullback.
 - **Scheme modules and smooth loci:** `AlgebraicGeometry/Modules/{Presheaf,Sheaf,Tilde}.lean`
-  supplies the scheme-module sheaf framework and affine tilde construction, and
+  supplies the scheme-module sheaf framework and affine presentation/tilde API;
+  `SheafOfModules.IsQuasicoherent` and `SheafOfModules.IsFinitePresentation` are defined in
+  `Algebra/Category/ModuleCat/Sheaf/Quasicoherent.lean`. Also,
   `Scheme.Hom.smoothLocus` in `Morphisms/Smooth.lean` supplies the open smooth locus used
-  for markings. The missing work is the quasi-coherence predicate and coherent-cohomology
-  API, not a replacement for these files.
+  for markings. Extend these APIs with the operations needed below rather than defining new
+  quasi-coherence or finite-presentation predicates.
 - **Morphism properties:** `Proper`, `Flat`, `LocallyOfFinitePresentation`, `Smooth`,
   `SmoothOfRelativeDimension`, `Separated`, `Finite`, `Etale`, `ClosedImmersion`, and their
   base-change/descent API under `Mathlib/AlgebraicGeometry/Morphisms/`.
@@ -242,22 +245,23 @@ sheaves [#39989](https://github.com/leanprover-community/mathlib4/pull/39989), l
 sheaves on affines [#40831](https://github.com/leanprover-community/mathlib4/pull/40831),
 locally free sheaves on `Spec R`
 [#40194](https://github.com/leanprover-community/mathlib4/pull/40194), and affine-scheme
-vanishing [#36345](https://github.com/leanprover-community/mathlib4/pull/36345). Layer 2
-should refactor onto these developments rather than duplicate them. The open Tau Ceti
-[elliptic-curves roadmap PR #68](https://github.com/TauCetiProject/TauCetiRoadmap/pull/68)
-deliberately defers the geometric interpretation of its `ReductionSymbol`; Layer 5 supplies
-the missing comparison with minimal regular models and Kodaira fibre geometry. Recheck open
-Mathlib work and Lean Zulip before each major foundation below, especially blowups,
+vanishing [#36345](https://github.com/leanprover-community/mathlib4/pull/36345). The first three
+remain open, and the fourth remains a draft; coordinate with them and refactor onto any results
+that land rather than duplicate them. The [elliptic-curves roadmap](../EllipticCurves/README.md)
+deliberately leaves the geometric interpretation of its `ReductionSymbol` to this roadmap;
+Layer 5 supplies the missing comparison with minimal regular models and Kodaira fibre geometry.
+Recheck open Mathlib work and Lean Zulip before each major foundation below, especially blowups,
 coherent cohomology, and duality.
 
 ## Inventory: what is missing
 
 There is presently no scheme-level API for families of curves, relative dimension at most
-one, Fitting ideals, the sheaf `Ω_{X/S}`, syntomic morphisms, quasi-coherence as a predicate,
-nodal singularities or the relative singular locus, arithmetic genus in families, relative
-dualizing sheaves, ampleness/projective morphisms, prestable/semistable/stable curves,
-marked curves, stable maps, blowups or contractions, intersection theory on arithmetic
-surfaces, regular/minimal models, numerical types, or semistable/stable reduction.
+one, the operations on quasi-coherent finitely presented modules needed for Fitting ideals,
+the sheaf `Ω_{X/S}`, syntomic morphisms, nodal singularities or the relative singular locus,
+arithmetic genus in families, relative dualizing sheaves, ampleness/projective morphisms,
+prestable/semistable/stable curves, marked curves, stable maps, blowups or contractions,
+intersection theory on arithmetic surfaces, regular/minimal models, numerical types, or
+semistable/stable reduction.
 The summit cannot be reached by filling one isolated `sorry`; every item below is part of
 its dependency graph.
 
@@ -271,10 +275,12 @@ before the named milestone.
 
 ### Layer 0: relative curves and extensions of DVRs
 
-- Extend the existing scheme-module sheaf framework with the minimal quasi-coherence and
-  finite-presentation API needed to construct sheaves of differentials, Fitting ideals,
-  conductors, and normalization exact sequences. The full proper-cohomology theory remains
-  in Layer 2, but these prerequisites precede the nodal layer.
+- Use the existing `SheafOfModules.IsQuasicoherent` and
+  `SheafOfModules.IsFinitePresentation` predicates and affine presentation/tilde API. Add only
+  the missing operations needed to construct sheaves of differentials, Fitting ideals,
+  conductors, and normalization exact sequences, coordinating pullback compatibility with
+  Mathlib [#39989](https://github.com/leanprover-community/mathlib4/pull/39989). The full
+  proper-cohomology theory remains in Layer 2, but these prerequisites precede the nodal layer.
 - For a locally finite type morphism, define relative dimension `≤ d` and pure relative
   dimension `d` fibrewise via Krull dimension. Prove invariance under isomorphism, locality,
   arbitrary-base-change stability, and the composition bound `≤ d + e` for composable
@@ -303,9 +309,14 @@ before the named milestone.
   condition: flat and locally finitely presented, with pure one-dimensional fibres having
   at worst nodes.
 - Prove the local normal form. At a node of a fibre the completed local ring is
-  `κ̄[[x,y]]/(xy)`; over a DVR a nodal family is étale-locally
-  `R'[x,y]/(xy)` or `R'[x,y]/(xy - πⁿ)`. Prove that smooth relative curves are nodal,
-  and that nodality is stable under base change and local for the étale topology.
+  `κ̄[[x,y]]/(xy)`. More precisely, for a point `x` of the special fibre over a DVR `R`,
+  construct an étale extension of DVRs `R ⊂ R'`, an étale neighborhood `U → X` containing
+  a point above `x`, and an étale morphism
+  `U → Spec(R'[u,v]/(uv))` or `U → Spec(R'[u,v]/(uv - πⁿ))`, where `π` is a uniformizer
+  of `R'`, such that both triangles to `Spec R' → Spec R` commute. This `R'/R` is étale
+  local-chart data, not the later finite, possibly ramified stable-reduction extension. Prove
+  that smooth relative curves are nodal, and that nodality is stable under base change and
+  local for the étale topology.
 - Prove that the singular locus of a proper nodal curve over a field is finite étale and that
   its branch scheme is finite étale of degree two over it. After one finite separable field
   extension, split and label every node, branch, and geometric component, recording the
@@ -531,8 +542,12 @@ stable-reduction layers are still in progress.
   curves that commute with `F`. Develop identity, inverse, composition, extensionality, and
   transport along isomorphisms of the base and target. For a separated locally finitely
   presented target, define the abstract automorphism group of each geometric fibre and its
-  infinitesimal automorphisms. Defer representability of relative Isom and Aut to the future
-  moduli roadmap.
+  infinitesimal automorphisms. Over an algebraically closed field `k`, an infinitesimal
+  automorphism is an automorphism after base change to `k[ε]/(ε²)` that reduces to the identity
+  modulo `ε`, fixes every marking, and commutes with the target map. Identify its tangent space
+  with the kernel of the map from global `k`-derivations of `𝒪_C` that vanish along the markings
+  to derivations from `F⁻¹𝒪_V` to `𝒪_C`, induced by precomposition with `F^#`. Defer
+  representability of relative Isom and Aut to the future moduli roadmap.
 - On a geometric fibre, define when an irreducible component is **contracted** by `F`.
   Relate constancy of the restricted morphism and set-theoretic image dimension zero. When
   the target has an ample invertible sheaf, also relate these to degree zero of its pullback.
@@ -567,19 +582,25 @@ stable-reduction layers are still in progress.
   available, this polarization degree is the numerical invariant of record; connect it to
   the pushforward curve class once Chow groups of one-cycles exist.
 - Decorate the dual graph from Layer 1 with marking legs and component degrees. Prove the
-  genus and total-degree formulas and characterize stable vertices by positive log-canonical
-  degree. Here valence counts incident half-edges, so a loop counts twice. Develop
-  restriction to a component, normalization at a node, and reconstruction of the numerical
-  data.
+  genus and total-degree formulas. A degree-zero vertex is stable exactly when
+  `2g_v - 2 + val(v) + markings(v) > 0`; a positive-degree vertex is automatically stable.
+  Equivalently, for a chosen polarization, require
+  `2g_v - 2 + val(v) + markings(v) + 3d_v > 0` at every vertex. Here valence counts incident
+  half-edges, so a loop counts twice. Develop restriction to a component, normalization at a
+  node, and reconstruction of the numerical data.
+- Prove the reusable descent theorem for contractions before using it: if
+  `c : C → C'` satisfies `c_*𝒪_C = 𝒪_{C'}` universally, `V → S` is separated, and `F` is
+  constant on every connected contracted subcurve, then `F` factors uniquely through `c`,
+  compatibly with base change.
 - Reindex markings by equivalences. Fix a relatively ample `L`; for `n > 0`, assume every
-  geometric fibre has arithmetic genus `g` and `L`-degree `d`, and put `n' = n - 1` for the
-  number of remaining markings. Define forgetting one marking followed by **map-aware
-  stabilization** when `2g - 2 + n' + 3d > 0`. Contract only components that become
-  unstable and on which `F` is constant. The criterion depends only on whether `d = 0`,
-  hence is independent of `L`; the excluded resulting types are `d = 0` with
-  `g = 0, n' ≤ 2`, and `d = 0` with `g = 1, n' = 0`. Prove that `F` descends uniquely, that
-  the result is stable, and that base change and repeated forgetting satisfy the
-  canonical-isomorphism coherence above.
+  target `V → S` separated. Assume every geometric fibre has arithmetic genus `g` and
+  `L`-degree `d`, and put `n' = n - 1` for the number of remaining markings. Define forgetting
+  one marking followed by **map-aware stabilization** when `2g - 2 + n' + 3d > 0`. Contract
+  only components that become unstable and on which `F` is constant. The criterion depends
+  only on whether `d = 0`, hence is independent of `L`; the excluded resulting types are
+  `d = 0` with `g = 0, n' ≤ 2`, and `d = 0` with `g = 1, n' = 0`. Use the preceding descent
+  theorem to prove that `F` descends uniquely, that the result is stable, and that base change
+  and repeated forgetting satisfy the canonical-isomorphism coherence above.
 - Define gluing two marked stable maps when their evaluation morphisms at the chosen
   markings agree. Use the shared clutching pushout from Layer 3, including self-gluing;
   descend the target maps by its universal property, calculate the decorated dual graph,
@@ -588,13 +609,10 @@ stable-reduction layers are still in progress.
   `2g - 2 + n + 3d > 0`, construct stabilization of a prestable map using the relative
   `Proj` of `⨁_{m ≥ 0} f_*(A^{⊗m})`, with multiplication maps constructed explicitly and
   `A = ω_{C/S}(Σsᵢ) ⊗ F^*(L^⊗3)`. Identify precisely the degree-zero unstable components it
-  contracts. Prove that if `c : C → C'` satisfies `c_*𝒪_C = 𝒪_{C'}` universally, `V → S`
-  is separated, and `F` is constant on every connected contracted subcurve, then `F`
-  factors uniquely through `c`, compatibly with base change. Use this theorem to construct
-  the stabilized target map. Prove the stabilization's universal property, uniqueness,
-  independence from `L`, compatibility with base change, and identity on an already stable
-  map. Prove separately that the excluded degree-zero genus-zero and genus-one numerical
-  types admit no stable map.
+  contracts. Use the contraction descent theorem to construct the stabilized target map.
+  Prove the stabilization's universal property, uniqueness, independence from `L`,
+  compatibility with base change, and identity on an already stable map. Prove separately
+  that the excluded degree-zero genus-zero and genus-one numerical types admit no stable map.
 - Record functoriality under target isomorphisms and closed immersions. For a general
   postcomposition `V → W`, prove a sharp criterion for preservation of stability rather
   than asserting it unconditionally: the new target map may contract additional source

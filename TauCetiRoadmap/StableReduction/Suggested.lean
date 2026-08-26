@@ -11,7 +11,7 @@ contributors and reviewers converge on names and signatures; discharging all of 
 finish neither a layer nor the roadmap.
 
 At this roadmap repository's pinned Mathlib commit
-`9caeba1000ef8f302920981f4a08651d325abc81`, the scheme-level vocabulary needed to state
+`05ae0103f49b1ad1248f6039bbbad43d8aeb52a9`, the scheme-level vocabulary needed to state
 many targets faithfully does not exist: families of curves, at-worst-nodal morphisms,
 relative dualizing sheaves, stable pointed families, stable maps, and finite DVR extensions
 are all roadmap targets. Introducing placeholder `Prop` definitions here would make the
@@ -60,8 +60,17 @@ structure FiniteDVRExtension (R K : Type u) [CommRing R] [IsDomain R]
   [localRingDVR : IsDiscreteValuationRing localRing]
   [localRingAlgebra : Algebra R localRing]
   [localRingDominates : IsLocalHom (algebraMap R localRing)]
-  localizationEquiv : localRing ≃+* Localization.AtPrime prime
+  prime_liesOver : prime.comap (algebraMap R (integralClosure R extensionField)) =
+    IsLocalRing.maximalIdeal R
+  localizationEquiv : localRing ≃ₐ[R] Localization.AtPrime prime
+  [localizationFractionAlgebra : Algebra (Localization.AtPrime prime) extensionField]
+  [localizationFractionTower : IsScalarTower (integralClosure R extensionField)
+    (Localization.AtPrime prime) extensionField]
   [fractionAlgebra : Algebra localRing extensionField]
+  [fractionTower : IsScalarTower R localRing extensionField]
+  fraction_commutes : algebraMap localRing extensionField =
+    (algebraMap (Localization.AtPrime prime) extensionField).comp
+      localizationEquiv.toRingEquiv.toRingHom
   [fractionIdentification : IsFractionRing localRing extensionField]
 
 /-- Suggested Layer 0 shape for a model with its generic-fibre identification. -/
@@ -72,6 +81,7 @@ structure Model (R K : Type u) [CommRing R] [IsDomain R] [IsDiscreteValuationRin
   toBase : total ⟶ Spec (.of R)
   flat : Flat toBase
   locallyOfFinitePresentation : LocallyOfFinitePresentation toBase
+  quasiCompact : QuasiCompact toBase
   genericFiberIso : genericFiber R K toBase ≅ Over.mk toK
 
 namespace Model
@@ -100,6 +110,8 @@ instance (M : Model R K C toK) : Flat M.toBase := M.flat
 
 instance (M : Model R K C toK) : LocallyOfFinitePresentation M.toBase :=
   M.locallyOfFinitePresentation
+
+instance (M : Model R K C toK) : QuasiCompact M.toBase := M.quasiCompact
 
 /-- Properness is an additional property of a model, not part of its bundled data. -/
 abbrev IsProper (M : Model R K C toK) : Prop := AlgebraicGeometry.IsProper M.toBase
@@ -163,6 +175,9 @@ structure DualGraph where
   [edgeDecidableEq : DecidableEq Edge]
   endpoint : Edge → Fin 2 → Vertex
   genus : Vertex → ℕ
+  connected : ∀ v w, Relation.ReflTransGen
+    (fun v w ↦ ∃ e, (endpoint e 0 = v ∧ endpoint e 1 = w) ∨
+      (endpoint e 0 = w ∧ endpoint e 1 = v)) v w
 
 namespace DualGraph
 
@@ -177,7 +192,7 @@ abbrev HalfEdge (G : DualGraph) := G.Edge × Fin 2
 /-- The vertex incident to a half-edge. -/
 def HalfEdge.vertex (G : DualGraph) (h : G.HalfEdge) : G.Vertex := G.endpoint h.1 h.2
 
-/-- The first Betti number of the intended connected dual graph, by Euler characteristic. -/
+/-- The first Betti number of the connected dual graph, by Euler characteristic. -/
 def firstBetti (G : DualGraph) : ℕ := Fintype.card G.Edge + 1 - Fintype.card G.Vertex
 
 /-- The arithmetic genus encoded by a connected weighted dual graph. -/
