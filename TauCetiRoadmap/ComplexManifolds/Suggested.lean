@@ -107,13 +107,17 @@ end ComplexQuotient
 
 /-! ## Compatible open gluing -/
 
-/-- The architecture-defining gluing target keeps `TopCat.GlueData.glued`. Compatibility is stated
-as complex differentiability of the actual transition maps, not hidden in a replacement carrier. -/
+/-- The architecture-defining gluing target keeps `TopCat.GlueData.glued`. The two hypotheses say
+that the chosen atlas on every overlap is compatible with both adjacent piece atlases: first along
+`D.f i j`, then along the canonical right inclusion `x ↦ D.f j i (D.t i j x)`. Merely requiring
+`D.t i j` to be smooth between independently chosen overlap atlases would not imply this. -/
 @[instance_reducible]
 noncomputable def gluedChartedSpace {E H : Type*} [NormedAddCommGroup E] [NormedSpace ℂ E]
     [TopologicalSpace H] (I : ModelWithCorners ℂ E H) (D : TopCat.GlueData)
     [∀ i, ChartedSpace H (D.U i)] [∀ i, ChartedSpace H (D.V i)]
-    (_compat : ∀ i j, ContMDiff I I ∞ (D.t i j)) :
+    (_left : ∀ i j, IsLocalDiffeomorph I I ∞ (D.f i j))
+    (_right : ∀ i j, IsLocalDiffeomorph I I ∞
+      (fun x : D.V (i, j) ↦ D.f j i (D.t i j x))) :
     ChartedSpace H D.toGlueData.glued := by
   sorry
 

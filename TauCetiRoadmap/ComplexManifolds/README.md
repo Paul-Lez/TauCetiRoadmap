@@ -140,6 +140,11 @@ The following interfaces are not at the pin and have a fixed supplier or local-m
 - Transported atlases are named definitions. Supply local or scoped instances at their use sites;
   do not install unrestricted global instances when several transported atlases can inhabit the
   same carrier.
+- An atlas on `D.V (i, j)` is compatible with the piece atlases only when both canonical maps
+  `D.f i j : D.V (i, j) → D.U i` and
+  `x ↦ D.f j i (D.t i j x) : D.V (i, j) → D.U j` are open local diffeomorphisms for the chosen
+  model. This pair of hypotheses is the public gluing input; smoothness of `D.t i j` between
+  independently chosen overlap atlases is not sufficient.
 - Bundle transition data use functions into continuous linear equivalences and Mathlib's cocycle
   equations. A line bundle is the rank-one case of this API, not a separate bespoke carrier.
 
@@ -240,8 +245,11 @@ Mathlib pull request above is normative for Lean-level names and carriers.
 Let `D : TopCat.GlueData` and give every piece `D.U i` a charted-space structure for one model
 and structure groupoid.
 
-1. State overlap compatibility using the structomorph property of the transition maps on
-   `D.V (i, j)`. Prove symmetry, restriction, and cocycle lemmas from `GlueData` rather than
+1. State overlap compatibility by requiring the two canonical maps from `D.V (i, j)` to its
+   adjacent pieces, namely `D.f i j` and `D.f j i ∘ D.t i j`, to be open local diffeomorphisms.
+   Thus the overlap atlas is compatible with both piece atlases, and the second map records the
+   transition equation rather than treating `D.t i j` between arbitrary overlap atlases as the
+   whole condition. Prove symmetry, restriction, and cocycle lemmas from `GlueData` rather than
    copying the gluing relation into a new record.
 2. Construct a `ChartedSpace` on `D.toGlueData.glued`, prove `HasGroupoid` and `IsManifold`, and
    prove every `D.toGlueData.ι i` is an open local diffeomorphism. Smooth and complex gluing are
@@ -341,7 +349,8 @@ Milestones 1 and 5; its hypersurface and canonical-bundle targets also use Miles
 - The finite and infinity charts make `OnePoint ℂ` a complex manifold and have transition
   `z ↦ z⁻¹` on the exact punctured overlap.
 - Two-chart and finite-star examples acquire complex atlases from the same `TopCat.GlueData`
-  theorem, and every canonical inclusion is an open local biholomorphism.
+  theorem, every input overlap atlas is compatible with both adjacent piece atlases, and every
+  canonical inclusion is an open local biholomorphism.
 - A cocycle for a trivial line bundle and a nontrivial finite-order character both pass through
   the same holomorphic-line-bundle constructor.
 - Gluing two copies of `ℂ` along `ℂˣ` produces the doubled origin; its generated equivalence
