@@ -39,6 +39,28 @@ or algebraic moduli problem.
 
 Suggested home: `TauCeti/NumberTheory/ModularForms/`.
 
+The cross-roadmap import graph is a required module split, not merely a proof order:
+
+```text
+TauCeti.Analysis.Complex.ModularForms.LevelOne.JInputs
+    -> TauCeti.Analysis.Complex.Fuchsian.LevelOne
+
+TauCeti.AlgebraicTopology.Cellular.FiniteCW
+    -> TauCeti.Analysis.Complex.RiemannSurface.Degree
+        |-> TauCeti.Analysis.Complex.Fuchsian.LevelOne
+        `-> TauCeti.Analysis.Complex.ModularForms.DimensionFormula
+
+TauCeti.Analysis.Complex.Fuchsian.Compactification
+    -> TauCeti.Analysis.Complex.ModularForms.DimensionFormula
+```
+
+`LevelOne.JInputs` contains only the normalized `j`-function, modular invariance, its
+`q`-expansion, and the exact elliptic orders; it imports no Fuchsian or dimension-formula module.
+The generic `RiemannSurface.Degree` module imports neither ModularForms nor analytic
+Riemann--Roch.  Only the higher `ModularForms.DimensionFormula` module imports the Fuchsian
+compactification and shared degree contracts.  This is the literal import discipline for the
+implementation.
+
 A large body of this theory — `sorry`-free apart from three flagged gaps (see *Provenance*) —
 already exists in the AINTLIB `LeanModularForms`
 project (~250 source files). This roadmap specifies the **mathematics**; the file-by-file
@@ -235,6 +257,14 @@ expressible in `TauCeti/`, its milestones go into `Suggested.lean` (with `sorry`
 below sketches signatures; it is illustrative, not required to compile.
 
 ### Layer 0: diamond operators and modular forms with character (nebentypus)
+- **Isolate the level-one `j` inputs in their own lower module.**
+  `TauCeti.Analysis.Complex.ModularForms.LevelOne.JInputs` defines the normalized
+  `j = E₄³/Δ`, proves modular invariance and its `q`-expansion, and proves the exact orders at
+  `ρ` and `i`.  It imports Mathlib's level-one modular-form files only.  In particular it imports
+  neither FuchsianOrbifolds, `RiemannSurface.Degree`, analytic Riemann--Roch, nor
+  `ModularForms.DimensionFormula`.  The Fuchsian level-one application is the sole geometric
+  consumer of these declarations; later ModularForms layers consume the resulting geometric
+  contracts in the other direction.
 - **Diamond operators first — from the slash action alone.** `Γ₁(N) ⊴ Γ₀(N)` with
   `Γ₀(N)/Γ₁(N) ≅ (ℤ/N)ˣ` via the lower-right entry, so slashing by (any lift of) `d ∈ (ZMod N)ˣ`
   is a well-defined `ℂ`-linear endomorphism of `M_k(Γ₁(N))` and of `S_k(Γ₁(N))`: the **diamond
@@ -997,11 +1027,14 @@ a compact Riemann surface by adjoining cusp orbits. This layer specializes that 
 congruence subgroups, identifies the cusps with `Γ\ℙ¹(ℚ)`, and builds the modular and
 cohomological inputs for dimension formulas. It introduces no second quotient carrier or moduli
 problem.
-The imported module is `TauCeti.Analysis.Complex.RiemannSurface.Degree`, with declarations
-`RiemannSurface.genus`, `RiemannSurface.localMultiplicity`, `RiemannSurface.degree`,
-`RiemannSurface.degree_comp`, `RiemannSurface.divisor_pullback`,
-`RiemannSurface.biholomorph_of_degree_eq_one`, and
-`RiemannSurface.riemannHurwitz`.
+The higher implementation module is
+`TauCeti.Analysis.Complex.ModularForms.DimensionFormula`.  It imports the independent
+`TauCeti.Analysis.Complex.RiemannSurface.Degree` module and the Fuchsian compactification
+application modules, with literal checks for `RiemannSurface.genus`,
+`RiemannSurface.localMultiplicity`, `RiemannSurface.degree`, `RiemannSurface.degree_comp`,
+`RiemannSurface.divisor_pullback`, `RiemannSurface.biholomorph_of_degree_eq_one`, and
+`RiemannSurface.riemannHurwitz`.  It does not import `ModularForms.LevelOne.JInputs` through a
+Fuchsian module: that lower module points only toward `Fuchsian.LevelOne` as displayed above.
 
 - **The Sturm bound and finite-dimensionality — consume level one, build the general case.** A
   nonzero `f ∈ M_k(Γ)` has `q`-order at `∞` at most `k·[SL₂(ℤ):Γ]/12`; consequently `M_k(Γ)`
@@ -1061,12 +1094,13 @@ The imported module is `TauCeti.Analysis.Complex.RiemannSurface.Degree`, with de
   that the exact formulas below actually use.
   (v) identify `g := dim H¹(X, 𝒪)` with `RiemannSurface.genus X`; then consume
   `RiemannSurface.riemannHurwitz` and the Fuchsian finite-index local-multiplicity formulas.
-  (vi) Supply the modular inputs to Fuchsian-orbifolds Layer 6: define the normalized
-  `j = E₄³/Δ` and `j − 1728 = E₆²/Δ`, and prove modular invariance, the q-expansion,
-  and the exact orders at `ρ` and `i`. Fuchsian-orbifolds Layer 6 owns descent through its
-  quotient, extension over its cusp, the local multiplicities, the degree-one calculation, and
-  the final biholomorphism. Consume its named `X(1) ≃ ℙ¹` and
-  `RiemannSurface.genus X(1) = 0` theorems.
+  (vi) Consume the named `X(1) ≃ ℙ¹` and `RiemannSurface.genus X(1) = 0` theorems from
+  `Fuchsian.LevelOne`.  The normalized `j = E₄³/Δ`, the identity
+  `j − 1728 = E₆²/Δ`, modular invariance, q-expansion, and exact orders at `ρ` and `i` were
+  already supplied by the independent Layer-0 `ModularForms.LevelOne.JInputs` module.  They are
+  not redefined in this higher module.  Fuchsian-orbifolds owns descent through its quotient,
+  extension over its cusp, the local multiplicities, the degree-one calculation, and the final
+  biholomorphism.
   Applying the shared Riemann–Hurwitz theorem to `X(Γ) → X(1)` with the Fuchsian elliptic and
   cusp local-multiplicity formulas gives
   `g = 1 + d/12 − ε₂/4 − ε₃/3 − ε∞/2`, where `d = [PSL₂(ℤ) : Γ̄]`, not

@@ -1,4 +1,5 @@
 import Mathlib
+import TauCetiRoadmap.FuchsianOrbifolds.Suggested
 
 /-!
 # Modular forms — Hecke theory, newforms, and L-functions: target signatures
@@ -74,6 +75,27 @@ of scope here.
 namespace TauCetiRoadmap.ModularForms
 
 open CongruenceSubgroup
+
+/-! ## Cross-roadmap import checks
+
+These checks stand in the higher target module
+`TauCeti.Analysis.Complex.ModularForms.DimensionFormula`.  That module imports the independent
+`TauCeti.Analysis.Complex.RiemannSurface.Degree` and Fuchsian compactification modules.  The lower
+target module `TauCeti.Analysis.Complex.ModularForms.LevelOne.JInputs`, which supplies normalized
+`j` data to `TauCeti.Analysis.Complex.Fuchsian.LevelOne`, contains none of these imports.  Keeping
+the checks here rather than alongside the level-one inputs makes the roadmap dependency acyclic.
+-/
+
+#check TauCetiRoadmap.FuchsianOrbifolds.CompactifiedQuotient
+#check TauCetiRoadmap.FuchsianOrbifolds.compactifiedChartedSpace
+#check RiemannSurface.FiniteHolomorphicMap
+#check RiemannSurface.genus
+#check RiemannSurface.localMultiplicity
+#check RiemannSurface.degree
+#check RiemannSurface.degree_comp
+#check RiemannSurface.divisor_pullback
+#check RiemannSurface.biholomorph_of_degree_eq_one
+#check RiemannSurface.riemannHurwitz
 
 /-- **Weight-two cusp forms ↔ genus, level 11** (Diamond–Shurman Thm 3.5.1, `k = 2`):
 `dim_ℂ S_2(Γ₀(11)) = 1`. The genus of `X₀(11)` is `1`, and `S_2(Γ)` is the space of
