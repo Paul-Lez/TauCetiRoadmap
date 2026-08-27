@@ -75,6 +75,12 @@ The roadmap is complete when Tau Ceti proves the following.
 - **The conformal-mapping roadmap owns the Riemann mapping theorem, analytic continuation, and
   Schwarz reflection.**  These are consumed in polygon uniformization and local extension
   arguments.
+- **The algebraic-topology roadmap owns finite CW models and Euler characteristic.**  The
+  independent `RiemannSurface.Degree` module imports its
+  `TauCeti.AlgebraicTopology.Cellular.FiniteCW` module, applies
+  `compactManifoldFiniteCWType` in real dimension two, and transports
+  `finiteCWEulerCharacteristic` to the compact surface.  No analytic Riemann--Roch theorem is
+  used to define genus or prove Riemann--Hurwitz.
 - **The modular-forms roadmap owns modular forms and functions before descent, including the
   normalized level-one `j`-function, modular invariance, q-expansion, and exact elliptic orders;
   it also owns congruence-subgroup arithmetic, analytic Riemann--Roch, automorphy sheaves, and
@@ -93,6 +99,25 @@ public contract is `RiemannSurface.genus`, `RiemannSurface.localMultiplicity`,
 and finite holomorphic-map carriers pinned in `Suggested.lean`. These are Layer 5 deliverables,
 not imports from a prospective supplier. If matching Mathlib declarations appear, replace the
 local declarations and update imports immediately; no work waits for upstream changes.
+
+The import graph is strict:
+
+```text
+TauCeti.AlgebraicTopology.Cellular.FiniteCW
+    -> TauCeti.Analysis.Complex.RiemannSurface.Degree
+        |-> Fuchsian compactification applications
+        `-> TauCeti.Analysis.Complex.ModularForms.DimensionFormula
+
+TauCeti.Analysis.Complex.ModularForms.LevelOne.JInputs
+    -> TauCeti.Analysis.Complex.Fuchsian.LevelOne
+```
+
+`RiemannSurface.Degree` imports neither `ModularForms` nor any analytic Riemann--Roch,
+automorphy-sheaf, or dimension-formula module.  The separate level-one application consumes the
+lower `TauCeti.Analysis.Complex.ModularForms.LevelOne.JInputs` module, which contains only the
+normalized `j`-function, its invariance, q-expansion, and elliptic orders.  Thus the apparent
+roadmap-level cycle is resolved by literal module boundaries rather than by an intended proof
+order.
 
 ## Pinned conventions
 
@@ -285,22 +310,29 @@ No step identifies the carrier with `P^1`, a torus, or another classified surfac
 
 ## Layer 5: compact-surface degree theory and Fuchsian applications
 
-1. In `TauCeti.Analysis.Complex.RiemannSurface.Degree`, define the analytic genus of a connected
-   compact Riemann surface, finite nonconstant holomorphic maps, local multiplicity from the local
-   analytic normal form, and degree as the sum of local multiplicities over a fibre. Prove
-   positivity, fibre finiteness, independence of the chosen fibre, and multiplicativity under
-   composition.
-2. Define pullback of finite divisors by local multiplicity. Prove the degree formula, construct
-   the ramification divisor, derive Riemann--Hurwitz from the canonical-divisor pullback formula,
-   and prove that degree one yields a biholomorphism via the local normal form. The exact public
-   names are pinned above and represented in `Suggested.lean`.
-3. Prove that a `Γ`-invariant holomorphic or meromorphic function descends uniquely to the
+1. In the independent lower module `TauCeti.Analysis.Complex.RiemannSurface.Degree`, consume
+   AlgebraicTopology's finite CW model of a compact smooth surface and its homotopy-invariant
+   Euler characteristic. Define topological genus by `chi(X) = 2 - 2 * genus(X)` and prove that it
+   agrees with the usual analytic genus. This module imports neither ModularForms nor analytic
+   Riemann--Roch.
+2. In that same lower module, define finite nonconstant holomorphic maps, local multiplicity from
+   the local analytic normal form, and degree as the sum of local multiplicities over a fibre.
+   Prove positivity, fibre finiteness, independence of the chosen fibre, multiplicativity under
+   composition, and the degree-one biholomorphism theorem.
+3. Define pullback of finite divisors by local multiplicity and construct the ramification
+   divisor. Prove first the branched-cover Euler-characteristic formula
+   `chi(X) = degree(f) * chi(Y) - ramificationDegree(f)` by excising pairwise-disjoint branch
+   discs, applying finite-cover multiplicativity to their complement, and adding back the discs.
+   Derive Riemann--Hurwitz by rewriting both Euler characteristics as `2 - 2g`; do not use the
+   canonical-divisor formula or Riemann--Roch in this proof spine. The exact public names are
+   represented in `Suggested.lean`.
+4. Prove that a `Γ`-invariant holomorphic or meromorphic function descends uniquely to the
    coarse quotient.  Combine the elliptic local-order formula and cusp q-expansion criterion to
    extend it to the compactification.
-4. Apply the generic declarations to finite-index compactified quotient maps. Reprove neither
+5. Apply the generic declarations to finite-index compactified quotient maps. Reprove neither
    generic fibre finiteness nor independence of the degree sum; identify the local multiplicities
    with the cusp-width and elliptic-stabilizer ratios from Layer 4.
-5. Derive the Fuchsian Riemann--Hurwitz and orbifold Euler-characteristic formulas, with the chosen
+6. Derive the Fuchsian Riemann--Hurwitz and orbifold Euler-characteristic formulas, with the chosen
    effective-action and orientation conventions explicit.
 
 **Source spine:** Forster, §§10, 17, and 19; Miranda, Chapter III §§3--4; Farkas--Kra,

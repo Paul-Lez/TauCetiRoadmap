@@ -310,6 +310,12 @@ end TauCetiRoadmap.FuchsianOrbifolds
 These declarations target `TauCeti.Analysis.Complex.RiemannSurface.Degree`. They use genuine maps,
 finite fibres, local multiplicities, and divisors rather than records carrying their desired
 conclusions as fields.
+
+The target module imports `TauCeti.AlgebraicTopology.Cellular.FiniteCW` and nothing from
+`ModularForms`. Its Euler characteristic is the literal transport of
+`TauCetiRoadmap.AlgebraicTopology.finiteCWEulerCharacteristic` along the model supplied by
+`TauCetiRoadmap.AlgebraicTopology.compactManifoldFiniteCWType 2`. Those roadmap-namespace names
+are import checks, not declarations to duplicate in the implementation.
 -/
 
 namespace RiemannSurface
@@ -382,20 +388,47 @@ noncomputable def divisor_pullback (f : FiniteHolomorphicMap X Y) :
     Divisor Y →+ Divisor X := by
   sorry
 
-/-- Analytic genus of a connected compact Riemann surface. -/
+/-- The Euler characteristic transported from AlgebraicTopology's finite CW model of the compact
+surface. The implementation is the literal application of `compactManifoldFiniteCWType 2` and
+`finiteCWEulerCharacteristic`; it does not introduce an analytic or Riemann--Roch definition. -/
+noncomputable def surfaceEulerCharacteristic (X : Type*) [TopologicalSpace X]
+    [ChartedSpace ℂ X] [T2Space X] [CompactSpace X] [ConnectedSpace X]
+    [IsManifold 𝓘(ℂ, ℂ) ∞ X] : ℤ := by
+  sorry
+
+/-- Genus is defined topologically from Euler characteristic. The preceding finite-CW theorem
+proves that `2 - chi(X)` is a nonnegative even integer. -/
 noncomputable def genus (X : Type*) [TopologicalSpace X] [ChartedSpace ℂ X] [T2Space X]
-    [CompactSpace X] [ConnectedSpace X] [IsManifold 𝓘(ℂ, ℂ) ∞ X] : ℕ := by
+    [CompactSpace X] [ConnectedSpace X] [IsManifold 𝓘(ℂ, ℂ) ∞ X] : ℕ :=
+  Int.toNat ((2 - surfaceEulerCharacteristic X) / 2)
+
+/-- The defining Euler-characteristic identity for topological genus. Analytic compatibility is
+then proved independently of the higher ModularForms Riemann--Roch layer. -/
+theorem surfaceEulerCharacteristic_eq_two_sub_two_mul_genus :
+    surfaceEulerCharacteristic X = 2 - 2 * (genus X : ℤ) := by
   sorry
 
 /-- Degree of the ramification divisor `sum_x (e_x - 1)[x]`. -/
 noncomputable def ramificationDegree (f : FiniteHolomorphicMap X Y) : ℕ := by
   sorry
 
-/-- Riemann--Hurwitz in terms of the degree and the ramification divisor. -/
+/-- The acyclic proof spine: excise branch discs, use finite-cover multiplicativity on their
+complement, and add the discs back. This theorem depends only on finite-CW Euler characteristic
+and local normal forms, never on canonical divisors or Riemann--Roch. -/
+theorem branchedCover_eulerCharacteristic (f : FiniteHolomorphicMap X Y) :
+    surfaceEulerCharacteristic X =
+      (degree f : ℤ) * surfaceEulerCharacteristic Y - (ramificationDegree f : ℤ) := by
+  sorry
+
+/-- Riemann--Hurwitz is an algebraic rewrite of the topological branched-cover formula. -/
 theorem riemannHurwitz (f : FiniteHolomorphicMap X Y) :
     2 * (genus X : ℤ) - 2 =
       (degree f : ℤ) * (2 * (genus Y : ℤ) - 2) + (ramificationDegree f : ℤ) := by
-  sorry
+  have hX := surfaceEulerCharacteristic_eq_two_sub_two_mul_genus (X := X)
+  have hY := surfaceEulerCharacteristic_eq_two_sub_two_mul_genus (X := Y)
+  have hχ := branchedCover_eulerCharacteristic f
+  rw [hX, hY] at hχ
+  linarith
 
 end CompactSurfaces
 
