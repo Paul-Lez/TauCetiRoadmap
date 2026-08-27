@@ -98,6 +98,12 @@ These choices are part of the specification.
   interface.  Kan-simplicial homotopy groups are also constructed because they interact well
   with `TopCat.toSSet`; a natural comparison identifies the two, including induced maps,
   basepoint change, suspension, and relative boundary morphisms.
+- **Base relative homotopy in the subspace.**  Relative homology remains a functor on unbased
+  `TopPair`, but relative homotopy uses a `BasedTopPair` containing `pair : TopPair` and
+  `basepoint : pair.snd`. Its morphisms are pair maps whose subspace component preserves that
+  point. Relative cubes, groups, boundary maps, the long exact sequence, basepoint change,
+  functoriality, and relative Hurewicz all take this based carrier; no declaration chooses a point
+  from a bare pair.
 - **Finiteness is a hypothesis.**  Euler characteristic is defined for finite CW structures and
   extended to finite-CW-type spaces by transport and invariance.  Additivity and multiplicativity
   state the necessary cofibration, excision, and finite-generation hypotheses.
@@ -355,9 +361,12 @@ This stage consumes every one of Stages 2--6.  Stage 1 is not a prerequisite.
 This stage consumes Stages 2--4, the universal-covers roadmap's induced-map and basepoint API,
 and geometric topology's smooth-triangulation result for the manifold corollaries.
 
-1. Extend cubical `HomotopyGroup` with pointed maps, functoriality, basepoint change, relative
-   homotopy groups, and the long exact sequence of a based pair.  State relative groups for NDR
-   pairs/cofibrations, rather than attaching them to arbitrary inclusions without hypotheses.
+1. Define `BasedTopPair` from a `TopPair` and an actual point of its subspace, together with
+   basepoint-preserving maps of pairs. Extend cubical `HomotopyGroup` with pointed maps,
+   functoriality, basepoint change, relative homotopy groups `pi_n(X,A,a_0)`, and the boundary maps
+   and long exact sequence of that based pair. State relative groups for NDR pairs/cofibrations,
+   rather than attaching them to arbitrary inclusions without hypotheses. The empty-subspace pair
+   admits no such based carrier.
    Keep the low-degree algebra honest: use pointed-set and group carriers in the ranges where
    relative homotopy is not abelian, and expose a `ModuleCat Z` carrier only in degrees at least
    three.  In particular, `pi_2(X,A)` is group-valued in general; its abelianization, not the
@@ -434,6 +443,9 @@ these arrows by assuming a downstream comparison theorem as input.
 - The proposed relative-homotopy API does not make `pi_2(X,A)` a `Z`-module in general.  Its
   degree-two Hurewicz theorem derives the needed commutativity from connectivity, while the direct
   module-valued carrier starts in degree three.
+- Every relative-homotopy group, induced map, boundary morphism, long exact sequence, and Hurewicz
+  map takes a `BasedTopPair`; its point lies in the subspace and all maps preserve it. The API
+  cannot construct `pi_n(X,A)` from an unbased `TopPair` or from an empty subspace.
 
 ## References
 

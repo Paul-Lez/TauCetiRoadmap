@@ -307,6 +307,22 @@ theorem poincareDualityMap_isIso (R : Type u) [CommRing R] (n : ℕ)
 
 /-! ## Relative Hurewicz -/
 
+/-- A topological pair with the point in the subspace required by relative homotopy. Relative
+homology continues to use the unbased `TopPair` above. -/
+structure BasedTopPair where
+  pair : TopPair.{u}
+  basepoint : pair.snd
+
+namespace BasedTopPair
+
+/-- A map of based pairs is a map of the underlying pairs whose subspace component preserves the
+chosen point. This is the map carrier for relative homotopy functoriality. -/
+structure Hom (X Y : BasedTopPair.{u}) where
+  toTopPairHom : X.pair ⟶ Y.pair
+  map_basepoint : TopPair.Hom.snd toTopPairHom X.basepoint = Y.basepoint
+
+end BasedTopPair
+
 /-- Explicit NDR data for an embedded pair. -/
 structure NDRPairData (X : TopPair.{u}) where
   u : C(X.fst, unitInterval)
@@ -320,59 +336,85 @@ structure NDRPairData (X : TopPair.{u}) where
 group is not assumed commutative. The implementation uses the same based-cube model as Mathlib's
 `HomotopyGroup`. -/
 noncomputable def relativeHomotopyGroup (n : ℕ) (_hn : 2 ≤ n)
-    (X : TopPair.{u}) : GrpCat.{u} := by
+    (X : BasedTopPair.{u}) : GrpCat.{u} := by
+  sorry
+
+/-- A basepoint-preserving map of pairs induces the relative homotopy homomorphism. -/
+noncomputable def BasedTopPair.Hom.relativeHomotopyMap {X Y : BasedTopPair.{u}}
+    (f : X.Hom Y) (n : ℕ) (hn : 2 ≤ n) :
+    relativeHomotopyGroup n hn X ⟶ relativeHomotopyGroup n hn Y := by
+  sorry
+
+/-- The based homotopy group of the subspace, used as the target of the relative boundary map. -/
+noncomputable def basedSubspaceHomotopyGroup (n : ℕ) (_hn : 1 ≤ n)
+    (X : BasedTopPair.{u}) : GrpCat.{u} := by
+  sorry
+
+/-- The boundary of a relative cube lands in the subspace at its stored basepoint. -/
+noncomputable def relativeHomotopyBoundary (n : ℕ) (hn : 2 ≤ n)
+    (X : BasedTopPair.{u}) :
+    relativeHomotopyGroup n hn X ⟶ basedSubspaceHomotopyGroup (n - 1) (by omega) X := by
+  sorry
+
+/-- Changing the chosen subspace point along a path gives the standard relative-homotopy
+basepoint-change isomorphism. -/
+noncomputable def relativeHomotopyChangeBasepoint (n : ℕ) (hn : 2 ≤ n)
+    (X : BasedTopPair.{u}) (a : X.pair.snd) (_path : Path X.basepoint a) :
+    relativeHomotopyGroup n hn X ≅
+      relativeHomotopyGroup n hn { pair := X.pair, basepoint := a } := by
   sorry
 
 /-- The integral module attached to the abelianization of the relative homotopy group. This is
 the natural source of Hurewicz before any commutativity theorem. -/
 noncomputable def relativeHomotopyAbelianization (n : ℕ) (hn : 2 ≤ n)
-    (X : TopPair.{u}) : ModuleCat.{u} ℤ := by
+    (X : BasedTopPair.{u}) : ModuleCat.{u} ℤ := by
   sorry
 
 /-- The quotient map from relative homotopy to its abelianization, displayed on underlying
 carriers so that the general group-valued source is not silently strengthened. -/
 noncomputable def relativeHomotopyToAbelianization (n : ℕ) (hn : 2 ≤ n)
-    (X : TopPair.{u}) :
+    (X : BasedTopPair.{u}) :
     relativeHomotopyGroup n hn X → relativeHomotopyAbelianization n hn X := by
   sorry
 
 /-- From degree three onward, relative homotopy itself has its canonical integral-module
 structure. -/
 noncomputable def relativeHomotopyModule (n : ℕ) (_hn : 3 ≤ n)
-    (X : TopPair.{u}) : ModuleCat.{u} ℤ := by
+    (X : BasedTopPair.{u}) : ModuleCat.{u} ℤ := by
   sorry
 
 /-- In the stable relative range, the module carrier agrees with the abelianization carrier. -/
 noncomputable def relativeHomotopyModuleIsoAbelianization (n : ℕ) (hn : 3 ≤ n)
-    (X : TopPair.{u}) :
+    (X : BasedTopPair.{u}) :
     relativeHomotopyModule n hn X ≅ relativeHomotopyAbelianization n (by omega) X := by
   sorry
 
-/-- Relative Hurewicz is defined on the abelianization in every degree at least two. -/
-noncomputable def relativeHurewicz (n : ℕ) (hn : 2 ≤ n) (X : TopPair.{u}) :
+/-- Relative Hurewicz is defined on the abelianization of a based pair in every degree at least
+two. Its homology target forgets only the basepoint, not the underlying pair. -/
+noncomputable def relativeHurewicz (n : ℕ) (hn : 2 ≤ n) (X : BasedTopPair.{u}) :
     relativeHomotopyAbelianization n hn X ⟶
-      (relativeSingularHomology ℤ n).obj (ModuleCat.of ℤ ℤ) |>.obj X := by
+      (relativeSingularHomology ℤ n).obj (ModuleCat.of ℤ ℤ) |>.obj X.pair := by
   sorry
 
 /-- At degree two, simple connectivity and relative one-connectivity force the generally
 nonabelian relative group to be abelian. -/
-theorem relativeHomotopyGroup_two_commutative (X : TopPair.{u})
-    (_hNDR : NDRPairData X)
-    [SimplyConnectedSpace X.fst] [SimplyConnectedSpace X.snd] :
+theorem relativeHomotopyGroup_two_commutative (X : BasedTopPair.{u})
+    (_hNDR : NDRPairData X.pair)
+    [SimplyConnectedSpace X.pair.fst] [SimplyConnectedSpace X.pair.snd] :
     ∀ a b : relativeHomotopyGroup 2 (Nat.le_refl 2) X, a * b = b * a := by
   sorry
 
 /-- Consequently the quotient to the degree-two abelianization is bijective; commutativity is a
 theorem under the Hurewicz hypotheses, not part of the general carrier. -/
-theorem relativeHomotopyToAbelianization_two_bijective (X : TopPair.{u})
-    (_hNDR : NDRPairData X)
-    [SimplyConnectedSpace X.fst] [SimplyConnectedSpace X.snd] :
+theorem relativeHomotopyToAbelianization_two_bijective (X : BasedTopPair.{u})
+    (_hNDR : NDRPairData X.pair)
+    [SimplyConnectedSpace X.pair.fst] [SimplyConnectedSpace X.pair.snd] :
     Function.Bijective (relativeHomotopyToAbelianization 2 (by omega) X) := by
   sorry
 
-theorem relativeHurewicz_isIso (n : ℕ) (hn : 2 ≤ n) (X : TopPair.{u})
-    (_hNDR : NDRPairData X)
-    [SimplyConnectedSpace X.fst] [SimplyConnectedSpace X.snd]
+theorem relativeHurewicz_isIso (n : ℕ) (hn : 2 ≤ n) (X : BasedTopPair.{u})
+    (_hNDR : NDRPairData X.pair)
+    [SimplyConnectedSpace X.pair.fst] [SimplyConnectedSpace X.pair.snd]
     (_hvanish : ∀ i (hi : 2 ≤ i), i < n →
       Subsingleton (relativeHomotopyGroup i hi X)) :
     IsIso (relativeHurewicz n hn X) := by
