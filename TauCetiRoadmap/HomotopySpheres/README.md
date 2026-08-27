@@ -91,6 +91,20 @@ endpoint.
   does not silently use ordinary `TopCat` products or colimits where an exponential law is
   required.
 
+`Suggested.lean` keeps two supplier-interface mirrors only under
+`TauCetiRoadmap.HomotopySpheres.Internal`: `OrientationSupplierMirror` for the
+Heegaard-Floer-owned orientation contract and `GeometricTopologySupplierMirror` for the
+GeometricTopology-owned collared-boundary contract.  These namespaces are compilation scaffolds,
+not exported targets.  Their exact deletion gate is:
+
+1. import the supplier modules exposing `Manifold.Orientation`,
+   `Manifold.Orientation.Agrees`, `Manifold.Diffeomorph.PreservesOrientation`,
+   `CollaredOrientedManifold`, `SmoothEmbeddedClosedDisk`, `CollarOpen`, and `CollarSource`;
+2. replace each occurrence of an internal mirror name by that exact supplier declaration; and
+3. delete both internal namespaces whole.
+
+No implementation module may export either mirror or retain it beside the supplier import.
+
 ## Encoding and convention choices
 
 These choices are acceptance conditions for every stage.
@@ -222,12 +236,11 @@ Mathlib's `Geometry/Manifold/PoincareConjecture.lean` supplies intended vocabula
 countability, and compactness hypotheses required by the smooth theorem.  Stage 10 proves a
 correctly scoped result directly.
 
-The algebraic-topology roadmap must merge before this roadmap is integrated.  This roadmap PR
-cannot import an unmerged sibling module without also changing files outside its directory.  In
-the first implementation commit after that merge, `Suggested.lean` must import
-`TauCetiRoadmap.AlgebraicTopology.Suggested` and literally `#check` the four supplier declarations
-named above before any consumer target is implemented.  Local substitutes do not satisfy this
-gate.
+The consumer modules import the algebraic-topology modules containing the four declarations named
+above and literally `#check` them before defining any homotopy-sphere target. The import gate is
+part of the integration check: local substitutes, copied declarations, and a prose-only dependency
+do not satisfy it. `Suggested.lean` names this gate without placing algebraic-topology declarations
+in the homotopy-sphere namespace.
 
 ## Stage 1: h-cobordisms and the high-dimensional theorem
 
@@ -735,6 +748,11 @@ occurs in Stage 7 after the obstruction groups and surgery theorem have been con
 - The geometric quotients use a Type-0 finite-atlas/handle skeleton, with essential surjectivity
   for arbitrary universes and invariance under changing the code; its source/target, groupoid,
   cover, cocycle, and separation laws are present in the actual code.
+- `Suggested.lean` exposes the geometric h-cobordism witness relation, the literal
+  `HomotopySphereClass` quotient and `Theta_n`, framed/almost-framed/stable-filling witness
+  relations and quotients, the maps `Theta_n -> A_n -> P_n` and `P_(n+1) -> Theta_n`, exactness at
+  the displayed segment, and the resulting `Theta_6 = 0`. None is represented by an arbitrary
+  `AddCommGrpCat` with the intended answer hidden in its body.
 - `J X ~= Omega Sigma X` is derived for every connected `X` using universal covers or local
   coefficients, and its `X=S^1` fundamental-group case is a regression theorem.  The EHP
   sequence follows from the resulting maps and connectivity theorem.

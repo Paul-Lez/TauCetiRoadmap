@@ -6,6 +6,16 @@ import Mathlib
 This file is not the roadmap and is not exhaustive. The definitive document is README.md.
 The declarations below pin representative interfaces whose types rule out the vacuous
 orientation, framing, boundary, Pontryagin--Thom, and Wall abstractions discussed in review.
+
+`Internal.OrientationSupplierMirror` is an exact temporary mirror of the Heegaard-Floer-owned
+orientation API. Its deletion gate is the import providing `Manifold.Orientation`,
+`Manifold.Orientation.Agrees`, and `Manifold.Diffeomorph.PreservesOrientation`; the implementation
+then replaces every mirror occurrence by those declarations and deletes the whole namespace.
+
+`Internal.GeometricTopologySupplierMirror` similarly mirrors only the collared-boundary
+contracts needed to type-check this file. Its deletion gate is the GeometricTopology import
+providing `CollaredOrientedManifold`, `SmoothEmbeddedClosedDisk`, `CollarOpen`, and `CollarSource`.
+Neither mirror is a public Tau Ceti target of this roadmap.
 -/
 
 open CategoryTheory ContinuousMap Manifold Topology
@@ -53,9 +63,9 @@ theorem stableSOHomotopy_six_subsingleton : Subsingleton (stableSOHomotopy 6) :=
 
 end TauCetiRoadmap.HomotopySpheres
 
-/-! ## Exact-shape orientation supplier -/
+/-! ## Internal exact-shape orientation supplier mirror -/
 
-namespace Manifold
+namespace TauCetiRoadmap.HomotopySpheres.Internal.OrientationSupplierMirror
 
 variable {E H : Type*} [NormedAddCommGroup E] [NormedSpace ℝ E] [TopologicalSpace H]
   (I : ModelWithCorners ℝ E H)
@@ -141,11 +151,11 @@ def Diffeomorph.PreservesOrientation
         (Orientation.orientationAt I oM x) =
     Orientation.orientationAt I' oN (f x)
 
-end Manifold
+end TauCetiRoadmap.HomotopySpheres.Internal.OrientationSupplierMirror
 
-/-! ## Shared collared geometry -/
+/-! ## Internal shared-collared-geometry supplier mirror -/
 
-namespace TauCetiRoadmap.GeometricTopology
+namespace TauCetiRoadmap.HomotopySpheres.Internal.GeometricTopologySupplierMirror
 
 private abbrev ModelSpace (n : ℕ) := EuclideanSpace ℝ (Fin n)
 
@@ -191,8 +201,8 @@ def CollarInducesBoundaryOrientation
     [ChartedSpace H M] [IsManifold I ∞ M] [TopologicalSpace B]
     [ChartedSpace (ModelSpace (n - 1)) B]
     [IsManifold (SmoothModel (n - 1)) ∞ B]
-    (ambientOrientation : Manifold.Orientation I M (Fin n))
-    (boundaryOrientation : Manifold.Orientation
+    (ambientOrientation : Internal.OrientationSupplierMirror.Orientation I M (Fin n))
+    (boundaryOrientation : Internal.OrientationSupplierMirror.Orientation
       (SmoothModel (n - 1)) B (Fin (n - 1)))
     (collar : PartialDiffeomorph
       ((𝓡∂ 1).prod (SmoothModel (n - 1))) I (unitInterval × B) M ∞)
@@ -202,8 +212,10 @@ def CollarInducesBoundaryOrientation
         rw [collarSource_eq]
         exact zero_mem_collarSource b))
       (outwardNormalBoundaryOrientation
-        (Manifold.Orientation.orientationAt (SmoothModel (n - 1)) boundaryOrientation b)) =
-    Manifold.Orientation.orientationAt I ambientOrientation (collar (0, b))
+        (Internal.OrientationSupplierMirror.Orientation.orientationAt
+          (SmoothModel (n - 1)) boundaryOrientation b)) =
+    Internal.OrientationSupplierMirror.Orientation.orientationAt
+      I ambientOrientation (collar (0, b))
 
 /-- A compact connected oriented manifold with its actual boundary and a half-open collar. -/
 structure CollaredOrientedManifold (n : ℕ) where
@@ -218,7 +230,7 @@ structure CollaredOrientedManifold (n : ℕ) where
   [secondCountable : SecondCountableTopology M]
   [compact : CompactSpace M]
   [connected : ConnectedSpace M]
-  orientation : Manifold.Orientation model M (Fin n)
+  orientation : Internal.OrientationSupplierMirror.Orientation model M (Fin n)
   B : Type
   [boundaryTopology : TopologicalSpace B]
   [boundaryCharted : ChartedSpace (ModelSpace (n - 1)) B]
@@ -227,7 +239,8 @@ structure CollaredOrientedManifold (n : ℕ) where
     ChartedSpace (ModelSpace (n - 1)) {x : M // x ∈ model.boundary M}]
   [intrinsicBoundaryManifold :
     IsManifold (SmoothModel (n - 1)) ∞ {x : M // x ∈ model.boundary M}]
-  boundaryOrientation : Manifold.Orientation (SmoothModel (n - 1)) B (Fin (n - 1))
+  boundaryOrientation : Internal.OrientationSupplierMirror.Orientation
+    (SmoothModel (n - 1)) B (Fin (n - 1))
   boundaryIdentification :
     B ≃ₘ⟮SmoothModel (n - 1), SmoothModel (n - 1)⟯ {x : M // x ∈ model.boundary M}
   collarNeighbourhood : Set M
@@ -287,7 +300,7 @@ noncomputable def SmoothEmbeddedClosedDisk.exterior
     (D : SmoothEmbeddedClosedDisk (M := M) n I) : TopologicalSpace.Opens M :=
   ⟨(Set.range D.embedding)ᶜ, D.range_closed.isOpen_compl⟩
 
-end TauCetiRoadmap.GeometricTopology
+end TauCetiRoadmap.HomotopySpheres.Internal.GeometricTopologySupplierMirror
 
 /-! ## Small atlas, genuine tangent framings, and fillings -/
 
@@ -392,7 +405,8 @@ structure SmoothClosedOrientedCycle (n : ℕ) where
   secondCountable : SecondCountableTopology code.Realization
   compact : CompactSpace code.Realization
   manifold : IsManifold (SmoothModel n) ∞ code.Realization
-  orientation : Manifold.Orientation (SmoothModel n) code.Realization (Fin n)
+  orientation : Internal.OrientationSupplierMirror.Orientation
+    (SmoothModel n) code.Realization (Fin n)
 
 attribute [instance] SmoothClosedOrientedCycle.t2
   SmoothClosedOrientedCycle.secondCountable SmoothClosedOrientedCycle.compact
@@ -402,10 +416,11 @@ def OrientationPreservingDiffeomorph {n : ℕ} (M : Type u) (N : Type v)
     [TopologicalSpace M] [TopologicalSpace N] [ChartedSpace (ModelSpace n) M]
     [ChartedSpace (ModelSpace n) N] [IsManifold (SmoothModel n) ∞ M]
     [IsManifold (SmoothModel n) ∞ N]
-    (oM : Manifold.Orientation (SmoothModel n) M (Fin n))
-    (oN : Manifold.Orientation (SmoothModel n) N (Fin n)) :=
+    (oM : Internal.OrientationSupplierMirror.Orientation (SmoothModel n) M (Fin n))
+    (oN : Internal.OrientationSupplierMirror.Orientation (SmoothModel n) N (Fin n)) :=
   {f : M ≃ₘ⟮SmoothModel n, SmoothModel n⟯ N //
-    Manifold.Diffeomorph.PreservesOrientation (SmoothModel n) (SmoothModel n) f oM oN}
+    Internal.OrientationSupplierMirror.Diffeomorph.PreservesOrientation
+      (SmoothModel n) (SmoothModel n) f oM oN}
 
 structure HomotopySphereCycle (n : ℕ) extends SmoothClosedOrientedCycle n where
   marking : code.Realization ≃ₕ Sphere n
@@ -452,21 +467,23 @@ noncomputable def StableTangentFraming.orientation
     [TopologicalSpace M] [ChartedSpace H M] [IsManifold I ∞ M]
     [FiniteDimensional ℝ E] {ι : Type*} [Fintype ι]
     [Fact (Fintype.card ι = Module.finrank ℝ E)] {r : ℕ}
-    (_framing : StableTangentFraming I M r) : Manifold.Orientation I M ι := by
+    (_framing : StableTangentFraming I M r) :
+    Internal.OrientationSupplierMirror.Orientation I M ι := by
   sorry
 
 structure FramedCycle (n : ℕ) extends SmoothClosedOrientedCycle n where
   stabilizationRank : ℕ
   framing : StableTangentFraming (SmoothModel n) code.Realization stabilizationRank
-  orientation_agrees : Manifold.Orientation.Agrees (SmoothModel n) orientation
+  orientation_agrees : Internal.OrientationSupplierMirror.Orientation.Agrees
+    (SmoothModel n) orientation
     (StableTangentFraming.orientation (ι := Fin n) framing)
 
 abbrev CollaredOrientedFilling :=
-  TauCetiRoadmap.GeometricTopology.CollaredOrientedManifold
+  Internal.GeometricTopologySupplierMirror.CollaredOrientedManifold
 
 noncomputable def HalfOpenCollarDomain {n : ℕ} (W : CollaredOrientedFilling n) :
     TopologicalSpace.Opens (unitInterval × W.B) :=
-  TauCetiRoadmap.GeometricTopology.CollarOpen W.B
+  Internal.GeometricTopologySupplierMirror.CollarOpen W.B
 
 noncomputable def pullbackFramingAlongCollar {n r : ℕ}
     (W : CollaredOrientedFilling n)
@@ -494,7 +511,8 @@ structure StableFramedFillingCycle (n : ℕ) where
   boundaryMarking : filling.B ≃ₕ Sphere (n - 1)
   framingRank : ℕ
   stableFraming : StableTangentFraming filling.model filling.M framingRank
-  framingOrientation : Manifold.Orientation.Agrees filling.model filling.orientation
+  framingOrientation : Internal.OrientationSupplierMirror.Orientation.Agrees
+    filling.model filling.orientation
     (StableTangentFraming.orientation (ι := Fin n) stableFraming)
   productOnCollar : stableFraming.IsProductOnCollar filling
 
@@ -520,16 +538,16 @@ noncomputable def DefectCollarDomain
     {n : ℕ} {H M : Type*} [TopologicalSpace H]
     {I : ModelWithCorners ℝ (ModelSpace n) H}
     [TopologicalSpace M] [ChartedSpace H M] [IsManifold I ∞ M]
-    (D : TauCetiRoadmap.GeometricTopology.SmoothEmbeddedClosedDisk (M := M) n I) :
+    (D : Internal.GeometricTopologySupplierMirror.SmoothEmbeddedClosedDisk (M := M) n I) :
     TopologicalSpace.Opens (unitInterval × D.disk.B) :=
-  ⟨{p | p ∈ TauCetiRoadmap.GeometricTopology.CollarSource D.disk.B ∧ p.1 ≠ 0},
+  ⟨{p | p ∈ Internal.GeometricTopologySupplierMirror.CollarSource D.disk.B ∧ p.1 ≠ 0},
     by sorry⟩
 
 noncomputable def pullbackFrameToDefectCollar
     {n r : ℕ} {H M : Type*} [TopologicalSpace H]
     {I : ModelWithCorners ℝ (ModelSpace n) H}
     [TopologicalSpace M] [ChartedSpace H M] [IsManifold I ∞ M]
-    (D : TauCetiRoadmap.GeometricTopology.SmoothEmbeddedClosedDisk (M := M) n I)
+    (D : Internal.GeometricTopologySupplierMirror.SmoothEmbeddedClosedDisk (M := M) n I)
     (_framing : StableTangentFraming I D.exterior r) :
     StableTangentFraming ((𝓡∂ 1).prod (SmoothModel (n - 1)))
       (DefectCollarDomain D) r := by
@@ -539,7 +557,7 @@ noncomputable def defectCollarProductFraming
     {n r : ℕ} {H M : Type*} [TopologicalSpace H]
     {I : ModelWithCorners ℝ (ModelSpace n) H}
     [TopologicalSpace M] [ChartedSpace H M] [IsManifold I ∞ M]
-    (D : TauCetiRoadmap.GeometricTopology.SmoothEmbeddedClosedDisk (M := M) n I)
+    (D : Internal.GeometricTopologySupplierMirror.SmoothEmbeddedClosedDisk (M := M) n I)
     (_boundaryFraming : StableTangentFraming (SmoothModel (n - 1)) D.disk.B r) :
     StableTangentFraming ((𝓡∂ 1).prod (SmoothModel (n - 1)))
       (DefectCollarDomain D) r := by
@@ -549,18 +567,223 @@ structure StableTangentFraming.IsProductNearDefect
     {n r : ℕ} {H M : Type*} [TopologicalSpace H]
     {I : ModelWithCorners ℝ (ModelSpace n) H}
     [TopologicalSpace M] [ChartedSpace H M] [IsManifold I ∞ M]
-    (D : TauCetiRoadmap.GeometricTopology.SmoothEmbeddedClosedDisk (M := M) n I)
+    (D : Internal.GeometricTopologySupplierMirror.SmoothEmbeddedClosedDisk (M := M) n I)
     (framing : StableTangentFraming I D.exterior r) where
   boundaryFraming : StableTangentFraming (SmoothModel (n - 1)) D.disk.B r
   agrees : (pullbackFrameToDefectCollar D framing).trivialization =
     (defectCollarProductFraming D boundaryFraming).trivialization
 
 structure AlmostFramedCycle (n : ℕ) extends SmoothClosedOrientedCycle n where
-  defect : TauCetiRoadmap.GeometricTopology.SmoothEmbeddedClosedDisk
+  defect : Internal.GeometricTopologySupplierMirror.SmoothEmbeddedClosedDisk
     (M := code.Realization) n (SmoothModel n)
   frameRank : ℕ
   frameOffDefect : StableTangentFraming (SmoothModel n) defect.exterior frameRank
   productNearDefect : frameOffDefect.IsProductNearDefect defect
+
+/-! ## Geometric bordism quotients and the Kervaire--Milnor segment -/
+
+/-- The two closed boundary components of a collared cobordism are supplied by actual smooth
+embeddings whose disjoint ranges cover its intrinsic boundary carrier. -/
+structure BoundaryIdentification {n : ℕ} (X Y : SmoothClosedOrientedCycle n)
+    (W : CollaredOrientedFilling (n + 1)) where
+  incoming : C(X.code.Realization, W.B)
+  outgoing : C(Y.code.Realization, W.B)
+  incomingSmooth : IsSmoothEmbedding (SmoothModel n) (SmoothModel ((n + 1) - 1)) ∞ incoming
+  outgoingSmooth : IsSmoothEmbedding (SmoothModel n) (SmoothModel ((n + 1) - 1)) ∞ outgoing
+  disjointRanges : Disjoint (Set.range incoming) (Set.range outgoing)
+  rangesCover : Set.range incoming ∪ Set.range outgoing = Set.univ
+
+/-- Compose the incoming boundary identification with the intrinsic boundary inclusion. -/
+noncomputable def BoundaryIdentification.incomingInclusion
+    {n : ℕ} {X Y : SmoothClosedOrientedCycle n} {W : CollaredOrientedFilling (n + 1)}
+    (D : BoundaryIdentification X Y W) : C(X.code.Realization, W.M) := by
+  sorry
+
+/-- Compose the outgoing boundary identification with the intrinsic boundary inclusion. -/
+noncomputable def BoundaryIdentification.outgoingInclusion
+    {n : ℕ} {X Y : SmoothClosedOrientedCycle n} {W : CollaredOrientedFilling (n + 1)}
+    (D : BoundaryIdentification X Y W) : C(Y.code.Realization, W.M) := by
+  sorry
+
+/-- A geometric h-cobordism witness. Both displayed boundary inclusions, rather than unrelated
+maps, are the forward maps of homotopy equivalences. -/
+structure GeometricHCobordismWitness {n : ℕ} (X Y : HomotopySphereCycle n) where
+  cobordism : CollaredOrientedFilling (n + 1)
+  boundary : BoundaryIdentification X.toSmoothClosedOrientedCycle
+    Y.toSmoothClosedOrientedCycle cobordism
+  incomingEquiv : X.code.Realization ≃ₕ cobordism.M
+  outgoingEquiv : Y.code.Realization ≃ₕ cobordism.M
+  incomingEquiv_toFun : incomingEquiv.toFun = boundary.incomingInclusion
+  outgoingEquiv_toFun : outgoingEquiv.toFun = boundary.outgoingInclusion
+
+/-- Oriented geometric h-cobordism is witnessed by the preceding collared object. -/
+def GeometricHCobordant {n : ℕ} (X Y : HomotopySphereCycle n) : Prop :=
+  Nonempty (GeometricHCobordismWitness X Y)
+
+theorem geometricHCobordant_equivalence (n : ℕ) :
+    Equivalence (@GeometricHCobordant n) := by
+  sorry
+
+/-- The setoid used for the geometric quotient of homotopy spheres. -/
+def homotopySphereSetoid (n : ℕ) : Setoid (HomotopySphereCycle n) :=
+  ⟨GeometricHCobordant, geometricHCobordant_equivalence n⟩
+
+/-- The underlying quotient carrier of oriented homotopy spheres modulo geometric h-cobordism. -/
+def HomotopySphereClass (n : ℕ) :=
+  Quotient (homotopySphereSetoid n)
+
+/-- Connected sum, orientation reversal, and the explicit inverse h-cobordism descend to the
+geometric quotient. -/
+noncomputable instance homotopySphereClassAddCommGroup (n : ℕ) :
+    AddCommGroup (HomotopySphereClass n) := by
+  sorry
+
+/-- The geometric Kervaire--Milnor group `Theta_n`; its carrier is definitionally the quotient
+above, not an arbitrary additive group. -/
+abbrev Theta (n : ℕ) := HomotopySphereClass n
+
+/-- A stably framed cobordism between closed cycles, including its collared-boundary geometry. -/
+structure StableFramedCobordismData {n : ℕ} (X Y : SmoothClosedOrientedCycle n) where
+  cobordism : CollaredOrientedFilling (n + 1)
+  boundary : BoundaryIdentification X Y cobordism
+  rank : ℕ
+  framing : StableTangentFraming cobordism.model cobordism.M rank
+  productOnCollar : framing.IsProductOnCollar cobordism
+
+/-- Pull the collared boundary framing back to the incoming closed cycle. -/
+noncomputable def StableFramedCobordismData.incomingFraming
+    {n : ℕ} {X Y : SmoothClosedOrientedCycle n} (W : StableFramedCobordismData X Y) :
+    StableTangentFraming (SmoothModel n) X.code.Realization W.rank := by
+  sorry
+
+/-- Pull the collared boundary framing back to the outgoing closed cycle. -/
+noncomputable def StableFramedCobordismData.outgoingFraming
+    {n : ℕ} {X Y : SmoothClosedOrientedCycle n} (W : StableFramedCobordismData X Y) :
+    StableTangentFraming (SmoothModel n) Y.code.Realization W.rank := by
+  sorry
+
+/-- Stabilize a cycle's actual tangent-bundle trivialization to a displayed common rank. -/
+noncomputable def FramedCycle.stabilizeTo {n : ℕ} (X : FramedCycle n) (r : ℕ)
+    (_hr : X.stabilizationRank ≤ r) :
+    StableTangentFraming (SmoothModel n) X.code.Realization r := by
+  sorry
+
+/-- A framed bordism witness whose boundary framing is the stabilization of each input framing. -/
+structure FramedBordismWitness {n : ℕ} (X Y : FramedCycle n) where
+  data : StableFramedCobordismData X.toSmoothClosedOrientedCycle
+    Y.toSmoothClosedOrientedCycle
+  incomingRank : X.stabilizationRank ≤ data.rank
+  outgoingRank : Y.stabilizationRank ≤ data.rank
+  incomingAgrees : data.incomingFraming.trivialization =
+    (X.stabilizeTo data.rank incomingRank).trivialization
+  outgoingAgrees : data.outgoingFraming.trivialization =
+    (Y.stabilizeTo data.rank outgoingRank).trivialization
+
+def FramedBordant {n : ℕ} (X Y : FramedCycle n) : Prop :=
+  Nonempty (FramedBordismWitness X Y)
+
+theorem framedBordant_equivalence (n : ℕ) : Equivalence (@FramedBordant n) := by
+  sorry
+
+def framedBordismSetoid (n : ℕ) : Setoid (FramedCycle n) :=
+  ⟨FramedBordant, framedBordant_equivalence n⟩
+
+def FramedBordismClass (n : ℕ) := Quotient (framedBordismSetoid n)
+
+noncomputable instance framedBordismClassAddCommGroup (n : ℕ) :
+    AddCommGroup (FramedBordismClass n) := by
+  sorry
+
+abbrev FramedBordism (n : ℕ) := FramedBordismClass n
+
+/-- An almost-framed bordism has a tracked collared defect and a genuine stable framing on its
+open complement. -/
+structure AlmostFramedBordismWitness {n : ℕ} (X Y : AlmostFramedCycle n) where
+  cobordism : CollaredOrientedFilling (n + 1)
+  boundary : BoundaryIdentification X.toSmoothClosedOrientedCycle
+    Y.toSmoothClosedOrientedCycle cobordism
+  defectTrack : Internal.GeometricTopologySupplierMirror.SmoothEmbeddedClosedDisk
+    (M := cobordism.M) (n + 1) cobordism.model
+  rank : ℕ
+  frameOffDefect : StableTangentFraming cobordism.model defectTrack.exterior rank
+  productNearDefect : frameOffDefect.IsProductNearDefect defectTrack
+
+def AlmostFramedBordant {n : ℕ} (X Y : AlmostFramedCycle n) : Prop :=
+  Nonempty (AlmostFramedBordismWitness X Y)
+
+theorem almostFramedBordant_equivalence (n : ℕ) :
+    Equivalence (@AlmostFramedBordant n) := by
+  sorry
+
+def almostFramedBordismSetoid (n : ℕ) : Setoid (AlmostFramedCycle n) :=
+  ⟨AlmostFramedBordant, almostFramedBordant_equivalence n⟩
+
+def AlmostFramedBordismClass (n : ℕ) := Quotient (almostFramedBordismSetoid n)
+
+noncomputable instance almostFramedBordismClassAddCommGroup (n : ℕ) :
+    AddCommGroup (AlmostFramedBordismClass n) := by
+  sorry
+
+abbrev AlmostFramedBordism (n : ℕ) := AlmostFramedBordismClass n
+
+/-- A cobordism with corners between two stably framed fillings, represented here by its ambient
+collared trace, the two smooth boundary embeddings, and a product-compatible stable framing. -/
+structure StableFillingBordismWitness {n : ℕ}
+    (X Y : StableFramedFillingCycle n) where
+  trace : CollaredOrientedFilling (n + 1)
+  incoming : C(X.filling.M, trace.B)
+  outgoing : C(Y.filling.M, trace.B)
+  incomingSmooth : IsSmoothEmbedding X.filling.model (SmoothModel ((n + 1) - 1)) ∞ incoming
+  outgoingSmooth : IsSmoothEmbedding Y.filling.model (SmoothModel ((n + 1) - 1)) ∞ outgoing
+  disjointRanges : Disjoint (Set.range incoming) (Set.range outgoing)
+  rangesCover : Set.range incoming ∪ Set.range outgoing = Set.univ
+  rank : ℕ
+  framing : StableTangentFraming trace.model trace.M rank
+  productOnCollar : framing.IsProductOnCollar trace
+
+def StableFillingBordant {n : ℕ}
+    (X Y : StableFramedFillingCycle n) : Prop :=
+  Nonempty (StableFillingBordismWitness X Y)
+
+theorem stableFillingBordant_equivalence (n : ℕ) :
+    Equivalence (@StableFillingBordant n) := by
+  sorry
+
+def stableFillingBordismSetoid (n : ℕ) : Setoid (StableFramedFillingCycle n) :=
+  ⟨StableFillingBordant, stableFillingBordant_equivalence n⟩
+
+def StableFillingBordismClass (n : ℕ) := Quotient (stableFillingBordismSetoid n)
+
+noncomputable instance stableFillingBordismClassAddCommGroup (n : ℕ) :
+    AddCommGroup (StableFillingBordismClass n) := by
+  sorry
+
+abbrev StableFillingBordism (n : ℕ) := StableFillingBordismClass n
+
+/-- The Kervaire--Milnor map `i : Theta_n -> A_n`, induced by the canonical punctured stable
+framing of a homotopy sphere. -/
+noncomputable def thetaToAlmostFramed (n : ℕ) :
+    Theta n →+ AlmostFramedBordism n := by
+  sorry
+
+/-- The Kervaire--Milnor map `p : A_n -> P_n`, induced by deleting the defect-disc interior. -/
+noncomputable def almostFramedToStableFilling (n : ℕ) :
+    AlmostFramedBordism n →+ StableFillingBordism n := by
+  sorry
+
+/-- The Kervaire--Milnor boundary map `b : P_(n+1) -> Theta_n`. -/
+noncomputable def stableFillingBoundaryToTheta (n : ℕ) :
+    StableFillingBordism (n + 1) →+ Theta n := by
+  sorry
+
+/-- One displayed geometric exact segment of the Kervaire--Milnor sequence. -/
+theorem kervaireMilnor_exact_at_theta (n : ℕ) (_hn : 5 ≤ n) :
+    Function.Exact (stableFillingBoundaryToTheta n) (thetaToAlmostFramed n) := by
+  sorry
+
+theorem kervaireMilnor_exact_at_almostFramed (n : ℕ) (_hn : 5 ≤ n) :
+    Function.Exact (thetaToAlmostFramed n) (almostFramedToStableFilling n) := by
+  sorry
 
 /-! ## Pointed Pontryagin--Thom data -/
 
@@ -810,6 +1033,18 @@ def wallStableEquivalence (n : ℕ) : Setoid (WallSurgeryDatum n) where
 def WallSurgeryClass (n : ℕ) :=
   Quotient (wallStableEquivalence n)
 
+/-! ## The geometric sixth-sphere group -/
+
+/-- The low-stem, Kervaire-invariant, Wall, and exactness chain makes the geometric quotient
+`Theta_6` trivial. -/
+theorem thetaSix_subsingleton : Subsingleton (Theta 6) := by
+  sorry
+
+/-- Additive form of `Theta_6 = 0`, with `Theta` still the literal geometric h-cobordism
+quotient. -/
+noncomputable def thetaSixIsoZero : Theta 6 ≃+ ZMod 1 := by
+  sorry
+
 /-! ## Oriented six-dimensional recognition -/
 
 private abbrev SixSphere := Sphere 6
@@ -820,8 +1055,8 @@ theorem smoothPoincareSix_oriented
     (M : Type u) [TopologicalSpace M] [T2Space M]
     [SecondCountableTopology M] [CompactSpace M]
     [ChartedSpace (ModelSpace 6) M] [IsManifold SixModel ∞ M]
-    (oM : Manifold.Orientation SixModel M (Fin 6))
-    (oS : Manifold.Orientation SixModel SixSphere (Fin 6))
+    (oM : Internal.OrientationSupplierMirror.Orientation SixModel M (Fin 6))
+    (oS : Internal.OrientationSupplierMirror.Orientation SixModel SixSphere (Fin 6))
     (_h : M ≃ₕ SixSphere) :
     Nonempty (OrientationPreservingDiffeomorph M SixSphere oM oS) := by
   sorry
