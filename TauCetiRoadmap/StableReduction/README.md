@@ -6,7 +6,7 @@ valuation ring and the scheme-level theory of stable maps. Its summit includes e
 and uniqueness of a stable curve model after finite base extension, first for smooth curves
 of genus at least two and then for stable pointed curves in the full stable range. It also
 defines families of stable maps to a target scheme and develops their basic geometric API,
-adding projectivity and a polarization only where degree or positivity needs them. It does
+using projective polarized targets for degree, positivity, openness, and stabilization. It does
 **not** construct a moduli functor, stack, or coarse moduli space, and it does
 not yet claim that such an object is proper.
 
@@ -51,8 +51,9 @@ Henselian, algebraic-closure, or perfect-residue-field hypothesis.
    targets, characterize stability by finiteness of the abstract automorphism group of each
    geometric fibre. Under componentwise generic separability, also prove vanishing of
    infinitesimal automorphisms. Require a projective target with a chosen relatively ample
-   invertible sheaf only for degree and positivity. Keep that polarization separate from the
-   underlying stable-map data.
+   invertible sheaf for degree, positivity, openness of stability, and the family-level
+   stabilization construction. Keep that polarization separate from the underlying
+   stable-map data.
 5. **A usable stable-map API.** Develop base change, isomorphisms, automorphisms, evaluation
    maps, polarization degree, decorated dual graphs, constant maps, reindexing and forgetting
    markings, gluing, and map-aware stabilization. These are constructions on individual
@@ -122,11 +123,13 @@ hypotheses.
   The Chapter 55 reduction predicate instead says that some proper model is at worst nodal;
   call it `HasNodalReduction`, especially in genus zero, and never use `semistable` as an
   unpinned synonym for `nodal`.
-- **Components and special flags use normalization data.** The genus of a component `E`
-  means the genus of its normalization `Ẽ`. Its special flags are the markings on `Ẽ`
-  together with the points of `Ẽ` above nodes of the whole curve. A self-node contributes
-  two flags. In a dual graph, valence is the number of incident half-edges, so a loop
-  contributes two.
+- **Geometric dual graphs and stability use normalization data.** In these contexts, the
+  genus of a component `E` means the genus of its normalization `Ẽ`. Its special flags
+  are the markings on `Ẽ` together with the points of `Ẽ` above nodes of the whole curve.
+  A self-node contributes two flags. In a dual graph, valence is the number of incident
+  half-edges, so a loop
+  contributes two. Numerical types instead use component arithmetic genera over constant
+  fields, as specified in Layer 6.
 - **Marked stability is logarithmic.** Markings are pairwise disjoint sections through the
   smooth locus. An `n`-pointed prestable curve is stable when
   `ω_{X/S}(s₁ + ⋯ + sₙ)` is relatively ample; equivalently, its restriction to every
@@ -137,7 +140,7 @@ hypotheses.
   which the map is constant must have positive log-canonical degree. For separated locally
   finitely presented targets, prove equivalence with finiteness of each geometric fibre's
   abstract automorphism group.
-  Representability of relative Isom and Aut is deferred to the future moduli roadmap. In
+  Representability of relative Isom and Aut is outside this roadmap. In
   positive characteristic, generic separability of `F|_E` onto its image for every
   noncontracted geometric component implies vanishing of infinitesimal automorphisms;
   without it, claim only finiteness. A downstream representing automorphism scheme is then
@@ -223,11 +226,28 @@ checkout and this roadmap repository, `05ae0103f49b1ad1248f6039bbbad43d8aeb52a9`
   the beginning of this lane: scheme-level invertible sheaves, rational points and residue
   degrees, and a substantial Weil-divisor/degree/Abel–Jacobi API. Stable reduction consumes
   and extends those shared foundations; it must not create a second Picard or divisor theory.
-- The stable-reduction proof uses representability of `Pic⁰` and its prime-to-characteristic
-  torsion from Layer D of the Jacobian roadmap, along with curve cohomology and duality.
-  State the exact shared lemmas in neutral files so both developments can import them
-  without a cycle; stable reduction need not wait for the later Abel-Jacobi or full abelian-
-  variety API once those Picard-scheme torsion results are available.
+- The supplier contracts below fix the shared mathematical interfaces. Each row is a
+  milestone, not a claim that the indicated files or theorems already exist. File paths are
+  relative to `TauCeti/AlgebraicGeometry/`; existing Mathlib APIs take precedence over the
+  suggested filenames. Implement missing contracts in these shared Tau Ceti files, under
+  the supplying roadmap, rather than duplicating them inside `StableReduction/`.
+
+| Contract and supplier | Required output | Shared file ownership |
+| --- | --- | --- |
+| J-A1: Jacobian Layer A, invertible sheaves and Picard group | Extend `TauCeti.AlgebraicGeometry.InvertibleSheaf X`: tensor, dual, integer powers, pullback with composition/base-change coherence; `Pic X` is its group of isomorphism classes, and pullback is a group homomorphism. | `LineBundle/Basic.lean` (existing), `LineBundle/{Tensor,Pullback,Picard}.lean` (Jacobian). |
+| J-A2: Jacobian Layer A, degree and divisor comparison | For a proper pure one-dimensional scheme over a field, `deg L = χ(L) - χ(𝒪)` in `ℤ`, additive under tensor product and invariant under field extension. On a regular proper curve, `deg 𝒪(D) = Σ nₓ[κ(x):k]`, agreeing with `SchemeWeilDivisor.relativeDegree`. On nodal curves, degree is the sum of degrees on normalized geometric components. | `LineBundle/Degree.lean`, `WeilDivisor/Scheme/LineBundle.lean` (Jacobian); the nodal normalization comparison is supplied by this roadmap's Layer 2 in `Curves/NormalizationDegree.lean`. |
+| J-B: Jacobian Layer B, coherent curve cohomology and Riemann–Roch | Extend `TauCeti.AlgebraicGeometry.Scheme.Modules.Cohomology`, not a second cohomology theory: field-module structure, finite-dimensionality for coherent sheaves on proper curves, vanishing in degrees above one, Euler characteristic, and `χ(L) = deg L + 1 - g` for smooth projective geometrically connected curves. Define `g = dim H¹(𝒪)` once and export the normalization exact-sequence maps. | `Cohomology/{Basic,Proper,Curves}.lean` (Jacobian); `Curves/Normalization.lean` (this roadmap, using that cohomology API). |
+| J-C: Jacobian Layer C, relative cohomology and base change | For proper finitely presented `f : X → S`, locally Noetherian `S`, and coherent `S`-flat `M`, construct coherent `Rⁱf_*M`, the base-change maps, their surjectivity/local-freeness criteria, and semicontinuity. In relative dimension one, fibrewise `H¹(M_s) = 0` implies locally free `f_*M` with arbitrary base change. Export projection formula and Leray comparison maps used by contractions. | `Cohomology/{Pushforward,BaseChange,Semicontinuity,ProjectionFormula}.lean` (Jacobian). |
+| J-B / SR-2: Jacobian Layer B duality and this roadmap's Layer 2 relative duality | One dualizing-sheaf interface: for proper flat finitely presented Gorenstein curves over a locally Noetherian base, an invertible `ω`, trace/duality, and coherent arbitrary-base-change isomorphisms. Jacobian's smooth-curve Serre duality is its restriction, with `deg ω = 2g - 2`; this roadmap proves the nodal component-degree formula. | `Duality/RelativeCurves.lean` (this roadmap), `Duality/Curves.lean` (Jacobian, importing the shared relative construction); no independent smooth `ω`. |
+| J-D: Jacobian Layer D, Picard functor and `Pic⁰` | For smooth projective geometrically connected `C/k`, the fppf sheafification of `T ↦ Pic(C_T)/Pic(T)` and its fibrewise degree-zero subfunctor; representation by `Pic⁰_{C/k}`, compatible with field extension. With `p ∈ C(k)`, identify its `k`-points with degree-zero line bundles via rigidification at `p`. | `Picard/{Functor,Representability,IdentityComponent,Rigidification}.lean` (Jacobian). |
+| J-E: Jacobian Layer E, abelian varieties and multiplication isogenies | `Pic⁰_{C/k}` is an abelian variety of dimension `g`. For prime `ℓ ≠ char(k)`, `[ℓ]` is finite étale of degree `ℓ^(2g)` and its geometric kernel is `(ℤ/ℓℤ)^(2g)`. Export the finite étale kernel and its Galois action; this is not supplied by representability in Layer D alone. | `AbelianVariety/{Basic,Multiplication,Torsion}.lean` and `Picard/AbelianVariety.lean` (Jacobian). |
+
+The curve-specific finite-separable splitting extension, rational-point choice, degree
+bound, and comparison with line bundles on DVR models are Layer 6 outputs in
+`Curves/StableReduction/PicardTorsion.lean`. They consume J-D and J-E; they do not require
+the Abel–Jacobi universal property of Jacobian Layer F. The import direction is shared
+sheaf/cohomology/duality files → Picard and abelian-variety files → stable reduction;
+none of the shared files imports `Curves/StableReduction/` or `Curves/StableMaps/`.
 
 ### Work already in motion
 
@@ -322,22 +342,21 @@ before the named milestone.
   extension, split and label every node, branch, and geometric component, recording the
   pairing involution. Develop normalization, the conductor, and the normalization exact
   sequence for `𝒪_X`.
-- Build the finite **dual graph** of a proper geometric nodal curve: vertices are irreducible
-  components of the normalization and edges are nodes, with loops allowed. Record component
-  genera and special flags, define valence by incident half-edges so loops count twice, and
-  prove graph connectedness and the formula
+- Build the finite, nonempty, connected **dual graph** of a proper geometric nodal curve:
+  vertices are irreducible components of the normalization and edges are nodes, with loops
+  allowed. Record component genera and special flags, define valence by incident half-edges
+  so loops count twice, and prove graph connectedness and the formula
   `pₐ(X) = Σ_v g_v + b₁(Γ_X)`.
 - Define rational tails and rational bridges geometrically and prove their invariance under
-  field extension. A rational component is unstable exactly when the log-canonical degree
-  on it is nonpositive; this link to Layer 3 must be a theorem, not a second definition.
+  field extension. A rational component is unstable in the current pointed curve exactly
+  when its log-canonical degree is nonpositive. After a contraction, recompute flags and
+  degrees: stabilization is iterative, not a test of initial component degrees.
 
 ### Layer 2: coherent curve theory, duality, and positivity
 
-The coherent-cohomology and cohomology-and-base-change foundations are shared with the
-Jacobian roadmap. Put them in shared files and coordinate ownership before implementation.
-The nodal/Gorenstein relative dualizing sheaf and its componentwise degree formula belong to
-this roadmap, with a compatibility theorem identifying the smooth-fibre restriction with
-the Jacobian roadmap's dualizing sheaf.
+Use contracts J-A1, J-A2, J-B, J-C, and J-B / SR-2 above. The nodal/Gorenstein relative
+dualizing sheaf and its componentwise degree formula belong to this roadmap in the shared
+files specified there; Jacobian's smooth duality imports that same construction.
 
 - Over locally Noetherian bases, build coherent sheaves of modules, coherent pushforward
   under proper morphisms, `Rⁱf_*`, finite-dimensionality over a proper curve, vanishing
@@ -370,6 +389,20 @@ the Jacobian roadmap's dualizing sheaf.
   on every geometric irreducible component. Do not assert a degree-only global-generation
   criterion for arbitrary invertible sheaves; instead prove the explicit degree bounds and
   the global-generation theorems for `ω^{⊗m}` and `ω(Σsᵢ)^{⊗m}` used below.
+- Prove that the locus where an invertible sheaf on a proper finitely presented family is
+  fibrewise ample is open, and identify it with the locus of relative ampleness. This is
+  the openness input for pointed stability and polarized stable maps; it requires no Isom
+  or Aut representability.
+- Build effective étale descent for schemes equipped with a compatible relatively ample
+  invertible sheaf: descend the graded quasi-coherent section algebra and recover the scheme
+  by relative `Proj`. Include descent of morphisms, sections, multiplication, and the
+  polarization, with cocycle and base-change coherence. Do not use effectiveness of arbitrary
+  scheme descent without a polarization or invoke a moduli stack.
+- Prove contraction descent: if `c : X → Y` is a proper surjective `S`-morphism with
+  `𝒪_Y ≅ c_*𝒪_X` universally, then every `S`-morphism `X → V` to a separated `S`-scheme
+  that is constant on every geometric fibre of `c` factors uniquely through `Y`. Prove this
+  using the quotient topology and the structure-sheaf isomorphism, compatibly with base
+  change. Apply it to contractions with geometrically connected genus-zero fibres below.
 
 ### Layer 3: prestable, semistable, stable, and pointed curves
 
@@ -389,12 +422,49 @@ the Jacobian roadmap's dualizing sheaf.
   open on the base in a prestable family.
 - Develop isomorphisms and automorphisms of (pointed) families as ordinary groups. Prove a
   stable geometric fibre has a finite abstract automorphism group and no infinitesimal
-  automorphisms. Defer representable relative Isom and Aut objects to the moduli roadmap.
-- Develop the shared clutching construction used by Layers 9 and 11. The pushout identifying
-  two disjoint sections through the smooth locus, including self-gluing, exists as a scheme;
-  is proper, flat, finitely presented, and nodal; commutes with arbitrary base change up to
-  canonical isomorphism; raises arithmetic genus by one; has the expected normalization;
-  and satisfies the universal property for descending morphisms. Follow Knudsen II, §2.
+  automorphisms. Representable relative Isom and Aut objects are outside this roadmap.
+- Develop the shared scheme pushout for identifying smooth sections, and expose two
+  clutching constructors. For **external clutching**, take two pointed prestable families
+  over the same base `S`, of genera `g₁`, `g₂`, with marking sets `I ⊔ {a}` and `J ⊔ {b}`;
+  identify `a` and `b` in
+  their disjoint union. The result is connected, has genus `g₁ + g₂`, and has markings
+  `I ⊔ J`. Its dual graph is the disjoint union of the input graphs with one new edge
+  joining the selected vertices; `b₁` is the sum of the two input Betti numbers.
+- For **self-clutching**, take one connected family of genus `g` with marking set
+  `I ⊔ {a,b}`, where `a ≠ b` and the sections are disjoint. Identifying them gives genus
+  `g + 1` and markings `I`. The graph acquires one edge, possibly a loop, so `b₁` increases
+  by one. For both constructors, prove properness, flatness, finite presentation, nodality,
+  stability when the inputs are stable, and the normalization and pushout universal
+  properties. Supply explicit equivalences from the remaining finite marking sets to
+  `Fin n`, naturality under reindexing, and canonical compatibility with arbitrary base
+  change. These are the two clutching operations of Knudsen II.
+
+#### Single-marking contraction primitive
+
+For a stable `(n + 1)`-pointed genus-`g` family and `2g - 2 + n > 0`, construct
+`forgetLastContraction` over a locally Noetherian base before constructing stabilization of
+arbitrary prestable families. Follow the scheme construction of Knudsen II, §1.
+
+- Set `B = ω_{C/S}(s₁ + ⋯ + sₙ)`. Prove that it is fibrewise nef: removing one marking
+  from a stable curve leaves no negative-degree component. On each geometric fibre there
+  is at most one zero-degree component, a smooth rational component containing the removed
+  marking and two remaining special flags. It is either a tail with one retained marking
+  or a bridge with no retained markings. The numerical range excludes contracting the
+  whole curve. Construct these two fibre contractions by deleting the tail or identifying
+  the two attachment points, and prove `B` is the pullback of the ample log-dualizing sheaf
+  of the resulting stable pointed curve.
+- Prove, locally uniformly on the base, global generation, `H¹`-vanishing, and normal
+  generation of sufficiently high powers of `B`. Use cohomology and base change to obtain
+  locally free pushforwards and surjective evaluation and multiplication maps. Form a
+  sufficiently divisible Veronese section algebra whose positive graded pieces commute
+  with arbitrary base change; prove that passing to it does not change relative `Proj`.
+- Construct the everywhere-defined proper surjection `c : C → C'` to that relative `Proj`.
+  Prove `C' → S` flat and finitely presented from the graded algebra, identify its geometric
+  fibres with the explicit contractions, and prove nodality, connectedness, and genus.
+  Retained sections descend to pairwise-disjoint smooth sections. Prove universally
+  `c_*𝒪_C = 𝒪_{C'}` and `R¹c_*𝒪_C = 0`. Establish the contraction universal property,
+  uniqueness, and coherent base change using Layer 2. The degree-zero assertion here is
+  about this single step, not an arbitrary prestable input.
 
 ### Layer 4: blowups and intersection theory on arithmetic surfaces
 
@@ -439,18 +509,35 @@ the Jacobian roadmap's dualizing sheaf.
 
 ### Layer 6: numerical types and Picard torsion
 
-- Define the numerical type of a regular model: the finite component index, multiplicities
-  `mᵢ`, intersection matrix `aᵢⱼ`, canonical/intersection weights, component genera,
-  residue degrees where needed, and the associated weighted dual graph. Prove that models
-  satisfying the geometric hypotheses yield valid numerical types.
-- Develop the abstract Picard group of a numerical type and its prime torsion. Prove the
-  combinatorial bounds relating `Pic(T)[ℓ]`, the first Betti number of the graph, the
+- Define an abstract numerical type exactly as in
+  [Stacks tag 0C6Z](https://stacks.math.columbia.edu/tag/0C6Z): a nonempty finite component
+  set, positive integers `mᵢ` and `wᵢ`, nonnegative integers `gᵢ`, and a symmetric integer
+  matrix `A = (aᵢⱼ)` with nonnegative off-diagonal entries. Require the graph with edges
+  `aᵢⱼ > 0` for `i ≠ j` to be connected, `Σⱼ aᵢⱼmⱼ = 0`, and `wᵢ ∣ aᵢⱼ` for all
+  `i,j`. Prove equivalence of graph connectedness with the source's no-disconnected-cut
+  condition, and develop reindexing and equivalence of types.
+- For a regular model with special-fibre components `Cᵢ`, set
+  `κᵢ = H⁰(Cᵢ, 𝒪_{Cᵢ})`, `wᵢ = [κᵢ:k]`, and `gᵢ = dim_{κᵢ} H¹(Cᵢ, 𝒪_{Cᵢ})`;
+  these are component arithmetic genera over their constant fields, not the normalization
+  genera of the geometric dual graph. Prove that the intersection data yield a numerical
+  type. Its signed genus is `g(T) = 1 + Σᵢ mᵢ(wᵢ(gᵢ - 1) - aᵢᵢ/2)`. Prove
+  `Σᵢ mᵢaᵢᵢ` even, so this rational expression is an integer, and identify it with the
+  model's generic-fibre genus. Do not divide each diagonal term in `ℤ` separately or
+  truncate the result to `ℕ`: abstract numerical types can have negative genus.
+- Define `Pic(T)` as the cokernel of
+  `eᵢ ↦ Σⱼ (aᵢⱼ/wⱼ)eⱼ`, with exact integer division justified by symmetry and
+  divisibility, as in [Stacks tag 0C7H](https://stacks.math.columbia.edu/tag/0C7H).
+  The unweighted cokernel `Coker(A)` is a different group: prove the source's injection
+  `Pic(T) → Coker(A)` induced by `eⱼ ↦ wⱼeⱼ`, not an equality. Develop the weighted
+  group's rank-one finite-generation theorem, reindexing invariance, and prime torsion.
+  Prove the combinatorial bounds relating `Pic(T)[ℓ]`, the first Betti number of the graph, the
   geometric genera of components, and the arithmetic genus. Include the classification and
   boundedness results for minimal numerical types used by the Artin–Winters argument.
 - Compare line bundles on the regular model, generic fibre, special fibre, reduced special
   fibre, and numerical type. Prove the specialization maps and exact sequences required to
   inject enough generic `ℓ`-torsion into the Picard group of the reduced special fibre.
-- Consume the representability and torsion theory of `Pic⁰` from the Jacobian roadmap. For
+- Consume contracts J-D and J-E for `Pic⁰`, including the multiplication-isogeny and
+  finite étale torsion results, from the Jacobian roadmap. For
   a smooth projective genus-`g` curve and a prime `ℓ` distinct from the field characteristic,
   prove that there is a finite separable extension `K'/K` such that `C_{K'}` has a
   `K'`-rational point and `Pic(C_{K'})[ℓ] ≅ (ℤ/ℓℤ)^{2g}`. The rational point is the descent
@@ -487,14 +574,37 @@ the Jacobian roadmap's dualizing sheaf.
 
 ### Layer 8: canonical contraction and unpointed stable reduction
 
-- Construct contraction of rational tails and bridges in a prestable family of genus at
-  least two, first over a DVR and then in base-change-compatible families. The canonical
-  construction is the relative `Proj` of the pluricanonical algebra; prove finite generation,
-  identify exactly the contracted components, and show the result remains nodal and flat.
-- Prove stabilization is unchanged on an already stable generic fibre and commutes with
-  arbitrary base change up to the coherent canonical isomorphisms fixed above. Its universal
-  property must imply uniqueness, rather than relying on choices of a sequence of component
-  contractions.
+- Over a field, contract rational tails repeatedly until none remain, proving termination
+  by the strictly decreasing number of geometric components. Recompute the graph after
+  every contraction. On the resulting tail-free curve of genus at least two, prove global
+  generation of `ω²` and `ω³` and the required cohomology vanishing; then contract rational
+  bridges and identify the stable result with the `Proj` of this tail-free curve's canonical
+  ring. Follow [Stacks §§53.23–53.25](https://stacks.math.columbia.edu/tag/0E7N).
+  Prove the fibrewise contraction is characterized by its stable target, preservation of
+  genus, and `c_*𝒪 = 𝒪`, `R¹c_*𝒪 = 0`.
+- For a prestable family of genus `g ≥ 2` over a locally Noetherian scheme, construct
+  stabilization by the following scheme-level route. Étale locally on the base, add
+  finitely many disjoint auxiliary smooth sections making the source pointed-stable.
+  Prove their existence by choosing separable smooth points on every geometric component,
+  lifting them to étale-local sections, and using openness of pointed stability. Forget
+  those auxiliary sections one at a time with Layer 3's single-marking contraction.
+  Each step starts from a stable pointed family, so its log-dualizing bundle is nef and
+  its sufficiently high powers define an actual morphism. The process terminates because
+  the finite number of auxiliary markings decreases; the geometric fibre is the iterative
+  tail-and-bridge contraction above.
+- Prove uniqueness among contractions with those geometric fibres, using universal
+  `c_*𝒪 = 𝒪` and contraction descent, so the result is independent of auxiliary sections
+  and their order. On overlaps, the unique isomorphisms preserve the final dualizing sheaf
+  and satisfy the cocycle condition. Apply Layer 2's effective descent of polarized schemes
+  and morphisms to obtain `C → Cᵗˢ → S` as schemes. Prove the resulting family is proper,
+  flat, finitely presented, and stable, and that the universal `c_*𝒪` and `R¹c_*𝒪`
+  statements survive descent. This replaces the stack-descent step in
+  [Stacks tag 0E8A](https://stacks.math.columbia.edu/tag/0E8A); no moduli stack is an input.
+- Prove stabilization is unchanged on an already stable fibre and commutes coherently with
+  arbitrary base change. For an already tail-free family, identify it directly with the
+  relative `Proj` of the pluricanonical algebra after proving relative generation and
+  base change. An arbitrary prestable family can have negative-degree rational tails, so
+  its original pluricanonical evaluation map is not the construction.
 - Prove the classical stable-reduction existence theorem by semistable reduction followed by
   stabilization.
 - Prove uniqueness of stable models over a DVR: extend the generic isomorphism through a
@@ -508,11 +618,19 @@ the Jacobian roadmap's dualizing sheaf.
 - Extend generic markings to sections by properness, then use finite base change and blowups
   to make their closures pairwise disjoint and contained in the smooth locus. Track the
   generic-fibre identifications throughout.
-- Construct the multiplication maps and the graded log-canonical algebra
-  `𝒜 = ⨁_{m ≥ 0} f_*(ω_{X/S}(Σsᵢ)^{⊗m})`, then define pointed stabilization by
-  relative `Proj`. Prove it contracts exactly the components on which the log-canonical
-  degree is nonpositive, preserves the marked generic fibre, and commutes with base change
-  up to canonical isomorphism.
+- For a pointed prestable family with `2g - 2 + n > 0`, use the auxiliary-section
+  construction of Layer 8, retaining all original markings and forgetting only auxiliary
+  ones. Descend using the final ample log-dualizing sheaf. Describe the geometric fibres
+  by iteratively contracting rational components with at most two current special flags:
+  delete an unmarked tail, transfer the marking on a one-marked tail to its attachment, or
+  replace an unmarked bridge by a node. Prove termination, order independence, and that the
+  remaining markings are disjoint and smooth. A component with initially positive
+  log-canonical degree can become unstable after neighboring tails are removed.
+- Construct the graded log-canonical algebra and its multiplication and base-change maps
+  for each nef single-marking step, and identify its `Proj` with that step's contraction
+  using Layer 3. Do not assert semiampleness on the original arbitrary prestable curve.
+  Prove that the composite preserves an already-stable marked generic fibre, is unique
+  with the stated fibrewise contraction property, and commutes coherently with base change.
 - Prove stable pointed reduction for smooth generic curves whenever
   `2g - 2 + n > 0`, including `(g,n) = (0,n)` for `n ≥ 3` and `(1,n)` for `n ≥ 1`, and prove
   uniqueness over the fixed DVR.
@@ -546,16 +664,20 @@ stable-reduction layers are still in progress.
   automorphism is an automorphism after base change to `k[ε]/(ε²)` that reduces to the identity
   modulo `ε`, fixes every marking, and commutes with the target map. Identify its tangent space
   with the kernel of the map from global `k`-derivations of `𝒪_C` that vanish along the markings
-  to derivations from `F⁻¹𝒪_V` to `𝒪_C`, induced by precomposition with `F^#`. Defer
-  representability of relative Isom and Aut to the future moduli roadmap.
+  to derivations from `F⁻¹𝒪_V` to `𝒪_C`, induced by precomposition with `F^#`.
+  Representability of relative Isom and Aut is outside this roadmap.
 - On a geometric fibre, define when an irreducible component is **contracted** by `F`.
   Relate constancy of the restricted morphism and set-theoretic image dimension zero. When
   the target has an ample invertible sheaf, also relate these to degree zero of its pullback.
   Prove that this notion is invariant under field extension and target isomorphism.
 - Define `IsStableMap F` fibrewise by positivity of the log-canonical degree on every
   contracted geometric component, using normalization genus and special flags. Prove
-  invariance under isomorphism and stability under arbitrary base change for every target;
-  prove openness when the target is separated and locally finitely presented.
+  invariance under isomorphism and stability under arbitrary base change for every target.
+  The openness theorem is restricted to a projective target with a relatively ample
+  invertible sheaf over a locally Noetherian base: identify stability with fibrewise
+  ampleness of `ω_{C/S}(Σsᵢ) ⊗ F^*(L^⊗3)` and apply Layer 2's openness-of-ampleness
+  theorem. Openness for general separated locally finitely presented targets is outside
+  this roadmap; it is not inferred from the finite-abstract-automorphism criterion.
 - Prove the two standard characterizations for a separated locally finitely presented
   target. First, `F` is stable exactly when each geometric fibre has finite abstract
   automorphism group. Under componentwise generic separability of every noncontracted
@@ -588,31 +710,50 @@ stable-reduction layers are still in progress.
   `2g_v - 2 + val(v) + markings(v) + 3d_v > 0` at every vertex. Here valence counts incident
   half-edges, so a loop counts twice. Develop restriction to a component, normalization at a
   node, and reconstruction of the numerical data.
-- Prove the reusable descent theorem for contractions before using it: if
-  `c : C → C'` satisfies `c_*𝒪_C = 𝒪_{C'}` universally, `V → S` is separated, and `F` is
-  constant on every connected contracted subcurve, then `F` factors uniquely through `c`,
-  compatibly with base change.
-- Reindex markings by equivalences. Fix a relatively ample `L`; for `n > 0`, assume every
-  target `V → S` separated. Assume every geometric fibre has arithmetic genus `g` and
-  `L`-degree `d`, and put `n' = n - 1` for the number of remaining markings. Define forgetting
-  one marking followed by **map-aware stabilization** when `2g - 2 + n' + 3d > 0`. Contract
-  only components that become unstable and on which `F` is constant. The criterion depends
-  only on whether `d = 0`, hence is independent of `L`; the excluded resulting types are
+- Specialize Layer 2's contraction-descent theorem to proper surjective contractions of
+  prestable curves with universally connected genus-zero fibres and `c_*𝒪_C = 𝒪_{C'}`.
+  For separated `V → S`, prove that a map constant on each contracted subcurve factors
+  uniquely through the contraction, compatibly with base change.
+- Reindex markings by equivalences. For a projective target with relatively ample `L` and
+  a stable map with `n > 0` markings, genus `g`, and `L`-degree `d`, put `n' = n - 1`.
+  Construct the single-marking contraction when `2g - 2 + n' + 3d > 0`, following
+  [Behrend–Manin, Proposition 3.10 and Lemmas 3.11–3.12](https://arxiv.org/pdf/alg-geom/9506023#page=22).
+  Set `A = ω_{C/S}(Σ retained sᵢ) ⊗ F^*(L^⊗3)`. Prove it is nef on each fibre and
+  its zero-degree components are precisely the `F`-constant rational components with two
+  remaining flags that contain the forgotten marking. Starting from a stable map, there
+  is at most one such component per fibre. Construct its fibre contraction, prove descent
+  of `F` and pullback of the resulting ample `A'`, then prove locally uniform generation,
+  vanishing, and normal generation of high powers of `A`. Use the resulting base-change-
+  compatible Veronese algebra to construct the relative `Proj` morphism, and prove
+  flatness, nodality, the universal structure-sheaf identities, and smooth disjoint retained
+  sections as in Layer 3. Positive map-degree components are never contracted.
+  The numerical existence criterion depends only on whether `d = 0`, hence is independent
+  of `L`; the excluded resulting types are
   `d = 0` with `g = 0, n' ≤ 2`, and `d = 0` with `g = 1, n' = 0`. Use the preceding descent
   theorem to prove that `F` descends uniquely, that the result is stable, and that base change
   and repeated forgetting satisfy the canonical-isomorphism coherence above.
-- Define gluing two marked stable maps when their evaluation morphisms at the chosen
-  markings agree. Use the shared clutching pushout from Layer 3, including self-gluing;
-  descend the target maps by its universal property, calculate the decorated dual graph,
-  and prove stability of the glued map.
+- Define **external gluing** of stable maps of types `(g₁, I ⊔ {a}, d₁)` and
+  `(g₂, J ⊔ {b}, d₂)` to the same target, assuming `ev_a = ev_b` as morphisms `S → V`.
+  Layer 3's external pushout gives type `(g₁ + g₂, I ⊔ J, d₁ + d₂)`. Define
+  **self-gluing** separately for type `(g, I ⊔ {a,b}, d)`, with `a ≠ b` and
+  `ev_a = ev_b`, yielding `(g + 1, I, d)`. In both cases descend the target map by the
+  pushout universal property; prove stability, the corresponding decorated-graph formula,
+  reindexing by the specified marking-set equivalences, and coherent base change.
 - For a projective target with relatively ample `L`, map degree `d`, and
-  `2g - 2 + n + 3d > 0`, construct stabilization of a prestable map using the relative
-  `Proj` of `⨁_{m ≥ 0} f_*(A^{⊗m})`, with multiplication maps constructed explicitly and
-  `A = ω_{C/S}(Σsᵢ) ⊗ F^*(L^⊗3)`. Identify precisely the degree-zero unstable components it
-  contracts. Use the contraction descent theorem to construct the stabilized target map.
-  Prove the stabilization's universal property, uniqueness, independence from `L`,
-  compatibility with base change, and identity on an already stable map. Prove separately
-  that the excluded degree-zero genus-zero and genus-one numerical types admit no stable map.
+  `2g - 2 + n + 3d > 0`, construct stabilization of an arbitrary prestable map by adding
+  auxiliary smooth markings étale locally until it is stable, then forgetting only those
+  markings with the single-marking construction above. The geometric fibre algorithm
+  iteratively contracts `F`-constant rational components with at most two current flags,
+  recomputing flags after each step. Prove termination by component count, independence
+  of contraction order, and agreement with the family construction. In families the
+  auxiliary-marking procedure terminates by marking count. Descend the final target map
+  and polarized source using the final ample log-dualizing/map bundle and Layer 2's
+  polarized scheme descent. Do not apply relative `Proj` directly to the initial bundle,
+  which can have negative degree on constant rational tails.
+  Prove the universal property for morphisms contracting the specified subcurves,
+  uniqueness, independence from auxiliary markings and `L`, coherent base change, and
+  identity on an already stable map. Prove separately that the excluded degree-zero
+  genus-zero and genus-one numerical types admit no stable map.
 - Record functoriality under target isomorphisms and closed immersions. For a general
   postcomposition `V → W`, prove a sharp criterion for preservation of stability rather
   than asserting it unconditionally: the new target map may contract additional source
@@ -631,10 +772,25 @@ or logarithmic in the wrong way.
 - **Genus from a dual graph:** two smooth components meeting transversely in one node have
   genus equal to the sum of their genera; a cycle of `r` rational curves has arithmetic
   genus one. Both follow from the normalization exact sequence and agree with the graph
-  formula.
+  formula. Both graph and numerical-type carriers must be nonempty: the empty graph must
+  not be admitted as a spurious genus-one curve.
+- **Weighted numerical Picard group:** for `m = (1,1)`, `w = (2,2)`, `gᵢ = (1,1)`, and
+  `A = [[-2,2],[2,-2]]`, verify all numerical-type axioms and `g(T) = 3`. The relations
+  are `(-1,1)` and `(1,-1)`, so `Pic(T) ≅ ℤ`; the raw cokernel is `ℤ ⊕ ℤ/2ℤ`.
+  Verify that no spurious two-torsion enters `Pic(T)`. Also test `w = (1,2)` with the same
+  `m`, genera, and `A`: the first weighted relation is `(-2,1)`, fixing division by the
+  destination weight. Test signed genus and the half-diagonal sum on a type with odd
+  diagonal entries, rather than relying only on examples where every `aᵢᵢ` is even.
 - **Unpointed stability:** a smooth genus-two curve is stable; a rational tail and a rational
   bridge have nonpositive canonical degree and are contracted; a cycle of rational curves is
   semistable of genus one but is not an unpointed stable curve.
+- **Iterated rational-tail contraction:** attach a rational component `E` to a smooth
+  genus-two curve and attach two unmarked rational leaves `T₁,T₂` to `E`. Initially
+  `deg ω|_E = 1` and `deg ω|_{Tᵢ} = -1`; after deleting both leaves, `E` is a rational
+  tail and contracts too. Check the same example with retained markings on the genus-two
+  component and for a map constant on the whole attached tree. Verify the final family
+  construction and its base changes contract the entire tree, despite the initial positive
+  degree on `E`.
 - **Pointed stability:** `(ℙ¹; 0,1,∞)` is stable. In the stable limit of four marked
   points on `ℙ¹` when two collide, the special fibre is two projective lines meeting in
   one node, with two markings on each component; both components have three special points.
@@ -653,7 +809,9 @@ or logarithmic in the wrong way.
   `ω(Σpᵢ) ⊗ F^*L^3`.
 - **Evaluation and gluing:** glue two stable maps at markings with equal evaluations and
   check the resulting map, arithmetic genus, total degree, and decorated dual graph. Also
-  verify that unequal evaluations correctly prevent the gluing construction.
+  check self-gluing separately: external gluing adds the input genera and degrees;
+  self-gluing adds one to genus and leaves degree unchanged. Verify that unequal
+  evaluations correctly prevent either construction.
 - **Forgetting a marking:** take the constant map from the two-line nodal curve with two
   markings on each component from the pointed-stability example. Forget a marking on one
   component; that contracted rational component now has only two special points and
@@ -675,8 +833,10 @@ duplicating ownership:
    proceed independently of arithmetic-surface reduction. Layer 11's contraction results
    then join it to Layers 8–9.
 
-Layer 7 joins the model and Picard lanes; Layer 8 also needs the duality/positivity lane;
-Layer 9 completes pointed reduction, while Layers 10–11 complete the stable-map foundation.
+Layer 7 joins the model and Picard lanes; Layer 8 also needs Layer 3's single-marking
+contraction and Layer 2's polarized descent, not Layer 9. Layer 9 completes pointed
+reduction, while Layers 10–11 complete the stable-map foundation. Layer 6 consumes the
+exact J-D/J-E Picard and isogeny contracts above; it does not import Jacobian Layer F.
 Every implementation issue should name the exact layer and target it claims. A headline
 stable-reduction or stable-map statement with unresolved definitions, hidden resolution
 assumptions, or a placeholder notion of node does not advance the summit.
@@ -701,6 +861,8 @@ needed to state that work without placeholders.
 ## References
 
 - The Stacks Project, [Chapter 55, *Semistable Reduction*](https://stacks.math.columbia.edu/tag/0C2P),
+  [numerical types](https://stacks.math.columbia.edu/tag/0C6Y) and
+  [their weighted Picard groups](https://stacks.math.columbia.edu/tag/0C7G),
   especially [the local nodal models and regularization](https://stacks.math.columbia.edu/tag/0CDB),
   [genus at least two](https://stacks.math.columbia.edu/tag/0CEI), and
   [the final semistable-reduction theorem](https://stacks.math.columbia.edu/tag/0CDM).
@@ -719,10 +881,13 @@ needed to state that work without placeholders.
   Topology 10 (1971), 373–383.
 - F. F. Knudsen,
   [*The projectivity of the moduli space of stable curves, II: The stacks M_{g,n}*](https://doi.org/10.7146/math.scand.a-12001),
-  Math. Scand. 52 (1983), 161–199, for pointed stabilization and clutching.
+  Math. Scand. 52 (1983), 161–199, especially §1 for the single-marking contraction, and
+  for the pointed stabilization and clutching constructions.
 - K. Behrend and Yu. Manin,
   [*Stacks of stable maps and Gromov–Witten invariants*](https://arxiv.org/abs/alg-geom/9506023),
-  Duke Math. J. 85 (1996), 1–60, for stable maps, decorated graphs, and their morphisms.
+  Duke Math. J. 85 (1996), 1–60, for stable maps and decorated graphs; §3, Cases I and V,
+  Proposition 3.10, and Lemmas 3.11–3.12 give the auxiliary-marking and single-marking
+  constructions underlying the scheme-level family route here.
 - W. Fulton and R. Pandharipande,
   [*Notes on stable maps and quantum cohomology*](https://arxiv.org/abs/alg-geom/9608011),
   Proc. Sympos. Pure Math. 62 (1997), Part 2, 45–96, especially the basic definition,
