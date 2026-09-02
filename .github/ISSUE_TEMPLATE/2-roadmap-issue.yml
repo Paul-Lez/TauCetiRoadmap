@@ -16,6 +16,7 @@ body:
       options:
         - AdicSpaces
         - AlgebraicCurves
+        - AnalyticToricGeometry
         - ArithmeticDirichletSeries
         - BelyiMaps
         - CFSGStatement
