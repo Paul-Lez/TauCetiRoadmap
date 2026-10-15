@@ -95,6 +95,24 @@ abbrev FibrewiseTorusFamily {Λ Y E : Type*} [AddCommGroup Λ] [AddCommGroup E]
     (period : Y → (Λ →ₗ[ℤ] E)) :=
   Σ y, TorusFibre period y
 
+/-- Descend a linear period-equivariant equivalence through the actual period submodules.
+The inverse is induced by the inverse linear equivalence and the inverse group element. -/
+noncomputable def linearPeriodFibreEquiv {Γ Λ Y E : Type*} [Group Γ] [MulAction Γ Y]
+    [AddCommGroup Λ] [AddCommGroup E] (period : Y → (Λ →ₗ[ℤ] E))
+    (ρ : Representation ℤ Γ Λ) (g : Γ) (y : Y) (R : E ≃ₗ[ℤ] E)
+    (_h : ∀ lam, R (period y lam) = period (g • y) (ρ g lam)) :
+    TorusFibre period y ≃+ TorusFibre period (g • y) := by
+  sorry
+
+@[simp]
+theorem linearPeriodFibreEquiv_mk {Γ Λ Y E : Type*} [Group Γ] [MulAction Γ Y]
+    [AddCommGroup Λ] [AddCommGroup E] (period : Y → (Λ →ₗ[ℤ] E))
+    (ρ : Representation ℤ Γ Λ) (g : Γ) (y : Y) (R : E ≃ₗ[ℤ] E)
+    (h : ∀ lam, R (period y lam) = period (g • y) (ρ g lam)) (e : E) :
+    linearPeriodFibreEquiv period ρ g y R h (Submodule.Quotient.mk e) =
+      Submodule.Quotient.mk (R e) := by
+  sorry
+
 /-- Algebraic affine equivariant data. The analytic constructor additionally requires
 complex-linear continuous lifts varying holomorphically and a holomorphic translation section.
 This record alone asserts no holomorphy.  The translation is a section of the appropriate target
@@ -103,27 +121,26 @@ structure AffineEquivariantPeriodData {Γ Λ Y E : Type*} [Group Γ] [MulAction 
     [AddCommGroup Λ] [AddCommGroup E] (period : Y → (Λ →ₗ[ℤ] E)) where
   latticeAction : Representation ℤ Γ Λ
   linearPart : ∀ (_g : Γ) (_y : Y), E ≃ₗ[ℤ] E
-  fibreLinearPart : ∀ (g : Γ) (y : Y),
-    TorusFibre period y ≃+ TorusFibre period (g • y)
-  fibreLinearPart_mk : ∀ (g : Γ) (y : Y) (e : E),
-    fibreLinearPart g y (Submodule.Quotient.mk e) =
-      Submodule.Quotient.mk (linearPart g y e)
   linearPart_period : ∀ (g : Γ) (y : Y) (lam : Λ),
     linearPart g y (period y lam) = period (g • y) (latticeAction g lam)
   linear_one : ∀ (y : Y) (e : E), linearPart 1 y e = e
   linear_mul : ∀ (g h : Γ) (y : Y) (e : E),
     linearPart (g * h) y e = linearPart g (h • y) (linearPart h y e)
-  fibreLinear_one : ∀ (y : Y) (x : TorusFibre period y),
-    TorusFibre.cast period (one_smul Γ y) (fibreLinearPart 1 y x) = x
-  fibreLinear_mul : ∀ (g h : Γ) (y : Y) (x : TorusFibre period y),
-    TorusFibre.cast period (mul_smul g h y) (fibreLinearPart (g * h) y x) =
-      fibreLinearPart g (h • y) (fibreLinearPart h y x)
   translation : ∀ (g : Γ) (y : Y), TorusFibre period (g • y)
   translation_one : ∀ (y : Y),
     TorusFibre.cast period (one_smul Γ y) (translation 1 y) = 0
   translation_mul : ∀ (g h : Γ) (y : Y),
     TorusFibre.cast period (mul_smul g h y) (translation (g * h) y) =
-      translation g (h • y) + fibreLinearPart g (h • y) (translation h y)
+      translation g (h • y) +
+      linearPeriodFibreEquiv period latticeAction g (h • y) (linearPart g (h • y))
+        (linearPart_period g (h • y)) (translation h y)
+
+/-- The fibre map is derived from the linear lift and equivariance, rather than stored. -/
+noncomputable def AffineEquivariantPeriodData.fibreLinearPart
+    {Γ Λ Y E : Type*} [Group Γ] [MulAction Γ Y] [AddCommGroup Λ] [AddCommGroup E]
+    {period : Y → (Λ →ₗ[ℤ] E)} (D : AffineEquivariantPeriodData (Γ := Γ) period)
+    (g : Γ) (y : Y) : TorusFibre period y ≃+ TorusFibre period (g • y) :=
+  linearPeriodFibreEquiv period D.latticeAction g y (D.linearPart g y) (D.linearPart_period g y)
 
 /-- The affine map on one fibre, with linear and translation parts both visible. -/
 noncomputable def AffineEquivariantPeriodData.affineFibreMap
@@ -262,9 +279,33 @@ noncomputable def AffineEquivariantPeriodData.affineOrbitLift
   (fibrewiseEquivOrbit period).symm.trans
     ((D.affineFamilyLift g).trans (fibrewiseEquivOrbit period))
 
+/-- Analytic descent adds complex-linear holomorphic lifts and a holomorphic torus-valued
+translation section to the algebraic cocycle. The orbit projection pins the quotient atlas. -/
+theorem AffineEquivariantPeriodData.affineOrbitLift_holomorphic
+    {Γ Λ Y E EB H : Type*} [Group Γ] [MulAction Γ Y] [AddCommGroup Λ]
+    [NormedAddCommGroup E] [NormedSpace ℂ E] [NormedAddCommGroup EB] [NormedSpace ℂ EB]
+    [TopologicalSpace H] (I : ModelWithCorners ℂ EB H)
+    [TopologicalSpace Y] [ChartedSpace H Y] [IsManifold I ∞ Y]
+    {period : Y → (Λ →ₗ[ℤ] E)}
+    [ChartedSpace (ModelProd H E) (Quotient (periodOrbitRel period))]
+    [IsManifold (I.prod 𝓘(ℂ, E)) ∞ (Quotient (periodOrbitRel period))]
+    (D : AffineEquivariantPeriodData (Γ := Γ) period)
+    (_hq : IsLocalDiffeomorph (I.prod 𝓘(ℂ, E)) (I.prod 𝓘(ℂ, E)) ∞
+      (Quotient.mk (periodOrbitRel period)))
+    (R : ∀ (_g : Γ) (_y : Y), E ≃L[ℂ] E)
+    (_hR : ∀ g y, (R g y).toLinearEquiv.restrictScalars ℤ = D.linearPart g y)
+    (_linear_holo : ∀ g, ContMDiff (I.prod 𝓘(ℂ, E)) (I.prod 𝓘(ℂ, E)) ∞
+      (fun p : Y × E ↦ (g • p.1, R g p.1 p.2)))
+    (_translation_holo : ∀ g, ContMDiff I (I.prod 𝓘(ℂ, E)) ∞
+      (fun y ↦ fibrewiseEquivOrbit period ⟨g • y, D.translation g y⟩))
+    (g : Γ) : ContMDiff (I.prod 𝓘(ℂ, E)) (I.prod 𝓘(ℂ, E)) ∞
+      (D.affineOrbitLift g) := by
+  sorry
+
 /-- The two-torus regression uses the actual product carrier; the total complex model is
 `ℂ × (E₁ × E₂)`, rather than the one-dimensional base model. -/
-noncomputable def involutionModelMap {T₁ T₂ : Type*} [AddCommGroup T₁] [AddCommGroup T₂] (a : T₁) :
+noncomputable def involutionModelMap {T₁ T₂ : Type*} [AddCommGroup T₁] [AddCommGroup T₂]
+    (a : T₁) :
     Complex.UnitDisc × (T₁ × T₂) → Complex.UnitDisc × (T₁ × T₂) :=
   fun x ↦ (-x.1, x.2.1 + a, -x.2.2)
 
