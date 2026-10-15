@@ -1118,14 +1118,16 @@ structure StableFillingBoundaryFaces {n : ℕ}
   incomingEquiv_toFun : incomingEquiv.toFun = verticalBoundary.incomingInclusion
   outgoingEquiv_toFun : outgoingEquiv.toFun = verticalBoundary.outgoingInclusion
 
-/-- The stable framing induced on the vertical face of a filling bordism. -/
+/-- The vertical h-cobordism uses the negative of the trace-induced face orientation.
+Reverse the outward normal line so its own endpoint convention is incoming-minus/outgoing-plus;
+this is the transposition sign of the time and boundary-normal directions at each corner. -/
 noncomputable def StableFillingBoundaryFaces.verticalFraming {n : ℕ}
     {X Y : StableFramedFillingCycle n} {trace : CollaredOrientedFilling (n + 1)}
     (F : StableFillingBoundaryFaces X Y trace) {r : ℕ}
     (framing : StableTangentFraming trace.model trace.M r) :
     StableTangentFraming F.vertical.model F.vertical.M (r + 1) :=
-  restrictStableFramingAlongCodimOne F.verticalAmbient F.verticalAmbientSmooth
-    F.verticalNormal framing
+  (restrictStableFramingAlongCodimOne F.verticalAmbient F.verticalAmbientSmooth
+    F.verticalNormal framing).reverseNormalLine (by omega)
 
 /-- The trace framing restricted to the incoming horizontal face. -/
 noncomputable def StableFillingBoundaryFaces.incomingFraming {n : ℕ}

@@ -580,8 +580,10 @@ statement above is part of the theorem, not quotient-by-choice automation.
    equality with the incoming framing after reversing the added normal line and with the
    outgoing framing directly. Require all three face orientations to be induced from the
    trace through their actual derivative/normal splittings, with incoming minus and outgoing
-   plus. The trace framing induces the trace orientation. At the corners, the two ordered
-   normal directions differ by their stated transposition sign. Its restriction to the vertical face is
+   plus. The trace framing induces the trace orientation. The vertical h-cobordism has the
+   negative of the trace-induced face orientation, so its own endpoints have incoming minus
+   and outgoing plus; reverse its added normal line as well. This is the transposition of
+   the time and boundary-normal directions at the corners. Its restriction to the vertical face is
    product-compatible on that face's collar.  Corner rounding must preserve these face maps,
    orientation identifications, and framing equations.  Construct the product cylinder, including
    its vertical boundary cylinder and both corners, as the reflexivity witness.  Use these
