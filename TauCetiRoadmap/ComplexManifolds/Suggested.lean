@@ -43,8 +43,17 @@ shape of mathlib4#42847 and proves composition, inverse, and groupoid-transport 
 @[instance_reducible]
 noncomputable def pullbackChartedSpace {H M N : Type*} [TopologicalSpace H]
     [TopologicalSpace M] [TopologicalSpace N] [ChartedSpace H N] (e : M ≃ₜ N) :
-    ChartedSpace H M := by
-  sorry
+    ChartedSpace H M where
+  atlas := (e.transOpenPartialHomeomorph ·) '' atlas H N
+  chartAt x := e.transOpenPartialHomeomorph (chartAt H (e x))
+  mem_chart_source x := mem_chart_source H (e x)
+  chart_mem_atlas x := ⟨_, chart_mem_atlas _ (e x), rfl⟩
+
+@[simp]
+theorem pullbackChartedSpace_chartAt {H M N : Type*} [TopologicalSpace H]
+    [TopologicalSpace M] [TopologicalSpace N] [ChartedSpace H N] (e : M ≃ₜ N) (x : M) :
+    @chartAt H _ M _ (pullbackChartedSpace e) x = e.transOpenPartialHomeomorph (chartAt H (e x)) :=
+  rfl
 
 /-- A manifold structure transports with the named atlas. Use this through a local or scoped
 instance when a carrier supports more than one transported atlas. -/

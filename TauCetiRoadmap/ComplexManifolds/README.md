@@ -48,8 +48,9 @@ cohomology; or Riemann--Roch.
 
 - Mathlib owns `ChartedSpace`, `ModelWithCorners`, `StructureGroupoid`, `HasGroupoid`,
   `Structomorph`, `IsManifold`, `Diffeomorph`, `IsLocalDiffeomorph`, `TopCat.GlueData`,
-  `FiberBundle`, `VectorBundle`, `ContMDiffVectorBundle`, the standard orbit quotients, and the
-  quotient-manifold theorem developed in mathlib4#40727. This roadmap extends those APIs and does
+  `FiberBundle`, `VectorBundle`, `ContMDiffVectorBundle`, and the standard orbit quotients; the
+  quotient-manifold theorem takes the shape of mathlib4#40727 (see below). This roadmap extends
+  those APIs and does
   not introduce replacement manifold, gluing, quotient, or bundle carriers.
 - The [universal-covers roadmap](../UniversalCovers/README.md) owns universal covers, deck groups,
   quotient-cover classification, and lifting theory. This roadmap consumes
@@ -98,12 +99,13 @@ At the repository pin, consume the following existing interfaces directly.
 - `OnePoint ℂ` and `OnePoint.equivProjectivization`, including the existing homogeneous-coordinate
   formulas. No topology or charted space is placed on a second projective-line carrier.
 
-The following interfaces are not at the pin and have a fixed supplier or local-mirror policy.
+The following interfaces are consumed from Mathlib whenever the dependency pin provides them, and
+otherwise mirrored locally in the shape of the cited pull request.
 
-- The active [mathlib4#40727](https://github.com/leanprover-community/mathlib4/pull/40727) owns the
-  `IsManifold` theorem for properly discontinuous quotients. Its `IsManifold` construction, local
-  inverses, and transition-map API are the selected upstream shape. At a dependency pin predating
-  that API, Tau Ceti mirrors precisely `orbitRel.Quotient.localInverseAt`,
+- [mathlib4#40727](https://github.com/leanprover-community/mathlib4/pull/40727) is the selected
+  shape for the `IsManifold` theorem for properly discontinuous quotients: its `IsManifold`
+  construction, local inverses, and transition-map API. Whenever the dependency pin lacks that
+  API, Tau Ceti mirrors precisely `orbitRel.Quotient.localInverseAt`,
   `localInverseAt_apply_mk`, `localInverseAt_symm_trans_eqOn_smul`,
   `exists_smul_mem_localInverseAt_target`, `transitionMap`, `transitionMap_eqOn_smul`,
   `transitionMap_locally_smul`, and `MulAction.isManifold_quotient_of_contMDiffSMul` under a
@@ -114,7 +116,7 @@ The following interfaces are not at the pin and have a fixed supplier or local-m
   invariant holomorphic maps, sections, and bundle morphisms.
 - [mathlib4#42847](https://github.com/leanprover-community/mathlib4/pull/42847) develops transport
   of charted spaces and structure groupoids along homeomorphisms. Atlas transport and
-  realification follow that design. Before it reaches the dependency pin, Tau Ceti locally mirrors
+  realification follow that design. Whenever the dependency pin lacks it, Tau Ceti locally mirrors
   the declarations from its `Mathlib.Geometry.Manifold.PullbackGroupoid` module:
   `Homeomorph.pullbackChartedSpace`, `_chartAt`, `_atlas`,
   `transOpenPartialHomeomorph_mem_pullbackChartedSpace_atlas`, `pullback_symm_trans`,
@@ -160,8 +162,9 @@ Fix a finite-dimensional complex normed vector space `E` and the boundaryless mo
    restrictions, tangent maps, and bundle charts. Show that the real derivative agrees with the
    restricted complex derivative.
 3. Transport models, atlases, and structure groupoids along a `ContinuousLinearEquiv` and along a
-   homeomorphism of carriers. Prove that the identity map between the original and transported
-   structures is a diffeomorphism and prove composition and inverse laws for transport.
+   homeomorphism `e : M ≃ₜ N` of carriers. Prove that the comparison diffeomorphism has
+   underlying map `e`; for model changes on the same carrier its underlying map is the identity.
+   Prove composition and inverse laws for transport.
 4. Prove that realification commutes, up to the canonical identity diffeomorphism, with recharting,
    products, and open restrictions.
 5. Construct the standard coordinate equivalence between the realification of
@@ -186,7 +189,9 @@ basis `(e₁, i e₁, ..., eₙ, i eₙ)`.
    shared orientation carrier. Prove independence from the atlas representative.
 3. Prove compatibility with restriction to open submanifolds, products using the stated ordered
    product convention, restriction of scalars, and recharting along complex and real continuous
-   linear equivalences. State the sign incurred by permuting product factors.
+   linear equivalences. Real recharting preserves the transported orientation; comparison with a
+   separately fixed model orientation has the sign of the real determinant. State the sign
+   incurred by permuting product factors.
 4. Prove that every biholomorphism preserves the canonical orientation. Identify this predicate
    literally with the orientation-preserving-map predicate from the Heegaard Floer API, rather
    than through an adapter or a second orientation definition.
@@ -214,9 +219,9 @@ holomorphic transition calculation.
 
 Fix a group `G` acting freely and properly discontinuously on a manifold `M`.
 
-Use the Mathlib-owned quotient-manifold theorem in the exact shape of mathlib4#40727, including its
-local inverses and transition maps. At a dependency pin predating that theorem, mirror the same API
-locally and replace the mirror with Mathlib imports on a dependency update. The covering-map,
+Use the quotient-manifold theorem in the exact shape of mathlib4#40727, including its local inverses
+and transition maps. Whenever the dependency pin lacks that theorem, mirror the same API locally and
+replace the mirror with Mathlib imports on a dependency update. The covering-map,
 open-quotient, Hausdorff, second-countability, and connectedness results listed in the inventory are
 inputs here, not targets.
 
