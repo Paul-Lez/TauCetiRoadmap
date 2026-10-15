@@ -43,23 +43,23 @@ specific global assembly.
 
 ## Ownership and dependencies
 
-- The complex-manifolds roadmap owns realification, free properly discontinuous smooth and
+- The [complex-manifolds roadmap](https://github.com/TauCetiProject/TauCetiRoadmap/pull/279) owns realification, free properly discontinuous smooth and
   complex quotients, holomorphic descent, holomorphic bundles, and compatible open gluing. This
   roadmap consumes those results on the standard orbit quotient and adds the torus-family and
   cyclic-affine geometry.
 - The [universal-covers roadmap](../UniversalCovers/README.md) owns covering spaces, deck groups,
   and lifting. This roadmap uses its quotient-cover and monodromy interfaces; it does not package
   another equivariant universal cover.
-- The algebraic-topology roadmap owns general fundamental groups, singular homology, Wang
+- The [algebraic-topology roadmap](../AlgebraicTopology/README.md) owns general fundamental groups, singular homology, Wang
   sequences, transfer, and homology of tori. This roadmap proves which maps arise from a torus
   family or logarithmic transform and applies that generic theory.
 - The [geometric-topology roadmap](../GeometricTopology/README.md) owns collars and boundary
   gluing. This roadmap constructs the analytic punctured-disc gauges and proves their boundary
   maps are smooth and holomorphic where appropriate.
-- The analytic-toric-geometry roadmap owns fan constructions and toric degenerations. This
-  roadmap treats smooth period-lattice families and finite cyclic multiple fibres; a toric
-  degeneration consumes both roadmaps.
-- The Fuchsian-groups roadmap owns orbifold bases and their quotient uniformization. An orbifold
+- The [analytic-toric-geometry roadmap](../AnalyticToricGeometry/README.md) owns analytic
+  manifolds from finite regular fans. This roadmap treats smooth period-lattice families and
+  finite cyclic multiple fibres.
+- The [Fuchsian-groups roadmap](../FuchsianOrbifolds/README.md) owns orbifold bases and their quotient uniformization. An orbifold
   torus family supplies its period representation and then consumes this roadmap's equivariant
   descent.
 
@@ -81,7 +81,11 @@ Use the following objects without replacement wrappers.
 - `ContMDiff`, `IsLocalDiffeomorph`, `ContMDiffMap`, `FiberBundle`, `VectorBundle`, and
   `ContMDiffVectorBundle` for the manifold and fibration interfaces.
 - Mathlib's `AddCircle`, finite cyclic groups, `Finset.range`, quotient modules, kernels, and ranges
-  for the cyclic affine calculation.
+  for the cyclic affine calculation. Use
+  [`groupCohomology`](https://leanprover-community.github.io/mathlib4_docs/Mathlib/RepresentationTheory/Homological/GroupCohomology/Basic.html#groupCohomology),
+  `Rep.FiniteCyclicGroup.groupCohomologyIsoOdd`, `groupCohomologyIsoEven`,
+  `groupCohomologyπOdd_eq_iff`, `groupCohomologyπEven_eq_iff`, `Representation.norm`,
+  `groupCohomology.map`, `groupCohomology.δ`, `δ_naturality`, and `isIso_δ_of_isZero`.
 
 The complex quotient work in
 [mathlib4#40727](https://github.com/leanprover-community/mathlib4/pull/40727) determines the
@@ -132,10 +136,12 @@ Let `L : Submodule ℤ E` have its subtype topology, `[DiscreteTopology L]`, and
    quotient is a complex manifold and the orbit map is a local biholomorphism.
 2. Descend addition, negation, and zero and prove the complex Lie-group laws. Prove compactness
    from a lattice fundamental domain, connectedness, Hausdorffness, and second countability.
-3. For a complex linear map `f : E →ₗ[ℂ] E'` satisfying `f '' L ≤ L'`, construct the induced
-   holomorphic homomorphism of tori. Prove identity, composition, products, kernels under the
-   standard closedness hypotheses, and the equivalence criterion for continuous linear
-   equivalences carrying one lattice onto the other.
+3. For a complex linear map `f : E →ₗ[ℂ] E'` satisfying `L.map (f.restrictScalars ℤ) ≤ L'`, construct the induced
+   holomorphic homomorphism of tori. Prove identity, composition, and products. The kernel is the closed complex Lie subgroup
+   `f⁻¹(L')/L`; its identity component is the torus `ker f / (L ∩ ker f)`, using the
+   induced full lattice on `ker f`, and its component group is `(L' ∩ range f)/f(L)`.
+   Prove the equivalence criterion for continuous linear equivalences carrying one lattice
+   onto the other.
 4. Identify the universal covering and deck action through the universal-covers roadmap. Consume
    the algebraic-topology roadmap to identify `π₁` and integral homology with the lattice and its
    exterior powers, naturally in induced maps.
@@ -159,16 +165,21 @@ Use the direct period-family hypotheses fixed above.
 3. Descend `Prod.fst` to `p : (Y × E)/Λ → Y`. Prove that `p ∘ q = Prod.fst`, that `p` is a
    holomorphic submersion, and construct submersion coordinates around each point of its total
    space. Identify the fibre over `y` biholomorphically with
-   `E / LinearMap.range (Π y)`. Separately prove smooth local triviality from the compact-fibre
-   proper-submersion theorem, with every properness hypothesis visible. Call the family a
+   `E / LinearMap.range (Π y)`. Choose a ℤ-basis `λ_i` as a proof choice and construct the real-linear equivalence
+   `F_y : ℝ^d ≃ₗ[ℝ] E`, `e_i ↦ Π(y) λ_i`, from injectivity and `IsZLattice`. Prove smooth
+   dependence of `F_y` and its inverse, then descend `[y,v] ↦ (y,[F_y⁻¹ v])` to a global
+   smooth trivialization with fibre `ℝ^d/ℤ^d`. Prove independence of the chosen basis up to
+   its integral change-of-basis map; this real-linear trivialization is not a holomorphic one. Call the family a
    holomorphic fibre bundle with one fixed compact fibre only under an isotriviality hypothesis;
    varying `τ` in `ℂ/(ℤ + τ(y)ℤ)` is the regression test which must not satisfy that conclusion.
 4. Prove fibre compactness, total-space Hausdorffness and second countability, existence and
    holomorphy of the zero section, and naturality under base change from the explicit Hausdorff,
    second-countability, continuity, and coordinatewise-holomorphy hypotheses on `Y` and `Π`.
-5. Define markings as isomorphisms from the local system of first integral homology groups to the
-   constant lattice local system. Prove change-of-marking and monodromy laws through the local-
-   system or covering API, not through unrelated matrices at each fibre.
+5. Construct the canonical marking `H₁(T_y;ℤ) ≅ Λ` by lifting loops to `E` and taking their
+   period displacement. Prove naturality in `y`, compatibility with the fibre identification
+   in item 3, and trivial monodromy of this globally marked family. Describe change of an
+   arbitrary marking by `Aut(Λ)`. Consume AlgebraicTopology Stage 2.6 for local-coefficient
+   systems and Stage 5.5 for bundle monodromy.
 
 For the analytic family construction use Birkenhake--Lange, Chapter 8, on families and period
 data, together with the quotient-manifold source spine in the complex-manifolds roadmap.
@@ -200,8 +211,11 @@ constructors, with different inputs and conclusions.
    second quotient.  This constructor includes elliptic base points whose stabilizers are removed
    by a fibre translation.
 4. Descend the family projection to `Y/Γ`, prove submersion charts over the free locus, and identify
-   its monodromy with `ρ`. Under the proper-submersion hypotheses, descend the separate smooth local
-   trivializations. Derive the action on homology through exterior powers.
+   its monodromy as follows. For a loop lifted from `y` to `g • y`, identify the endpoint
+   fibre back with the starting fibre by the inverse action: transport on the marking is
+   `ρ(g⁻¹)`. Equivalently a lift ending at `g⁻¹ • y` has monodromy `ρ(g)`. Prove this formula
+   before the reversal law, and descend the smooth trivializations from Milestone 2 over the
+   free locus. Derive the action on homology through exterior powers.
 5. Prove naturality under equivariant base change, conjugation of the marking, and reversal of
    loop orientation.
 
@@ -232,15 +246,15 @@ are assumed.
    has exact order `m` exactly when, in addition, for every `0 < k < m` either `A_T^k ≠ 1` or
    `N_{A,k}(t) ≠ 0`. Derive an action of `ZMod m` from periodicity without calling it faithful;
    faithfulness follows from the exact-order theorem.
-3. Prove that conjugation by translation sends `t` to `t + (1-A_T)b`. Classify `m`-periodic
-   translation-conjugacy classes by the literal additive-group quotient
-
-   `H¹(C_m,T) = ker (N_A : T → T) / range (1-A_T : T → T)`.
-
-   Implement `ker N_A` and `range(1-A_T)` as additive subgroups and `H¹` as their
-   `QuotientAddGroup`, so its `AddCommGroup` structure, quotient homomorphism, induction principle,
-   and lift theorem are available. Prove identity, change-of-representative, functoriality, and
-   restriction homomorphisms in this carrier.
+3. Prove that conjugation by translation sends `t` to `t + (1-A_T)b`. For
+   `A_T^m = 1`, construct the representation in `Rep ℤ C_m`, where
+   `C_m = Multiplicative (ZMod m)` and its selected generator acts by `A_T`.
+   Classify translation-conjugacy classes in Mathlib's `groupCohomology` in degree one.
+   Its finite-cyclic isomorphism computes this as `ker N_A / range(A_T-1)`.
+   Prove `range(A_T-1) = range(1-A_T)` by negation, and compare `Representation.norm`
+   with the ordered sum of powers. Use Mathlib's quotient maps and equality criteria,
+   rather than defining another public `H¹` carrier. Retain the partial norms `N_{A,k}`
+   for arbitrary `k`, which are needed for the iterate and fixed-point formulas.
 4. Prove
 
    `affine(A_T,t)^k` has a fixed point
@@ -251,22 +265,31 @@ are assumed.
 
 ### Integral connecting class
 
-5. For a lift `t̃ : E` of `t`, prove `N_A(t̃) ∈ Λ^A`. Prove that changing `t̃` by `λ : Λ`
-   changes this invariant by `N_A(λ)`, and hence obtain the connecting class
+5. Fix the equivariant short exact sequence `0 → Λ → E → T → 0` in `Rep ℤ C_m`.
+   Its input consists of compatible actions `A_Λ`, `A_E`, `A_T`, each with `m`-th power
+   one, with `A_E` real-linear, and equivariant inclusion and quotient maps. Construct
+   these representations from the automorphisms and prove their exactness. For a lift
+   `t̃ : E` of a norm-zero `t`, show `N_A(t̃) ∈ Λ^A`; changing the lift by `λ` adds
+   `N_A(λ)`. Use `groupCohomology.δ` as the connecting homomorphism
+   `H¹(C_m,T) → H²(C_m,Λ)`, and the finite-cyclic isomorphism to compute the latter
+   as `Λ^A/N_AΛ`. Fix the generator `1 mod m` and the cocycle determined by its value
+   `t`; verify against `δ_apply` that the connecting class is `[N_A(t̃)]` and hence
+   that `δ(v/m) = [v]` for `v ∈ Λ^A`, with the displayed positive sign.
 
-   `δ(t) ∈ Λ^A / N_A Λ = H²(C_m,Λ)`.
-
-   Construct the connecting additive homomorphism
-   `δ : H¹(C_m,T) →+ H²(C_m,Λ)` induced by the equivariant short exact sequence
-   `0 → Λ → E → T → 0`. Use the vanishing of positive-degree finite-group cohomology of the
-   real vector space `E` to construct an `AddEquiv` between these two carriers, and prove that
-   its forward map is `δ`. For normalized data `t = v/m` with `v ∈ Λ^A`, compute `δ(t)`
-   explicitly.
-6. Prove functoriality under equivariant homomorphisms, products, restriction to subgroups, and
-   base change for both cohomology carriers, with the connecting homomorphism natural in these
-   maps. As the decisive regression test, when `A_T = 1`, prove that the `m`-periodic translations
-   form the `m`-torsion subgroup and that `T[m] ≃+ Λ/mΛ`; a lattice cokernel of `A-1` must not
-   appear. State any exact-order subset only after adding the exact-order criterion from Step 2.
+   Prove vanishing in degrees one and two for the real-vector-space representation
+   `E` using the periodic complex and division by `m`. This is the finite cyclic
+   special case of [SmoothRepresentationsOfLocalGroups SR.0d.2, #793](https://github.com/TauCetiProject/TauCetiRoadmap/pull/793).
+   Use `isIso_δ_of_isZero` to obtain the connecting isomorphism and its underlying
+   additive equivalence. The periodic proof supplies this case independently of the
+   more general supplier.
+6. Prove naturality under morphisms of equivariant short exact sequences, products,
+   and restriction along homomorphisms of finite cyclic groups, using
+   `groupCohomology.map` and `δ_naturality`. In a varying family, base change along a
+   holomorphic `f : Y' → Y` means pulling back the marked lattice, vector-space and
+   torus local systems and their short exact sequence; construct the induced fibrewise
+   cohomology comparisons and prove that `δ` commutes with them. When all actions are
+   trivial, prove `H¹(C_m,T) ≃+ AddSubgroup.torsionBy T m` and
+   `T[m] ≃+ Λ/mΛ`. Exact order still requires Step 2's separate criterion.
 
 Brown, *Cohomology of Groups*, Chapter VI, Section 2, supplies the cyclic norm, invariants,
 coinvariants, and periodic cohomology spine. The fixed-point criterion follows directly from the
@@ -274,31 +297,32 @@ affine iterate equation and is proved in the torus quotient, not asserted as a f
 
 ## Milestone 5: cyclic quotients and multiple fibres
 
-Let `D` be a complex disc with a rotation `r` of exact order `m`, and let a varying torus family
-over `D` carry compatible period monodromy and affine translation data from Milestone 4. In
-addition to the additive class, fix a complex-linear equivalence `A_E : E ≃L[ℂ] E` preserving
-the period lattice in both directions and inducing `A_T`, or supply the equivalent
-biholomorphic additive automorphism of each torus fibre.
+Let `D_z` be the unit disc, `ζ = exp(2πi/m)` for `m > 0`, and `r(z) = ζz`.
+Consume Milestone 3's full holomorphic cyclic affine cocycle `(R_g(z), b_g(z))` on
+its varying torus family `X → D_z`, with the period-equivariance and action laws.
+In the constant-linear-part specialization require
+`A_E(Π(z)λ) = Π(ζz)(A_Λ λ)`. The translation law is the full orbit sum of sections,
+not a norm equation in one fixed fibre. At zero the generator has linear part
+`R_g(0)` and translation `b_g(0)`, so Milestone 4 applies there.
 
-1. Construct the generator on the total torus family and prove it biholomorphic from the
-   complex-linearity and lattice-preservation hypotheses, not merely from the additive
-   automorphism `A_T`. Prove its `m`-th power is the identity from `A_E ^ m = 1` (hence
-   `A_T ^ m = 1`) and the translation norm equation. Use the exact fixed-point criterion to prove
-   that the action is free; the exact order of the base rotation makes the total generator have
-   exact order `m`.
-2. Take the standard complex quotient and descend the base map `z ↦ z^m`. Prove this map is a
-   holomorphic submersion away from the central fibre and has a multiple central fibre of
-   multiplicity exactly `m`.
-3. In every transverse chart prove the local normal form `t = a u^m`, with `a` a nowhere-zero
-   holomorphic unit. Identify the reduced fibre and its quotient by the central affine action.
-4. Use the complex-manifolds roadmap's holomorphic-line-bundle API to prove that the normal bundle
-   of the reduced fibre has `m`-th tensor power trivial. Identify its character. Prove exact order
-   only by the associated-character-to-Picard injectivity criterion from that roadmap, with the
-   connected compact covering-space and constant-invertible-holomorphic-function hypotheses
-   displayed; faithful base rotation alone proves only divisibility.
-5. Compute the canonical-bundle character from the derivative of the affine generator and give an
-   exact-order criterion using the same injectivity theorem. Prove smoothness, compactness, and
-   complex-manifold instances for the reduced quotient under their explicit hypotheses.
+1. Construct the biholomorphic total action using Milestone 3. Away from zero the
+   base rotation is free. At zero require Milestone 4's fixed-point exclusion for
+   every nonidentity power. Prove total-space freeness and exact order `m`.
+2. Form the standard quotient `Q = X/C_m` and descend `t = z^m` to
+   `p_Q : Q → D_t`. Prove it is a holomorphic submersion off zero.
+3. Define `F` as the image of the central torus `T_0` in `Q`. Prove that it is an
+   embedded complex hypersurface, equals `p_Q⁻¹(0)` as a set, and is biholomorphic
+   to `T_0/C_m`. In transverse charts prove `t = a u^m` with `a` a holomorphic unit;
+   thus the vanishing order along `F`, and the fibre multiplicity, is exactly `m`.
+4. With associated-bundle convention `(x,v) ↦ (g x, χ(g)v)`, identify the normal
+   character as `ζ` and prove `N_(F/Q)^⊗m` trivial. For exact order use
+   [ComplexManifolds Milestone 7.6, #279](https://github.com/TauCetiProject/TauCetiRoadmap/pull/279),
+   including its connected compact cover and constant-unit hypotheses.
+5. In the constant-linear-part case distinguish `K_Q|_F`, with character
+   `(ζ · det A_E)⁻¹`, from `K_F`, with character `(det A_E)⁻¹`. Prove adjunction
+   `K_F ≅ K_Q|_F ⊗ N_(F/Q)`. For varying linear part use the corresponding
+   determinant transition cocycle. Apply Milestone 7.6 to the character cases,
+   and prove smoothness, compactness and manifold instances for `F`.
 
 Barth--Hulek--Peters--Van de Ven, *Compact Complex Surfaces*, second edition, Chapter V, the
 section “Logarithmic Transformations” (beginning on p. 216), supplies the local cyclic-quotient
@@ -306,48 +330,67 @@ model. The statements here allow higher-dimensional torus fibres.
 
 ## Milestone 6: logarithmic gauges and regluing
 
-Fix the punctured unit disc `D*`, the degree-`m` cover
-`β_m : D* → D*`, `z ↦ z^m`, the restriction `X* → D*` of the original family, and the punctured
-restriction `Q* → D*` of the cyclic quotient.  Write
-`β_m^*X* = D* ×_(β_m,D*) X*` for the literal pullback family.
+Distinguish `D_z` and `D_t`, their punctured subspaces, and
+`β_m : D_z* → D_t*`, `β_m(z) = z^m`. Fix a varying marked period family
+`Y → D_t`, set `X = β_m^*Y → D_z`, and form `Q = X/C_m → D_t` using
+Milestone 5. The logarithmic transform uses trivial linear part; general linear
+cocycles remain in Milestone 5.
 
-1. Over `D*`, construct logarithmic gauges from a chosen branch of logarithm. Prove
-   that changing the branch acts by the corresponding lattice translation and therefore gives the
-   same descended biholomorphism.
-2. Construct a named biholomorphism over `D*`
-   `puncturedBaseChangeEquiv : Q* ≃_[D*] β_m^*X*`.  Its forward map is the descended logarithmic
-   gauge; expose that forward map, the equation with both projections to `D*`, the inverse formula,
-   and holomorphy in both directions.  This is an identification only after the displayed base
-   change.  It gives no isomorphism between `Q*` and a constant family over the original punctured
-   base unless the linear monodromy is separately proved trivial.  Any descent used for the final
-   regluing is a further theorem and must retain the identification with the family on the
-   complement.
+1. For any free equivariant family of Milestone 5 prove the canonical covering
+   identification `X* ≃_[D_z*] β_m^*Q*`, with forward map
+   `x ↦ (p_X(x), [x])`. Expose the inverse, both projection equations and
+   holomorphy. This theorem requires no logarithm.
+2. For trivial linear part lift the generator's holomorphic translation section
+   `b` to `b̃ : D_z → E` by lifting through the period covering of the simply
+   connected disc. The action law gives a constant `λ ∈ Λ` such that
+   `∑_(j<m) b̃(ζ^j z) = Π_Y(z^m)λ`. Put
+   `f(z) = b̃(z) − Π_Y(z^m)λ/m` and
+   `c(z) = −(1/m)∑_(j<m) j f(ζ^j z)`.
+   Prove `c(ζz) − c(z) = −f(z)`, so the change of fibre coordinate
+   `x ↦ x+c(z)` normalizes the cocycle to `Π_Y(z^m)λ/m`.
+   Identify the invariant `λ mod mΛ` with `b(0) ∈ T_0[m]` and with
+   `H¹(C_m,T_0)` for the trivial action; central freeness means exact order `m`.
+3. For normalized data prove a separate downstairs gauge
+   `G : Q* ≃_[D_t*] Y*`. On a simply connected logarithm chart define
 
-The regression model is the involution on `D × E₁ × E₂` combining a nonzero fibre translation
-with linear monodromy `-id` around the puncture.  Its quotient over the original `D*` cannot be
-identified with a constant family: that would trivialize the displayed nontrivial monodromy.  The
-double cover `β₂` kills this monodromy and permits the punctured pullback identification above,
-but descending that identification and gluing it across the central fibre remain separate
-theorems.
-3. Construct compatible smooth collars through the geometric-topology roadmap and prove that the
-   punctured gauge restricts to the collar map used for regluing. Apply the complex-manifolds
-   roadmap's open-gluing theorem to the analytic pieces.
-4. Prove independence, up to biholomorphism over the base, of disc radius, collar width, logarithm
-   branch, and linearizing coordinate while holding the period family and class in `H¹(C_m,T)`--or
-   equivalently its connecting class in `Λ^A/N_AΛ`--fixed. State separately how changing that class
-   changes the gluing map.
-5. Compute the induced maps on fundamental groups and first homology from the actual collar and
-   quotient maps. Record fibre lattice generators and the selected meridian convention, and prove
-   the inversion law under orientation reversal.
+   `G[(z,[e])] = (z^m,[e − (Log z/2πi)Π_Y(z^m)λ])`.
 
-The logarithmic-transform section of Barth--Hulek--Peters--Van de Ven gives the local proof spine.
+   Use the counterclockwise meridian and `Log(ζz) = Log z+2πi/m` on compatible
+   charts to prove cyclic invariance. A full branch change adds the period
+   `−Π_Y(t)(kλ)`, so the local maps patch. The inverse sends `(t,[y])` to
+   `[(z,[y+(Log z/2πi)Π_Y(t)λ])]` using a local root `z^m=t`.
+   Prove independence of root and branch, the inverse identities and holomorphy.
+   Compose with item 2 for non-normalized pure-translation data.
+4. Fix an ambient complex manifold `M` containing the original `Y → D_t` as
+   an open fibred neighbourhood. Glue `M` minus its central fibre to `Q` along
+   `Y*`, using its inclusion into `M` and `G⁻¹ : Y* → Q*`.
+   Apply ComplexManifolds Milestones 5–6 to these named pieces and maps, including
+   their separation hypotheses. Restrict `G` to annular overlaps and the smooth
+   collars of GeometricTopology to identify the actual regluing map.
+5. Prove independence of radius, collar width, local logarithm, lift `b̃`, and
+   linearizing coordinate, holding `M`, the marked family `Y`, the class
+   `λ mod mΛ ≅ H¹(C_m,T_0)`, and the overlap identification fixed up to the
+   induced isotopies/biholomorphisms. State the effect of changing this class.
+6. Compute induced `π₁` and `H₁` maps from the constructed quotient and collar
+   maps, with lattice generators and the selected meridian. Prove the inversion
+   law under orientation reversal.
+
+For the free involution `(z,x₁,x₂) ↦ (−z,x₁+a,−x₂)` on a constant family
+of two elliptic curves, with `0 ≠ a ∈ E₁[2]`, the punctured quotient has
+monodromy `id ⊕ (−id)`. Item 1 recovers the upstairs family after the double
+cover. Item 3 does not apply: its pure-translation hypothesis fails, and this
+quotient cannot be identified downstairs with a family extending over the disc
+with trivial monodromy.
+
+The logarithmic-transform section of Barth--Hulek--Peters--Van de Ven supplies
+the local proof spine; compare [Bogomolov–Tschinkel, §3](https://arxiv.org/abs/math/0303044).
 
 ## Dependency order
 
 Milestone 1 consumes the complex-manifolds, universal-covers, and algebraic-topology roadmaps.
 Milestone 2 uses Milestone 1 and develops the compact-uniform lattice estimates in Milestone 2.1.
 Milestone 3 uses Milestone 2 and the universal-covers roadmap. Milestone 4 is algebraic and can
-proceed in parallel with Milestones 1--3. Milestone 5 uses Milestones 2 and 4 together with the
+proceed in parallel with Milestones 1--3. Milestone 5 uses Milestones 2–4 together with the
 complex-manifolds roadmap's holomorphic-line-bundle API. Milestone 6 uses Milestone 5 together
 with the complex-manifolds and geometric-topology gluing APIs.
 
@@ -369,8 +412,9 @@ with the complex-manifolds and geometric-topology gluing APIs.
   no-smaller-power criterion, and `T[m]` is consistently called the `m`-torsion subgroup.
 - The iterate theorem computes every power on `T`, translation conjugacy changes the twist by
   `(1-A_T)b`, and the normalized class lies in `ker N_A / range(1-A_T)`. Its integral connecting
-  class lies in `Λ^A/N_AΛ`. The first quotient is an `AddCommGroup`; the connecting map is an
-  additive homomorphism and the vanishing theorem supplies an `AddEquiv` to the second quotient.
+  class lies in `Λ^A/N_AΛ`. Both cohomology carriers are Mathlib `groupCohomology`; the concrete quotients compute
+  them through its finite-cyclic isomorphisms. The connecting map is Mathlib’s `δ`,
+  and the vanishing theorem makes it an isomorphism.
 - For composite `m`, freeness checks every `0 < k < m` using
   `cyclicNorm A k t ∉ range(1-A^k)`. A proposition which checks only the generator is rejected.
 - When `A = 1`, the classification specializes to the additive equivalence
@@ -383,11 +427,13 @@ with the complex-manifolds and geometric-topology gluing APIs.
   cocycle.  A nonzero torsion translation over a base fixed point is accepted only by the latter.
 - The cyclic quotient retains the varying period lattice and proves the local equation
   `t = a u^m`; it is not replaced by a product with a fixed torus.
-- Branch changes in the punctured logarithmic gauge are proved to be lattice translations, and
-  induced `π₁` and `H₁` maps come from the constructed maps.  The punctured-family equivalence is
-  over the explicit `z ↦ z^m` pullback; nontrivial linear monodromy forbids silently replacing it
-  by an equivalence over the original base.  The `-id` involution regression becomes trivial only
-  after the displayed double cover, and does not make descent or final gluing automatic.
+- Instantiate both punctured contracts with inherited subtype/product topologies and
+  total-space model `ℂ × E`: a disc times an elliptic curve has complex dimension two,
+  and the two-factor involution has dimension three. The covering identification recovers
+  `X*` by pulling back `Q*`; only pure-translation data instantiate the downstairs gauge.
+- Branch changes are lattice translations. The gauge patches over `D_t*`, while the
+  canonical covering identification is over `D_z*`. The involution is a positive test
+  for the covering theorem and a negative test for a trivial-monodromy downstairs gauge.
 
 ## References
 
