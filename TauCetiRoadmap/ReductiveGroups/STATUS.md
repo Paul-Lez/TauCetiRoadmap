@@ -1,98 +1,45 @@
-<!--tauceti-status:v1 {"roadmap":"ReductiveGroups","to_sha":"c4d7989a116c565aa558fb82c318ad7c651bf2f4","ts":"2026-08-18T20:34:58Z"}-->
+<!--tauceti-status:v1 {"roadmap":"ReductiveGroups","to_sha":"b8db0474eb2d3d0831a82689f429f61a3129b234","ts":"2026-10-08T05:52:52Z"}-->
+<!--tauceti-coverage:v1 {"layers":[{"id":"Layer 0","state":"done"},{"id":"Layer 1","state":"done"},{"id":"Layer 2","state":"done"},{"id":"Layer 3","remaining":"representability of G/H for general closed H via flatness of the projective orbit map; affineness of G/H for reductive H","state":"partial"},{"id":"Layer 4","state":"done"},{"id":"Layer 5","remaining":"general maximality theorem for the unipotent radical","state":"partial"},{"id":"Layer 6","remaining":"characteristic-zero equivalence with linear reductivity; simply connected covers; SLn to PGLn as a central isogeny","state":"partial"},{"id":"Layer 7","remaining":"conjugacy of Borels and maximal tori beyond GLn and SLn; root datum of an arbitrary reductive group; N(T)/T as Weyl group","state":"partial"},{"id":"Layer 8","state":"untouched"},{"id":"Layer 9","remaining":"uniform pinned construction from arbitrary root data, existence half of the pinned isomorphism theorem, and identification of the explicit carriers with pinned groups","state":"partial"}],"readme_sha":"b6888bb0f65d0f4a7686c047ee2d3204d019fb3e6c35fc0bd83b531ef10b4c1b","roadmap":"ReductiveGroups","to_sha":"b8db0474eb2d3d0831a82689f429f61a3129b234"}-->
 # Status: ReductiveGroups
 
-This file documents the status of the ReductiveGroups roadmap up until `c4d7989` (2026-08-18T20:34:58Z). There may have been subsequent updates.
+This file documents the status of the ReductiveGroups roadmap up until `b8db047` (2026-10-08T05:52:52Z). There may have been subsequent updates.
 
 It is generated, and its prose is not security-validated; see
 https://github.com/TauCetiProject/TauCetiProgress for what that means.
 
 ## Where this roadmap stands
 
-**At a glance.** Layers 0 through 4 are essentially done: an affine group scheme of finite type
-over a field embeds in a general linear group, is recovered from its tensor category of
-representations, and its points decompose into semisimple and unipotent parts. Layer 5 has
-started, Layer 6 exists only as definitions, and Layers 7 and 8 have not begun; of Layer 9 only
-Lie-algebra prerequisites and root subgroups of the classical groups are in place.
+**At a glance.** Four layers are done: the three-way group-scheme dictionary, representations as comodules, the Lie algebra, and tori with Jordan decomposition. Subgroups and quotients, the unipotent radical, reductivity, structure theory and the pinned Chevalley lane are partial. Classification has not begun.
 
 ### Named results
 
-- **Tannakian reconstruction** — the points of a commutative Hopf algebra over a field are
-  exactly the tensor automorphisms of scalar extension on its finite-dimensional comodules
-  ([`fgPointTensorIsoEquiv`](https://taucetiproject.github.io/TauCeti/docs/TauCeti/Algebra/AlgebraicGroup/Representation/Tannaka/Equivalence.html#TauCeti.Tannaka.fgPointTensorIsoEquiv)),
-  naturally enough in the value algebra to be an isomorphism of group-valued functors
-  ([`pointsFunctorIsoTensorAutFunctor`](https://taucetiproject.github.io/TauCeti/docs/TauCeti/Algebra/AlgebraicGroup/Representation/Tannaka/GroupFunctor.html#TauCeti.Tannaka.pointsFunctorIsoTensorAutFunctor)).
-- **The multiplicative Jordan decomposition** — over a perfect extension field every point
-  factors uniquely as commuting semisimple and unipotent parts, compatibly with homomorphisms
-  ([`jordanDecomposition`](https://taucetiproject.github.io/TauCeti/docs/TauCeti/Algebra/AlgebraicGroup/Representation/JordanDecomposition/Basic.html#TauCeti.HopfAlgebra.Point.jordanDecomposition),
-  [`isSemisimple_isUnipotent_unique`](https://taucetiproject.github.io/TauCeti/docs/TauCeti/Algebra/AlgebraicGroup/Representation/JordanDecomposition/Basic.html#TauCeti.HopfAlgebra.Point.isSemisimple_isUnipotent_unique)).
-- **The embedding theorem** — every affine group scheme of finite type over a field is a closed
-  subgroup of some general linear group
-  ([`exists_isClosedImmersion_generalLinear`](https://taucetiproject.github.io/TauCeti/docs/TauCeti/Algebra/AlgebraicGroup/Representation/Embedding.html#TauCeti.AffineGroupSchemeCat.exists_isClosedImmersion_generalLinear)),
-  proved through finite-dimensional subcoalgebras.
-- **Cartier duality** — finite dualization is an anti-equivalence of the category of finite
-  locally free bicommutative Hopf algebras over a commutative ring
-  ([`cartierDuality`](https://taucetiproject.github.io/TauCeti/docs/TauCeti/Algebra/HopfAlgebra/FiniteDual/CartierDuality/Basic.html#TauCeti.FiniteLocallyFreeBicommutativeHopfAlgCat.cartierDuality)),
-  and commuting with base change.
-- **The characterization of tori** — a finite-type commutative Hopf algebra over a field is a
-  torus exactly when it is of multiplicative type, geometrically connected and geometrically
-  reduced
-  ([`iff_multiplicativeType_and_geometricallyConnected_and_geometricallyReduced`](https://taucetiproject.github.io/TauCeti/docs/TauCeti/Algebra/AlgebraicGroup/Torus/Characterization.html#TauCeti.torusCommHopfAlgProperty.iff_multiplicativeType_and_geometricallyConnected_and_geometricallyReduced)).
+- **The Hopf algebra–affine group scheme anti-equivalence**: [`commHopfAlgCatOpEquivAffineGroupSchemeCat`](https://taucetiproject.github.io/TauCeti/docs/TauCeti/AlgebraicGeometry/AffineGroupScheme/Equivalence.html#TauCeti.commHopfAlgCatOpEquivAffineGroupSchemeCat) identifies commutative Hopf algebras with affine group schemes, contravariantly.
+- **The embedding theorem**: by [`exists_isClosedImmersion_generalLinear`](https://taucetiproject.github.io/TauCeti/docs/TauCeti/Algebra/AlgebraicGroup/Representation/Embedding.html#TauCeti.AffineGroupSchemeCat.exists_isClosedImmersion_generalLinear), every affine group scheme of finite type over a field is a closed subgroup of some general linear group.
+- **Tannakian reconstruction**: [`fgPointTensorIsoEquiv`](https://taucetiproject.github.io/TauCeti/docs/TauCeti/Algebra/AlgebraicGroup/Representation/Tannaka/Equivalence.html#TauCeti.Tannaka.fgPointTensorIsoEquiv) recovers the points of a commutative Hopf algebra from its finite-dimensional comodules.
+- **Chevalley's theorem on subgroups**: by [`exists_finite_subcomodule_exteriorPower_line_stabilizer`](https://taucetiproject.github.io/TauCeti/docs/TauCeti/Algebra/AlgebraicGroup/Representation/ExteriorStabilizer/Character.html#TauCeti.HopfIdeal.exists_finite_subcomodule_exteriorPower_line_stabilizer), a closed subgroup whose ideal is finitely generated is the stabilizer of a line in a finite-dimensional representation.
+- **Quotients by normal subgroups**: let `G` be geometrically reduced and of finite type over a field, and `N` a normal closed subgroup. The fppf quotient of `G` by `N` [is represented by the coinvariant Hopf algebra](https://taucetiproject.github.io/TauCeti/docs/TauCeti/Algebra/AlgebraicGroup/Fppf/Quotient/Coinvariants.html#TauCeti.CommHopfAlgCat.coinvariantsFppfQuotientIso), and [its kernel is exactly `N`](https://taucetiproject.github.io/TauCeti/docs/TauCeti/Algebra/AlgebraicGroup/HopfIdeal/Coinvariants/Exactness.html#TauCeti.CommHopfAlgCat.kernelHopfIdeal_coinvariantsι_eq). A concrete case is `PGLₙ`: over a field, [`GLₙ / Z(GLₙ)` is represented by the automorphism group scheme of the matrix algebra](https://taucetiproject.github.io/TauCeti/docs/TauCeti/Algebra/AlgebraicGroup/ProjectiveGeneralLinear/Quotient.html#TauCeti.ProjectiveGeneralLinear.centerQuotientFppfIso).
 
 ### Notable definitions and infrastructure
 
-- **The fppf quotient sheaf.** The quotient of an affine group by a normal Hopf ideal is a group
-  object in fppf sheaves
-  ([`fppfQuotientSheaf`](https://taucetiproject.github.io/TauCeti/docs/TauCeti/Algebra/AlgebraicGroup/Fppf/Quotient/Basic.html#TauCeti.CommHopfAlgCat.fppfQuotientSheaf)),
-  with a locally surjective projection whose kernel pair is the torsor square
-  ([`isPullback_fppfQuotientTorsor`](https://taucetiproject.github.io/TauCeti/docs/TauCeti/Algebra/AlgebraicGroup/Fppf/Quotient/Torsor.html#TauCeti.CommHopfAlgCat.isPullback_fppfQuotientTorsor)).
-  This makes short exact sequences and the component group expressible; representability by a
-  scheme is not addressed.
-- **The identity component.** `G°` is a closed subgroup scheme with connected carrier
-  ([`identityComponentSpec`](https://taucetiproject.github.io/TauCeti/docs/TauCeti/Algebra/AlgebraicGroup/Connected/GroupScheme.html#TauCeti.FiniteTypeCommHopfAlgCat.identityComponentSpec)),
-  cut out by a normal Hopf ideal, and over an algebraically closed field its component group is
-  finite
-  ([`instFiniteComponentGroupPoints`](https://taucetiproject.github.io/TauCeti/docs/TauCeti/Algebra/AlgebraicGroup/Connected/ComponentGroup/Basic.html#TauCeti.FiniteTypeCommHopfAlgCat.instFiniteComponentGroupPoints)).
-- **Unipotence, geometrically.** A group is smooth unipotent when it is smooth and every
-  algebraically-closed-valued point acts unipotently in every finite-dimensional representation
-  ([`smoothUnipotentCommHopfAlgProperty_iff`](https://taucetiproject.github.io/TauCeti/docs/TauCeti/Algebra/AlgebraicGroup/Unipotent/Basic.html#TauCeti.smoothUnipotentCommHopfAlgProperty_iff)),
-  the definition reductivity is stated against.
+- **Orbits in projective space.** The orbit of a line under a group of finite type is a scheme. The map onto it is [flat over a dense open](https://taucetiproject.github.io/TauCeti/docs/TauCeti/Algebra/AlgebraicGroup/Representation/ProjectiveOrbit/GenericFlatness.html#TauCeti.Comodule.exists_dense_open_flat_toProjectiveOrbit), and rational translations act transitively on its closed points. These are the inputs for representing `G/H`.
+- **Borel subgroups and pinnings over a base.** A [Borel subgroup over a ring](https://taucetiproject.github.io/TauCeti/docs/TauCeti/Algebra/AlgebraicGroup/Borel/Over.html#TauCeti.HopfIdeal.IsBorelOver) is a smooth closed subgroup that is Borel on every geometric fibre. A [pinning](https://taucetiproject.github.io/TauCeti/docs/TauCeti/Algebra/AlgebraicGroup/Pinning/Basic.html#TauCeti.Pinning) adds a split maximal torus and trivializations of the simple root spaces.
+- **Explicit Chevalley carriers.** These are toral closures of root subgroups inside general linear groups over `ℤ`, such as the [`E₆` minuscule carrier](https://taucetiproject.github.io/TauCeti/docs/TauCeti/Algebra/Lie/E6/Minuscule/GroupScheme.html#TauCeti.E6Minuscule.groupScheme). A morphism out of the type-`C` carrier [is determined by its values on the root subgroups and the torus](https://taucetiproject.github.io/TauCeti/docs/TauCeti/Algebra/Lie/Symplectic/StandardCarrier/Scheme.html#TauCeti.SpStd.groupScheme_hom_ext).
 
 ### Roadmap coverage
 
-Layers 0 and 2 are done, as is Layer 1 now that reconstruction has closed. Layer 3 is done except
-that quotients are only fppf sheaves and the identity component and component group are currently
-developed over an algebraically closed field. Layer 4 is done: Jordan decomposition, groups of
-multiplicative type with their Galois module structure on characters and cocharacters, tori with
-a perfect character-cocharacter pairing, and Cartier duality. Layer 5 has the definition of
-unipotence with its closure properties, `𝔾ₐ` and the upper-unitriangular groups as examples,
-solvability of geometric points closed under extensions, and no unipotent radical. Layer 6 has
-reductive and semisimple as object properties
-([`reductiveCommHopfAlgProperty_iff`](https://taucetiproject.github.io/TauCeti/docs/TauCeti/Algebra/AlgebraicGroup/Reductive/Basic.html#TauCeti.reductiveCommHopfAlgProperty_iff))
-and linear reductivity separately
-([`IsLinearlyReductive`](https://taucetiproject.github.io/TauCeti/docs/TauCeti/Algebra/Coalgebra/Comodule/LinearlyReductive.html#TauCeti.Coalgebra.IsLinearlyReductive)),
-but no theorem connecting them and no example of either beyond diagonalizable groups. Layers 7
-and 8 are untouched apart from a Borel subgroup of `GL₂` and the weight grading of the adjoint
-action. Layer 9 has root subgroups of `GLₙ` and `SLₙ` with the type-A Chevalley commutator
-relations, the Serre presentation of split semisimple Lie algebras, and the Kostant integral form
-in rank one. Worked examples now include the orthogonal and symplectic groups as Hopf-ideal
-quotients of `GLₙ` with their points identified.
+Layers 0–2 and 4 are done.
+
+- **Layer 3** has Hopf ideals, kernels, component groups, short exact sequences, Chevalley's theorem, and the quotient of a geometrically reduced group by a normal subgroup as the fppf quotient. It lacks representability of `G/H` for a general closed subgroup, and affineness of `G/H` when `H` is reductive.
+- **Layer 5** can recognise the unipotent radical but has no general maximality theorem.
+- **Layer 6** proves that `GLₙ`, `SLₙ`, `Sp₂ₘ` and `SOₙ` are reductive, the last away from characteristic two. It also has radicals, central isogenies, derived subgroups and linear reductivity, and has `PGLₙ` as the fppf quotient of `GLₙ` by its centre. It lacks the characteristic-zero equivalence with linear reductivity, and simply connected covers. For `SLₙ → PGLₙ`, finiteness and a central kernel are proved, but the map is not yet shown to be a central isogeny.
+- **Layer 7** has Borel subgroups, maximal tori, dynamic parabolics, Tits systems for `GLₙ` and `SLₙ`, and root data for three split classical families. Conjugacy of Borel subgroups is proved only for `GLₙ` and `SLₙ`.
+- **Layer 8** is untouched.
+- **Layer 9** has pinnings, explicit carriers for many types with triality and special isogenies, and reductivity of the short-root `G₂` and `F₄` carriers over their prime fields. It lacks a construction from an arbitrary root datum, and the pinned isomorphism theorem.
 
 ## The frontier
 
-- **The unipotent radical.** Layer 5's hard core, and the reason reductivity is currently a
-  definition with no examples. Nothing constructs a maximal connected normal unipotent subgroup;
-  the closure properties of unipotence are the raw material.
-- **A group proved reductive.** `GLₙ`, `SLₙ` and tori are all present and none is known to be
-  reductive. The geometric definition requires ruling out unipotent normal subgroups of the base
-  change to an algebraic closure, which needs the previous item or a direct argument.
-- **Lie-Kolchin.** The flag machinery is conditional: if every nonzero finite-dimensional comodule
-  has a nonzero fixed vector then every one has an upper-unitriangular basis
-  ([`exists_basis_coefficientMatrix_isUpperUnitriangular_of_fixed_vectors`](https://taucetiproject.github.io/TauCeti/docs/TauCeti/Algebra/Coalgebra/Comodule/Flag/Induction.html#TauCeti.Comodule.exists_basis_coefficientMatrix_isUpperUnitriangular_of_fixed_vectors)).
-  The fixed-vector hypothesis is undischarged for solvable or unipotent groups.
-- **Root data of a group.** The bracket of weight vectors multiplies weights
-  ([`lie_mem_adjointWeightSpace_mul`](https://taucetiproject.github.io/TauCeti/docs/TauCeti/Algebra/AlgebraicGroup/Tangent/RootSpace.html#Derivation.lie_mem_adjointWeightSpace_mul)),
-  which is the grading a root datum would sit on, but there is no maximal torus inside a larger
-  group, no root set, and no Weyl group.
-- **Chevalley-Demazure over `ℤ`.** The Serre presentation and the rank-one Kostant form exist; the
-  general Kostant form, pinnings, the construction itself and the isomorphism theorem for pinned
-  groups do not.
+- **`SLₙ → PGLₙ` as a central isogeny.** Over a field, this reduces to injectivity of the coordinate morphism `O(PGLₙ) → O(SLₙ)`, which is the one missing piece.
+- **Representable quotients `G/H`.** The ingredients listed above are in place. What remains is to combine them into global flatness of the orbit map, and then to identify the orbit with the fppf sheaf `G/H`. Affineness when `H` is reductive comes after that.
+- **Conjugacy of Borel subgroups, and root data in general.** Conjugacy is known only for `GLₙ` and `SLₙ`. The general case comes before the root datum of an arbitrary reductive group. Identifying `N(T)/T` with the Weyl group is still open.
+- **Reductive versus linearly reductive in characteristic zero.** Linear reductivity and exact invariants exist; the equivalence itself is missing.
+- **Carriers as pinned groups.** The type-`C` carrier is matched with the symplectic group only on points over a field. The spin, tripled `D₄` and `E₆` carriers still have to be identified with the smooth connected subgroups their root subgroups generate, and then given pinnings. The existence half of the pinned isomorphism theorem is also missing.
