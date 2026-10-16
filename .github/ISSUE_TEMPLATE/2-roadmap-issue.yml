@@ -15,6 +15,7 @@ body:
       label: Roadmap area
       options:
         - AdicSpaces
+        - AdicSpacesPartII
         - AlgebraicCurves
         - AlgebraicTopology
         - AlgebraicVectorBundles
@@ -26,6 +27,7 @@ body:
         - ClassFieldTheory
         - ClassifyingSpaces
         - CombinatorialHeegaardFloer
+        - CompactOperators
         - ConformalMapping
         - DGAInfinity
         - DGFloer
@@ -51,6 +53,7 @@ body:
         - LocalGaloisGroups
         - ModularCurves
         - ModularForms
+        - NewtonPolygons
         - NoncommutativeGeometry
         - NumberFieldArithmetic
         - OneParameterSemigroups
@@ -58,6 +61,7 @@ body:
         - OptimalTransport
         - OrthogonalSpinGroups
         - PDE
+        - PadicFunctionalAnalysis
         - PadicMeasuresIwasawaAlgebras
         - PeripheralActions
         - PivotalSpherical
@@ -69,7 +73,9 @@ body:
         - QuantumGroups
         - RealAlgebraicGeometry
         - ReductiveGroups
+        - Regularity
         - RepresentationTheory
+        - RigidAnalyticGeometry
         - SchemeAndStackFoundations
         - StablePeriodicCurved
         - StableReduction
