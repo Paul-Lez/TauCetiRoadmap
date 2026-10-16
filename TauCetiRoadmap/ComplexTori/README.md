@@ -47,7 +47,7 @@ specific global assembly.
   complex quotients, holomorphic descent, holomorphic bundles, and compatible open gluing. This
   roadmap consumes those results on the standard orbit quotient and adds the torus-family and
   cyclic-affine geometry.
-- The [universal-covers roadmap](../UniversalCovers/README.md) owns covering spaces, deck groups,
+- The [completed universal-covers roadmap](../../Completed/UniversalCovers/README.md) owns covering spaces, deck groups,
   and lifting. This roadmap uses its quotient-cover and monodromy interfaces; it does not package
   another equivariant universal cover.
 - The [algebraic-topology roadmap](../AlgebraicTopology/README.md) owns general fundamental groups, singular homology, Wang
