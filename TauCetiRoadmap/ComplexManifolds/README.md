@@ -20,7 +20,7 @@ every object it introduces.
    maps and diffeomorphisms, and the construction commutes with products, open subspaces, and
    restrictions.
 2. Its complex atlas induces the canonical orientation of the underlying real manifold in the
-   orientation carrier shared with the Heegaard Floer roadmap. This orientation is functorial for
+   orientation carrier supplied by the differential-geometry roadmap. This orientation is functorial for
    biholomorphisms and compatible with products, open submanifolds, realification, and recharting.
 3. Mathlib's carrier `OnePoint ℂ` has a named two-chart complex atlas for the Riemann sphere, with
    compactness and separation inherited from its existing topology.
@@ -52,18 +52,18 @@ cohomology; or Riemann--Roch.
   quotient-manifold theorem takes the shape of mathlib4#40727 (see below). This roadmap extends
   those APIs and does
   not introduce replacement manifold, gluing, quotient, or bundle carriers.
-- The [universal-covers roadmap](../UniversalCovers/README.md) owns universal covers, deck groups,
+- The [completed universal-covers roadmap](../../Completed/UniversalCovers/README.md) owns universal covers, deck groups,
   quotient-cover classification, and lifting theory. This roadmap consumes
   `IsQuotientCoveringMap` and `IsAddQuotientCoveringMap` and adds the compatible
   local-diffeomorphism and holomorphic descent API.
 - The [geometric-topology roadmap](../GeometricTopology/README.md) owns manifolds with boundary,
   collars, handle attachment, connected sum, cobordisms, and boundary gluing. Open gluing of
   boundaryless structure-groupoid atlases is owned here.
-- The [Heegaard Floer roadmap](../HeegaardFloer/README.md) owns the orientation API and general
-  almost-complex and pseudoholomorphic analysis. This roadmap proves that a complex atlas has its
-  canonical real orientation in that exact carrier and supplies integrable atlas constructions.
+- The [differential-geometry roadmap](../DifferentialGeometry/README.md), Layers 2 and 10, owns
+  chosen manifold orientations and degree. This roadmap proves that a complex atlas has its
+  canonical real orientation in that carrier and supplies integrable atlas constructions.
   The bridge theorem is an equivalence between the chartwise complex orientation defined here and
-  the Heegaard Floer orientation represented by the positive component of real frames; this
+  the DifferentialGeometry chosen orientation represented by source-indexed chart signs; this
   roadmap does not introduce a second orientation carrier.
 - The [conformal-mapping roadmap](../ConformalMapping/README.md) owns one-variable analytic
   theorems such as Riemann mapping and Schwarz reflection. It consumes the Riemann-sphere manifold
@@ -177,7 +177,7 @@ Chapter I, for atlases and compatible transformations, together with Huybrechts,
 
 ## Milestone 2: the canonical real orientation
 
-Use the orientation carrier and positive-frame convention owned by the Heegaard Floer roadmap.
+Use the source-indexed chart-sign orientation carrier owned by DifferentialGeometry Layer 2.
 For a finite-dimensional complex model `E`, regard an ordered complex basis as the ordered real
 basis `(e₁, i e₁, ..., eₙ, i eₙ)`.
 
@@ -193,11 +193,11 @@ basis `(e₁, i e₁, ..., eₙ, i eₙ)`.
    separately fixed model orientation has the sign of the real determinant. State the sign
    incurred by permuting product factors.
 4. Prove that every biholomorphism preserves the canonical orientation. Identify this predicate
-   literally with the orientation-preserving-map predicate from the Heegaard Floer API, rather
+   literally with the orientation-preserving-map predicate from the DifferentialGeometry API, rather
    than through an adapter or a second orientation definition.
 
 Bott--Tu, *Differential Forms in Algebraic Topology*, Section 1, supplies the complex-orientation
-convention; the shared Lean carrier and comparison theorem come from the Heegaard Floer roadmap.
+convention; the shared Lean carrier and comparison theorem come from the differential-geometry roadmap.
 
 ## Milestone 3: the Riemann sphere
 
@@ -337,7 +337,7 @@ and change-of-trivialization spine.
 ## Dependency order
 
 Milestones 1 and 3 start from Mathlib. Milestone 2 uses Milestone 1 and the exact orientation carrier
-from the Heegaard Floer roadmap. Milestone 4 uses Milestone 1 and the Mathlib-owned quotient shape.
+from the differential-geometry roadmap. Milestone 4 uses Milestone 1 and the Mathlib-owned quotient shape.
 Milestone 5 uses Milestone 1 and `TopCat.GlueData`. Milestone 6 uses Milestone 5's canonical maps
 only for its gluing applications and can develop its general topology in parallel. Milestone 7 uses
 Milestones 1 and 5; its hypersurface and canonical-bundle targets also use Milestone 2.
