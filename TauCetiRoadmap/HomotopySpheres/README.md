@@ -72,11 +72,15 @@ endpoint.
   carrier, and smooth triangulation.  This roadmap uses those same objects.  It introduces no
   second boundary, collar, gluing, handle, surgery, connected-sum, cobordism, or triangulation
   type.
-- The [Heegaard Floer roadmap](../HeegaardFloer/README.md) owns the shared manifold orientation
-  and degree API and, in Lanes M/F0, finite-dimensional Sard, Morse functions, stable and
-  unstable manifolds, and Morse--Smale transversality.  This roadmap consumes them to prove
-  handle decompositions, Whitney and cancellation results, and Pontryagin--Thom transversality.
-- The [universal-covers roadmap](../UniversalCovers/README.md) owns basepoint change, covering
+- [DifferentialGeometry Layers 2 and 10](../DifferentialGeometry/README.md) own chosen
+  manifold orientations and degree. Consume its source-indexed chart-sign carrier, reversal,
+  orientation-at-point and derivative-preservation laws, extending these to the collar
+  comparisons below. Retain Tau Ceti's existing orientation-preserving groupoid and orientability
+  API from `TauCeti.Geometry.Manifold.Orientation`; do not duplicate it.
+- The [Heegaard Floer roadmap](../HeegaardFloer/README.md), Lanes M/F0, supplies the distinct
+  trajectory and Morse–Smale inputs for handle decompositions, Whitney moves and cancellation.
+  The finite-dimensional Sard, smooth-map and degree inputs use DifferentialGeometry.
+- The [completed universal-covers roadmap](../../Completed/UniversalCovers/README.md) owns basepoint change, covering
   maps, and induced maps on homotopy groups.  The simple-connectivity and homotopy-equivalence
   arguments here consume those interfaces.
 - The spin-representation section of the
@@ -100,18 +104,23 @@ endpoint.
   or limits where compact generation is required for an exponential law.
 
 `Suggested.lean` keeps two supplier-interface mirrors only under
-`TauCetiRoadmap.HomotopySpheres.Internal`: `OrientationSupplierMirror` for the
-Heegaard-Floer-owned orientation contract and `GeometricTopologySupplierMirror` for the
-GeometricTopology-owned collared-boundary contract.  These namespaces are compilation scaffolds,
-not exported targets.  Their exact deletion gate is:
+`TauCetiRoadmap.HomotopySpheres.Internal`. The orientation mirror copies DifferentialGeometry
+Layer 2's `OrientationLift` with source-indexed signs and its diagonal-flip setoid exactly;
+its agreement and diffeomorphism predicates are derived conveniences. The collared-geometry
+mirror describes the GeometricTopology contract. These are compilation scaffolds, not exported
+carriers. Their integration gate is:
 
-1. import the supplier modules exposing `Manifold.Orientation`,
-   `Manifold.Orientation.Agrees`, `Manifold.Diffeomorph.PreservesOrientation`,
+1. import the DifferentialGeometry supplier providing `Manifold.Orientation`, `orientationAt`,
+   `Manifold.Orientation.neg` and `IsOrientationPreservingAt`, and the GeometricTopology supplier
+   providing
    `CollaredOrientedManifold`, `SmoothEmbeddedClosedDisk`, `CollarOpen`, and `CollarSource`,
    including the empty/disconnected bordism, boundary-model exterior and proper-tube
    contracts specified below;
-2. replace each occurrence of an internal mirror name by that exact supplier declaration; and
-3. delete both internal namespaces whole.
+2. replace the copied orientation carrier by the supplier carrier and rederive agreement and
+   preservation from `orientationAt` and `IsOrientationPreservingAt`. Check equality at points,
+   reversal, derivatives and the outward-normal boundary comparisons explicitly;
+3. replace the collared-geometry mirror by its supplier and delete the copied carriers. No
+   integration step may identify different orientation representations by a mere rename.
 
 No implementation module may export either mirror or retain it beside the supplier import.
 
@@ -183,7 +192,10 @@ These choices are acceptance conditions for every stage.
   correspondence independent of stabilization and isotopy.  Do not identify the two framings
   definitionally. Restriction to a codimension-one submanifold consumes a chosen smooth
   normal-line framing and a smooth splitting `TM ⊕ ℝ ≅ f*TN` whose first summand is the
-  actual derivative of `f`; the dimension equation is explicit. General embeddings do not
+  actual derivative of `f`; the dimension equation is explicit. Smoothness is imposed on the
+  forward and inverse maps of the canonical total bundles, not on a family of matrices between
+  fixed model spaces: the latter would incorrectly trivialize `TM`. The outward normal of
+  `S² -> R³` is a regression example, without assuming that `TS²` is trivial. General embeddings do not
   supply a trivial normal line. Boundary restrictions use the collar's outward normal.
   The outward-normal-first ordering and its permutation into the fixed stabilization
   convention are part of the construction. Incoming comparisons reverse that normal line.
@@ -238,17 +250,17 @@ The development starts from these current APIs and cited roadmap targets.
   right adjoint of that inclusion), its adjunction, and the Cartesian closed API are targets here,
   not inferred instances.
 - Geometric topology's boundary, collar, gluing, tubular-neighbourhood, connected-sum, handle,
-  surgery, cobordism, and triangulation outputs, plus Heegaard Floer's orientation, degree,
-  Morse, Sard, and transversality outputs.
+  surgery, cobordism, and triangulation outputs; DifferentialGeometry's orientations, degree
+  and Sard theorem; and Heegaard Floer's distinct trajectory and Morse–Smale inputs.
 
 These Mathlib pull requests determine target shapes.  Consume every declaration present at the
 dependency pin, build the missing interface in Tau Ceti now in the same shape, and replace it by
 imports whenever a later pin supplies it.
 
 - [mathlib4#35376](https://github.com/leanprover-community/mathlib4/pull/35376) develops
-  `Manifold.Orientation`, orientability, orientation lifts, and degree.  Follow its orbit-quotient
-  `OrientationLift` carrier and `orientationAt` accessor exactly; do not replace it with a local
-  record of tangent-fibre choices.
+  `Manifold.Orientation`, orientability, orientation lifts, and degree. Follow
+  DifferentialGeometry Layer 2's source-indexed `OrientationLift`, diagonal-flip setoid, and
+  `orientationAt` accessor exactly; do not replace it with a local record of tangent-fibre choices.
 - [mathlib4#31350](https://github.com/leanprover-community/mathlib4/pull/31350) proposes the
   collared bordism and boundary-identification shape consumed here through geometric topology.
 - [mathlib4#28246](https://github.com/leanprover-community/mathlib4/pull/28246) proves simple
@@ -269,7 +281,8 @@ in the homotopy-sphere namespace.
 
 ## Stage 1: h-cobordisms and the high-dimensional theorem
 
-This stage consumes the shared geometric-topology and Heegaard-Floer foundations.
+This stage consumes geometric topology, DifferentialGeometry orientations/Sard, and the
+Heegaard-Floer trajectory and Morse–Smale foundations.
 
 1. On the existing oriented collared-cobordism carrier, define `IsHCobordism W` by requiring
    both boundary inclusions to be homotopy equivalences.  Prove invariance under equivalence,
@@ -518,14 +531,23 @@ VIII--X, gives the modern Pontryagin--Thom proof.  Hirsch, *Differential Topolog
 approximation, transversality, embeddings, and tubular neighbourhoods.  Every independence
 statement above is part of the theorem, not quotient-by-choice automation.
 
+The sphere-source collapse has a compact source manifold as an explicit hypothesis.
+Use the chosen normal-disc quotient model of the Thom space: the tubular coordinate maps
+to its corresponding Thom class, the zero section maps to the zero-section class, and the
+complement of the open tube (including ambient infinity) maps to the Thom basepoint.
+State these as evaluation laws. The `FramedCycle` application supplies compactness; a
+noncompact source does not instantiate this classical collapse theorem.
+
 ## Stage 6: almost-framed groups, geometric `P_n`, and the exact sequence
 
 ### 6A. Almost-framed bordism and comparison
 
-1. Define a geometric almost-framed `n`-cycle as a closed oriented smooth manifold `M`, an
-   embedded defect disc, and a stable tangent framing of the punctured manifold which is product-
-   compatible near the new boundary.  Its source is smoothly diffeomorphic, as a manifold with
-   boundary, to the standard closed disc. The closed exterior has its own half-space
+1. In the Kervaire–Milnor range `n ≥ 5`, define a geometric almost-framed `n`-cycle as a
+   connected closed oriented smooth manifold `M`, an embedded defect disc, and a stable
+   tangent framing of the punctured manifold which is product-
+   compatible near the new boundary. Require this punctured framing to induce the restriction
+   of the chosen orientation of `M`. The defect disc's source is smoothly diffeomorphic,
+   as a manifold with boundary, to the standard closed disc. The closed exterior has its own half-space
    manifold-with-boundary model and boundary identification with the defect sphere, not the
    ambient boundaryless chart model. The ambient map is a smooth proper embedding with an
    interior collar and non-surjective image.  Its exterior collar has target open in the closed
@@ -541,8 +563,10 @@ statement above is part of the theorem, not quotient-by-choice automation.
    framing off that neighbourhood whose endpoint
    pullbacks equal the two displayed complement framings after one common stabilization.
 2. Prove independence of defect discs, collars, representatives, and stabilization.  Prove the
-   bordism relation and connected-sum abelian-group laws; call the resulting exported group
-   `AlmostFramedBordism n`.
+   bordism relation and connected-sum abelian-group laws in dimension `n ≥ 5`; call the
+   resulting exported group `AlmostFramedBordism n`. Filling-group instances and the maps
+   consuming these groups carry their dimension range explicitly. No degree-zero group is
+   asserted on a carrier that requires a positive-dimensional defect disc.
 3. Separately define the historical Kervaire--Milnor carrier: a closed oriented `n`-manifold with
    their stable normal frame field on the complement of one chosen top cell, modulo their
    framed-bordism relation on the punctured representatives.  Pin the collar, stabilization, and
@@ -611,6 +635,15 @@ statement above is part of the theorem, not quotient-by-choice automation.
    relative handle argument.  Compare the collar and three-face corner conventions, prove both
    composites, and prove compatibility with boundary connected sum, orientation reversal, and
    boundary.  Only then identify the resulting quotient with `P_n`.
+
+Before defining defect deletion on quotient classes, construct the following map on
+connected almost-framed representatives. Extend the open-exterior framing to the closed
+exterior using its fixed product collar and prove that restriction recovers the given
+framing. Give the closed exterior its inherited orientation and prove the extended framing
+induces it. In dimension at least two, prove the exterior connected, and identify its
+boundary with the defect sphere with the reversed boundary orientation. Package these
+specific data as a `StableFramedFillingCycle`, then prove witness compatibility and the
+required Stage 6B comparison before descending the map. No component is discarded.
 
 ### 6C. Maps and exactness
 
@@ -699,8 +732,14 @@ homology and duality, and Stages 4--6's framings and `P_n` cycles.
 2. In dimension `4k`, identify the obstruction with the signature of the even unimodular middle
    form divided by eight.  Prove divisibility by eight, classify the Witt group, construct the
    `E_8` plumbing realization, and obtain `P_(4k) ~= Z` for `k>=2` with the stated normalization.
-3. In dimension `4k+2`, classify nonsingular quadratic forms over `F_2` by Arf invariant, realize
-   both classes geometrically, and obtain `P_(4k+2) ~= Z/2` for `k>=1`.
+3. Consume the pure algebra substage of
+   [TangentialBordism B3.2, #942](https://github.com/TauCetiProject/TauCetiRoadmap/pull/942)
+   for `finiteQuadraticArf`, basis independence, hyperbolic/anisotropic decomposition and
+   the zero-Arf/zero-quadratic-Lagrangian criterion, including dimension zero. Own the
+   integral Wall-form reduction to that shared `F₂` refinement and its comparison here.
+   Realize both classes geometrically and obtain `P_(4k+2) ~= Z/2` for `k>=1`.
+   Only B3.2's early pure algebra is a dependency: TangentialBordism's later PT theory
+   consumes this roadmap and is not an input to this calculation.
 4. Prove that framed surgery on an almost-framed cycle produces precisely the class carried by
    `p : A_n -> P_n`.  Interior surgery is a trace cobordism, not an additional quotient relation.
 
@@ -712,15 +751,23 @@ final `L`-group table does not replace this decomposition.
 
 ## Stage 8: the Kervaire--Milnor comparison with stable homotopy
 
-1. Given an almost-framed cycle, use the framing off its defect disc and Pontryagin--Thom to
-   define its stable sphere class.  Show that changing the extension over the disc changes the
-   class by `im J`.
-2. Prove the exact sequence
-   `pi_n(SO) ->^J pi_n^S -> A_n -> pi_(n-1)(SO)` by identifying the last map with the obstruction
-   to extending the stable framing.  Prove exactness directly at all four terms.
-3. When the last `SO` group vanishes, identify `A_n` canonically with `coker J_n`.  Transport the
-   Stage 6 exact segment through this isomorphism and identify both boundary images with the
-   corresponding `bP` subgroups.
+1. Use Pontryagin–Thom on a closed framed representative to construct the always-defined
+   forgetting homomorphism `π_n^S → A_n`: choose a defect disc and retain the framing off it.
+   Prove independence of the representative, defect, collar and stabilization. Framed
+   disconnected representatives are normalized by framed connecting 1-handles; prove this
+   normalization independent and compatible with addition before using connected `A_n` cycles.
+2. Construct the extension obstruction `A_n → π_(n-1)(SO)` from the framing on the defect
+   sphere, with its orientation and stabilization conventions. Prove the exact sequence
+   `π_n(SO) →^J π_n^S → A_n → π_(n-1)(SO)` at its intermediate terms. A cycle in the
+   obstruction kernel admits an extension across its defect; only for such cycles apply PT
+   to the resulting closed framing. Changing that extension changes its stable class by
+   `im J_n`, so the canonical inverse lands in `coker J_n`. Prove the resulting canonical
+   isomorphism `coker J_n ≅ ker(A_n → π_(n-1)(SO))`.
+3. If `π_(n-1)(SO)=0`, identify all of `A_n` with that kernel and hence with `coker J_n`.
+   Transport Stage 6's exact segment through this isomorphism and identify both boundary
+   images with the corresponding `bP` subgroups. The sixth-dimensional application uses
+   the independently proved `π_5(SO)=0`; no arbitrary almost-framed cycle receives a
+   preferred element of `π_n^S`.
 4. Define the Kervaire invariant on an almost-framed `(4k+2)`-manifold as the Arf invariant of
    the surgery-normalized middle-dimensional quadratic form.  Prove bordism invariance,
    compatibility with Pontryagin--Thom, and equality with the map from `coker J` to `P_(4k+2)`.
@@ -752,16 +799,20 @@ as a field of a low-stem data record.
 4. Record the chain as one compatible table of groups, generators, and suspension maps for stems
    zero through six.  Each table entry links to the theorem calculating it; the table itself is
    generated documentation, not proof input.
-5. Apply Pontryagin--Thom and a regular value to the normalized map above to obtain its framed
-   six-manifold.  Construct a framed bordism from it to the capped two-vertex plumbing of two
-   tangent `D^3`-bundles over `S^3`: prove that the plumbing boundary is a homotopy `5`-sphere,
-   cap it using the Stage 6 comparison, and track the framing across the cap.  On the resulting
-   closed manifold identify the two middle-dimensional generators `a,b`, prove their intersection
-   matrix is the standard symplectic matrix, and calculate the framed quadratic refinement
-   `q(a)=q(b)=1`.  Hence its Arf and Kervaire invariants are one.  Finally prove that this geometric
-   class is the Pontryagin--Thom class of `nu_4 o Sigma^3(nu_4)` and that the comparison
-   `coker(J_6) -> P_6` sends it to the nonzero Wall class.  Therefore
-   `KI : pi_6^S -> Z/2` is an isomorphism.
+5. Construct a chosen stable framing `φ_ν` of the actual `S³` whose Pontryagin–Thom
+   class is the normalization of `ν` fixed in Steps 1 and 3. Produce it from a regular
+   fibre of the quaternionic Hopf map, with an explicit normal-to-tangent framing comparison.
+   On the closed product `S³ × S³`, use `φ_ν × φ_ν` and Stage 5's PT product theorem to
+   identify its stable class with the selected composition `ν²`, including the summand
+   permutations. Identify the factor generators `a,b` in middle homology, prove their
+   symplectic intersection matrix, and calculate the geometric framed refinement
+   `q(a)=q(b)=1` from the factor normal framings and the Hopf-invariant-one calculation
+   of Stage 3. Prove this framing/refinement comparison before using its Arf value. Use the shared
+   algebraic Arf theorem to conclude Kervaire invariant one. Compare this class with the regular-value representative
+   of `ν_4 ∘ Σ³ν_4` by the PT inverse bordism, and prove that
+   `coker(J_6) → P_6` sends it to the nonzero Wall class. Thus
+   `KI : π_6^S → ℤ/2` is an isomorphism. This construction uses an already closed product,
+   so requires neither a homotopy-five-sphere cap nor `Theta_5=0`.
 6. Bott periodicity gives `pi_5(SO)=0` and `pi_6(SO)=0`.  Use Stage 8 to prove
    `A_6 ~= coker(J_6) ~= pi_6^S ~= Z/2`, with the comparison sending the framed `nu^2`
    representative to the nonzero class.
@@ -772,7 +823,7 @@ as a field of a low-stem data record.
    zero.  Conclude `Theta_6=0`.
 
 Toda, Chapters I--V, is normative for the unstable representative, its composition order, and
-its stabilization in Steps 1--4.  Kervaire--Milnor, Sections 4--6, supplies the plumbing and the
+its stabilization in Steps 1--4.  Kervaire--Milnor, Sections 4--6, supplies the geometric refinement and the
 comparison with `P_6`, while Browder, *The Kervaire Invariant of Framed Manifolds and its
 Generalization*, supplies the framed quadratic refinement, Arf invariant, and Pontryagin--Thom
 comparison.  The proof above explains how the cited table is reconstructed; importing the table
@@ -801,13 +852,13 @@ as unexplained data does not meet the roadmap.
 
 | Track | Depends on | Feeds |
 | --- | --- | --- |
-| 1 h-cobordism | geometric topology, Heegaard Floer, algebraic topology | 2, 10 |
+| 1 h-cobordism | geometric topology, DifferentialGeometry orientations/Sard, HF Morse data, algebraic topology | 2, 10 |
 | 2 small skeleton and `Theta_n` | 1, triangulation, geometric connected sum | 6, 9--10 |
 | 3 James/EHP/stable stems | algebraic topology, compactly generated substrate | 5, 8--9 |
 | 4 `SO`/`BSO`/Bott/`J` | compactly generated substrate, bundles, Lie groups | 5--6, 8--9 |
 | 5 Pontryagin--Thom | 3--4, tubular neighbourhoods, transversality | 6, 8--9 |
 | 6 `A_n`, `P_n`, exactness | 1--2, 4--5 | 7--9 |
-| 7 Wall surgery | algebraic topology, geometric surgery, 4--6 | 8--9 |
+| 7 Wall surgery | algebraic topology, geometric surgery, TangentialBordism B3.2 pure algebra, 4--6 | 8--9 |
 | 8 stable comparison | 3--7 | 9 |
 | 9 sixth-stem calculation | 3--8 | 10 |
 | 10 smooth recognition | 1--2, 9 | endpoint |
@@ -874,8 +925,8 @@ occurs in Stage 7 after the obstruction groups and surgery theorem have been con
   even-dimensional whole-module quadratic forms, odd-dimensional formations with lawful
   lagrangian submodules, vanishing, realization, and group computation.
 - The sixth-stem result records the intermediate stem-zero-through-six computations, the EHP
-  maps, the normalized representative `nu_4 o Sigma^3(nu_4)`, its order, the plumbing comparison,
-  and its nonzero Kervaire invariant.
+  maps, the normalized representative `nu_4 o Sigma^3(nu_4)`, its order,
+  the framed `S³ × S³` product comparison, and its nonzero Kervaire invariant.
 - `Theta_6=0` refers to the geometric group of homotopy spheres and uses the proved maps
   `P_7 -> Theta_6 -> coker(J_6) -> P_6`.
 - Smooth recognition concludes a diffeomorphism to Mathlib's standard metric sphere under
@@ -912,3 +963,7 @@ occurs in Stage 7 after the obstruction groups and surgery theorem have been con
 - C. T. C. Wall, *Surgery on Compact Manifolds*, 2nd ed., AMS, 1999, Chapters 2--6.
 - William Browder, [*The Kervaire Invariant of Framed Manifolds and its
   Generalization*](https://doi.org/10.2307/1970686), Annals of Mathematics 90 (1969), 157--186.
+
+- Victor Snaith, [*The Arf–Kervaire invariant of framed manifolds*](https://arxiv.org/abs/1001.4751),
+  Definition 3.1 and §3.1 for compact-source collapse, and Example 8.3 for the Arf-one product.
+  Stage 9 additionally proves that its chosen product framing represents the normalized `ν²`.

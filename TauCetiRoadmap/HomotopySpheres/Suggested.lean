@@ -1,4 +1,5 @@
 import Mathlib
+import TauCeti.Geometry.Manifold.Orientation
 import TauCetiRoadmap.AlgebraicTopology.Suggested
 
 /-!
@@ -8,10 +9,11 @@ This file is not the roadmap and is not exhaustive. The definitive document is R
 The declarations below pin representative interfaces whose types rule out the vacuous
 orientation, framing, boundary, Pontryagin--Thom, and Wall interfaces.
 
-`Internal.OrientationSupplierMirror` is an exact temporary mirror of the Heegaard-Floer-owned
-orientation API. Its deletion gate is the import providing `Manifold.Orientation`,
-`Manifold.Orientation.Agrees`, and `Manifold.Diffeomorph.PreservesOrientation`; the implementation
-then replaces every mirror occurrence by those declarations and deletes the whole namespace.
+`Internal.OrientationSupplierMirror` copies DifferentialGeometry Layer 2's source-indexed
+`OrientationLift` and its diagonal-flip quotient. When the chosen-orientation supplier is imported,
+replace this copied carrier and derive agreement and preservation from `orientationAt` and
+`IsOrientationPreservingAt`, checking reversal, derivative and boundary-sign comparisons.
+Tau Ceti's existing orientation-preserving groupoid is imported directly.
 
 `Internal.GeometricTopologySupplierMirror` similarly mirrors only the collared-boundary
 contracts needed to type-check this file. Its deletion gate is the GeometricTopology import
@@ -93,43 +95,32 @@ def signedOrientation {ι : Type*} (ε : ℤˣ)
     (orient : _root_.Orientation ℝ E ι) : _root_.Orientation ℝ E ι :=
   Units.map (Int.castRingHom ℝ).toMonoidHom ε • orient
 
-noncomputable def tangentCoordChangeEquiv
-    {M : Type*} [TopologicalSpace M] [ChartedSpace H M] [IsManifold I 1 M]
-    (x y z : M) : E ≃ₗ[ℝ] E := by
-  sorry
-
-/-- A lift of a manifold orientation with continuous, chart-compatible signs. -/
+/-- DifferentialGeometry Layer 2.1's source-indexed orientation lift. -/
 structure OrientationLift (M : Type*) [TopologicalSpace M] [ChartedSpace H M]
-    [IsManifold I 1 M] [FiniteDimensional ℝ E] (ι : Type*) [Fintype ι]
-    [Fact (Fintype.card ι = Module.finrank ℝ E)] where
+    [FiniteDimensional ℝ E] (ι : Type*) [Fintype ι] where
   modelOrientation : _root_.Orientation ℝ E ι
-  chartSign : M → M → ℤˣ
-  continuousOn_chartSign : ∀ x, ContinuousOn (chartSign x) (chartAt H x).source
-  chartSign_eq_one_of_notMem : ∀ x z, z ∉ (chartAt H x).source → chartSign x z = 1
-  compatible : ∀ x y z, z ∈ (chartAt H x).source → z ∈ (chartAt H y).source →
-    _root_.Orientation.map ι (tangentCoordChangeEquiv I x y z)
-        (signedOrientation (chartSign x z) modelOrientation) =
-      signedOrientation (chartSign y z) modelOrientation
+  card_eq : Fintype.card ι = Module.finrank ℝ E
+  sign : (x : M) → (chartAt H x).source → ℤˣ
+  continuous_sign : ∀ x, Continuous (sign x)
+  sign_mul_sign : ∀ x x' y (hy : y ∈ (chartAt H x).source)
+      (hy' : y ∈ (chartAt H x').source),
+    ((sign x ⟨y, hy⟩ * sign x' ⟨y, hy'⟩ : ℤˣ) : ℤ) =
+      (SignType.sign (LinearMap.det
+        (fderivWithin ℝ (extChartAt I x' ∘ (extChartAt I x).symm) (Set.range I)
+          (extChartAt I x y) : E →ₗ[ℝ] E)) : ℤ)
 
-noncomputable instance OrientationLift.instSMul
-    {M : Type*} [TopologicalSpace M] [ChartedSpace H M] [IsManifold I 1 M]
-    [FiniteDimensional ℝ E] {ι : Type*} [Fintype ι]
-    [Fact (Fintype.card ι = Module.finrank ℝ E)] :
-    SMul ℤˣ (OrientationLift I M ι) := by
-  sorry
+/-- The supplier's diagonal flip, with no off-source sign data. -/
+def OrientationLift.setoid
+    {M : Type*} [TopologicalSpace M] [ChartedSpace H M]
+    [FiniteDimensional ℝ E] {ι : Type*} [Fintype ι] :
+    Setoid (OrientationLift I M ι) where
+  r l l' := l' = l ∨
+    (l'.modelOrientation = -l.modelOrientation ∧ l'.sign = fun x y ↦ -l.sign x y)
+  iseqv := by sorry
 
-noncomputable instance OrientationLift.instMulAction
-    {M : Type*} [TopologicalSpace M] [ChartedSpace H M] [IsManifold I 1 M]
-    [FiniteDimensional ℝ E] {ι : Type*} [Fintype ι]
-    [Fact (Fintype.card ι = Module.finrank ℝ E)] :
-    MulAction ℤˣ (OrientationLift I M ι) := by
-  sorry
-
-/-- A manifold orientation is the orbit of compatible lifts under simultaneous reversal. -/
 abbrev Orientation (M : Type*) [TopologicalSpace M] [ChartedSpace H M]
-    [IsManifold I 1 M] [FiniteDimensional ℝ E] (ι : Type*) [Fintype ι]
-    [Fact (Fintype.card ι = Module.finrank ℝ E)] :=
-  MulAction.orbitRel.Quotient ℤˣ (OrientationLift I M ι)
+    [FiniteDimensional ℝ E] (ι : Type*) [Fintype ι] :=
+  Quotient (OrientationLift.setoid I (M := M) (ι := ι))
 
 namespace Orientation
 
@@ -140,6 +131,15 @@ noncomputable def orientationAt
     (o : Orientation I M ι) (x : M) : _root_.Orientation ℝ E ι := by
   sorry
 
+theorem orientationAt_mk
+    {M : Type*} [TopologicalSpace M] [ChartedSpace H M] [IsManifold I 1 M]
+    [FiniteDimensional ℝ E] {ι : Type*} [Fintype ι]
+    [Fact (Fintype.card ι = Module.finrank ℝ E)] (l : OrientationLift I M ι) (x : M) :
+    orientationAt I (Quotient.mk _ l) x =
+      if l.sign x ⟨x, mem_chart_source H x⟩ = 1 then l.modelOrientation
+      else -l.modelOrientation := by
+  sorry
+
 def Agrees
     {M : Type*} [TopologicalSpace M] [ChartedSpace H M] [IsManifold I 1 M]
     [FiniteDimensional ℝ E] {ι : Type*} [Fintype ι]
@@ -147,11 +147,26 @@ def Agrees
     (o₀ o₁ : Orientation I M ι) : Prop :=
   ∀ x, orientationAt I o₀ x = orientationAt I o₁ x
 
+noncomputable def neg
+    {M : Type*} [TopologicalSpace M] [ChartedSpace H M] [IsManifold I 1 M]
+    [FiniteDimensional ℝ E] {ι : Type*} [Fintype ι]
+    [Fact (Fintype.card ι = Module.finrank ℝ E)]
+    (o : Orientation I M ι) : Orientation I M ι :=
+  Quotient.map (fun l ↦ { l with modelOrientation := -l.modelOrientation }) (by sorry) o
+
 noncomputable instance
     {M : Type*} [TopologicalSpace M] [ChartedSpace H M] [IsManifold I 1 M]
     [FiniteDimensional ℝ E] {ι : Type*} [Fintype ι]
     [Fact (Fintype.card ι = Module.finrank ℝ E)] :
-    InvolutiveNeg (Orientation I M ι) := by
+    InvolutiveNeg (Orientation I M ι) where
+  neg := neg I
+  neg_neg := by sorry
+
+theorem orientationAt_neg
+    {M : Type*} [TopologicalSpace M] [ChartedSpace H M] [IsManifold I 1 M]
+    [FiniteDimensional ℝ E] {ι : Type*} [Fintype ι]
+    [Fact (Fintype.card ι = Module.finrank ℝ E)] (o : Orientation I M ι) (x : M) :
+    orientationAt I (-o) x = -orientationAt I o x := by
   sorry
 
 end Orientation
@@ -734,12 +749,41 @@ structure StableTangentFraming.IsProductNearDefect
   agrees : (pullbackFrameToDefectCollar D framing).trivialization =
     (defectCollarProductFraming D boundaryFraming).trivialization
 
+noncomputable def orientationOnOpen
+    {n : ℕ} {H M : Type*} [TopologicalSpace H]
+    (I : ModelWithCorners ℝ (ModelSpace n) H) [TopologicalSpace M]
+    [ChartedSpace H M] [IsManifold I ∞ M]
+    (_o : Internal.OrientationSupplierMirror.Orientation I M (Fin n))
+    (U : TopologicalSpace.Opens M) :
+    Internal.OrientationSupplierMirror.Orientation I U (Fin n) := by
+  sorry
+
 structure AlmostFramedCycle (n : ℕ) extends SmoothClosedOrientedCycle n where
+  connected : ConnectedSpace code.Realization
   defect : Internal.GeometricTopologySupplierMirror.SmoothEmbeddedClosedDisk
     (M := code.Realization) n (SmoothModel n)
   frameRank : ℕ
   frameOffDefect : StableTangentFraming (SmoothModel n) defect.exterior frameRank
   productNearDefect : frameOffDefect.IsProductNearDefect defect
+  framingOrientation : Internal.OrientationSupplierMirror.Orientation.Agrees
+    (SmoothModel n) (orientationOnOpen (SmoothModel n) orientation defect.exterior)
+    (StableTangentFraming.orientation (ι := Fin n) frameOffDefect)
+
+/-- Extend the actual open-exterior frame across its product collar to the closed exterior. -/
+noncomputable def extendFramingAcrossDefectCollar {n : ℕ} [NeZero n] (X : AlmostFramedCycle n) :
+    StableTangentFraming (𝓡∂ n) X.defect.closedExterior X.frameRank := by
+  sorry
+
+/-- Restrict through the actual codimension-zero inclusion of the open exterior. -/
+noncomputable def restrictClosedExteriorFraming {n r : ℕ} [NeZero n] (X : AlmostFramedCycle n)
+    (_f : StableTangentFraming (𝓡∂ n) X.defect.closedExterior r) :
+    StableTangentFraming (SmoothModel n) X.defect.exterior r := by
+  sorry
+
+theorem extendFramingAcrossDefectCollar_restrict {n : ℕ} [NeZero n] (X : AlmostFramedCycle n) :
+    (restrictClosedExteriorFraming X (extendFramingAcrossDefectCollar X)).trivialization =
+      X.frameOffDefect.trivialization := by
+  sorry
 
 /-! ## Geometric bordism quotients and the Kervaire--Milnor segment -/
 
@@ -793,10 +837,29 @@ structure FramedNormalLine
   dimension : Module.finrank ℝ F = Module.finrank ℝ E + 1
   splitting : ∀ x : M, (E × ℝ) ≃L[ℝ] F
   tangent_eq : ∀ x v, splitting x (v, 0) = mfderiv I J f x v
-  smooth : ContMDiff I 𝓘(ℝ, (E × ℝ) →L[ℝ] F) ∞
-    (fun x ↦ (splitting x).toContinuousLinearMap)
-  smooth_symm : ContMDiff I 𝓘(ℝ, F →L[ℝ] (E × ℝ)) ∞
-    (fun x ↦ (splitting x).symm.toContinuousLinearMap)
+  smooth : ContMDiff (I.prod 𝓘(ℝ, E × ModelSpace 1)) (I.prod 𝓘(ℝ, F)) ∞
+    (fun p : Bundle.TotalSpace (E × ModelSpace 1) (StabilizedTangentBundle I M 1) ↦
+      (⟨p.proj, splitting p.proj (p.2.1, p.2.2 0)⟩ :
+        Bundle.TotalSpace F (Bundle.Pullback f (fun y : N ↦ TangentSpace J y))))
+  smooth_symm : ContMDiff (I.prod 𝓘(ℝ, F)) (I.prod 𝓘(ℝ, E × ModelSpace 1)) ∞
+    (fun p : Bundle.TotalSpace F (Bundle.Pullback f (fun y : N ↦ TangentSpace J y)) ↦
+      (⟨p.proj, ((splitting p.proj).symm p.2).1,
+        WithLp.toLp 2 (fun _ : Fin 1 ↦ ((splitting p.proj).symm p.2).2)⟩ :
+        Bundle.TotalSpace (E × ModelSpace 1) (StabilizedTangentBundle I M 1)))
+
+/-- Regression target: the standard sphere has an outward normal without a tangent framing. -/
+noncomputable def sphereOutwardNormalLine (n : ℕ) :
+    FramedNormalLine (SmoothModel n) (SmoothModel (n + 1))
+      (⟨Subtype.val, continuous_subtype_val⟩ : C(Sphere n, ModelSpace (n + 1))) := by
+  sorry
+
+theorem sphereOutwardNormalLine_apply (n : ℕ) (x : Sphere n) (v : ModelSpace n) (a : ℝ) :
+    (sphereOutwardNormalLine n).splitting x (v, a) =
+      NormedSpace.fromTangentSpace (x : ModelSpace (n + 1))
+        (mfderiv (SmoothModel n) (SmoothModel (n + 1))
+          (Subtype.val : Sphere n → ModelSpace (n + 1)) x v) +
+        a • (x : ModelSpace (n + 1)) := by
+  sorry
 
 noncomputable def restrictStableFramingAlongCodimOne
     {E F H K M N : Type*} [NormedAddCommGroup E] [NormedSpace ℝ E]
@@ -1049,7 +1112,7 @@ def almostFramedBordismSetoid (n : ℕ) : Setoid (AlmostFramedCycle n) :=
 
 def AlmostFramedBordismClass (n : ℕ) := Quotient (almostFramedBordismSetoid n)
 
-noncomputable instance almostFramedBordismClassAddCommGroup (n : ℕ) :
+noncomputable instance almostFramedBordismClassAddCommGroup (n : ℕ) [Fact (5 ≤ n)] :
     AddCommGroup (AlmostFramedBordismClass n) := by
   sorry
 
@@ -1205,7 +1268,7 @@ def stableFillingBordismSetoid (n : ℕ) : Setoid (RelativelyDestabilizedFilling
 
 def StableFillingBordismClass (n : ℕ) := Quotient (stableFillingBordismSetoid n)
 
-noncomputable instance stableFillingBordismClassAddCommGroup (n : ℕ) :
+noncomputable instance stableFillingBordismClassAddCommGroup (n : ℕ) [Fact (5 ≤ n)] :
     AddCommGroup (StableFillingBordismClass n) := by
   sorry
 
@@ -1217,18 +1280,30 @@ noncomputable def thetaToAlmostFramed (n : ℕ) [Fact (5 ≤ n)] :
     Theta n →+ AlmostFramedBordism n := by
   sorry
 
+/-- The representative-level deletion construction uses the connected closed exterior with
+its inherited orientation, the extended collar framing, and the reversed defect-sphere boundary. -/
+noncomputable def defectDeletionFilling {n : ℕ} [Fact (5 ≤ n)]
+    (X : AlmostFramedCycle n) : StableFramedFillingCycle n := by
+  sorry
+
+noncomputable def defectDeletionFilling_carrier {n : ℕ} [Fact (5 ≤ n)] [NeZero n]
+    (X : AlmostFramedCycle n) :
+    X.defect.closedExterior ≃ₘ⟮𝓡∂ n, (defectDeletionFilling X).filling.model⟯
+      (defectDeletionFilling X).filling.M := by
+  sorry
+
 /-- The Kervaire--Milnor map `p : A_n -> P_n`, induced by deleting the defect-disc interior. -/
-noncomputable def almostFramedToStableFilling (n : ℕ) :
+noncomputable def almostFramedToStableFilling (n : ℕ) [Fact (5 ≤ n)] :
     AlmostFramedBordism n →+ StableFillingBordism n := by
   sorry
 
 /-- The Kervaire--Milnor boundary map `b : P_(n+1) -> Theta_n`. -/
-noncomputable def stableFillingBoundaryToTheta (n : ℕ) [Fact (5 ≤ n)] :
+noncomputable def stableFillingBoundaryToTheta (n : ℕ) [Fact (5 ≤ n)] [Fact (5 ≤ n + 1)] :
     StableFillingBordism (n + 1) →+ Theta n := by
   sorry
 
 /-- One displayed geometric exact segment of the Kervaire--Milnor sequence. -/
-theorem kervaireMilnor_exact_at_theta (n : ℕ) [Fact (5 ≤ n)] :
+theorem kervaireMilnor_exact_at_theta (n : ℕ) [Fact (5 ≤ n)] [Fact (5 ≤ n + 1)] :
     Function.Exact (stableFillingBoundaryToTheta n) (thetaToAlmostFramed n) := by
   sorry
 
@@ -1313,6 +1388,10 @@ structure SmoothTubularNeighborhood
   smoothEmbedding : IsSmoothEmbedding
     ((SmoothModel n).prod (SmoothModel k)) (SmoothModel (n + k)) ∞ tubular
   surjective : Function.Surjective tubular
+  normalCoordinates : Bundle.TotalSpace (ModelSpace k) (NormalFiber e) ≃ₜ discDomain
+  normalCoordinates_over_base : ∀ v, (normalCoordinates v).1.proj = v.proj
+  normalCoordinates_zero : ∀ x,
+    normalCoordinates ⟨x, 0⟩ = ⟨⟨x, 0⟩, zero_mem x⟩
   zeroSection : ∀ x,
     (tubular ⟨⟨x, 0⟩, zero_mem x⟩ : ModelSpace (n + k)) = e.map x
 
@@ -1343,11 +1422,67 @@ noncomputable def suspendedBaseCG
     (k : ℕ) {M : Type*} [TopologicalSpace M] : PointedConvenientSpace := by
   sorry
 
+/-- The chosen sphere model is the one-point compactification of its Euclidean chart. -/
+noncomputable def ambientSphereHomeomorph (d : ℕ) :
+    OnePoint (ModelSpace d) ≃ₜ (pointedSphereCG d).right := by
+  sorry
+
+/-- For a compact base, the normal Thom quotient is the one-point compactification of the
+normal total space, identifying every fibre-infinity with its single Thom basepoint. -/
+noncomputable def normalThomHomeomorph
+    {n k : ℕ} {M : Type*} [TopologicalSpace M] [T2Space M] [CompactSpace M]
+    [ChartedSpace (ModelSpace n) M] [IsManifold (SmoothModel n) ∞ M]
+    (e : SmoothEuclideanEmbedding n k M) :
+    OnePoint (Bundle.TotalSpace (ModelSpace k) (NormalFiber e)) ≃ₜ (normalThomCG e).right := by
+  sorry
+
+theorem ambientSphereHomeomorph_infty (d : ℕ) :
+    ambientSphereHomeomorph d OnePoint.infty = (pointedSphereCG d).hom PUnit.unit := by
+  sorry
+
+theorem normalThomHomeomorph_infty
+    {n k : ℕ} {M : Type*} [TopologicalSpace M] [T2Space M] [CompactSpace M]
+    [ChartedSpace (ModelSpace n) M] [IsManifold (SmoothModel n) ∞ M]
+    (e : SmoothEuclideanEmbedding n k M) :
+    normalThomHomeomorph e OnePoint.infty = (normalThomCG e).hom PUnit.unit := by
+  sorry
+
 noncomputable def tubularCollapse
-    {n k : ℕ} {M : Type*} [TopologicalSpace M]
+    {n k : ℕ} {M : Type*} [TopologicalSpace M] [T2Space M] [CompactSpace M]
     [ChartedSpace (ModelSpace n) M] [IsManifold (SmoothModel n) ∞ M]
     {e : SmoothEuclideanEmbedding n k M} (_tube : SmoothTubularNeighborhood e) :
     PointedConvenientMap (pointedSphereCG (n + k)) (normalThomCG e) := by
+  sorry
+
+theorem tubularCollapse_coordinates
+    {n k : ℕ} {M : Type*} [TopologicalSpace M] [T2Space M] [CompactSpace M]
+    [ChartedSpace (ModelSpace n) M] [IsManifold (SmoothModel n) ∞ M]
+    {e : SmoothEuclideanEmbedding n k M} (tube : SmoothTubularNeighborhood e)
+    (v : Bundle.TotalSpace (ModelSpace k) (NormalFiber e)) :
+    (tubularCollapse tube).right
+      (ambientSphereHomeomorph (n + k)
+        ((tube.tubular (tube.normalCoordinates v) : ModelSpace (n + k)) :
+          OnePoint (ModelSpace (n + k)))) = normalThomHomeomorph e (v : OnePoint _) := by
+  sorry
+
+theorem tubularCollapse_zeroSection
+    {n k : ℕ} {M : Type*} [TopologicalSpace M] [T2Space M] [CompactSpace M]
+    [ChartedSpace (ModelSpace n) M] [IsManifold (SmoothModel n) ∞ M]
+    {e : SmoothEuclideanEmbedding n k M} (tube : SmoothTubularNeighborhood e) (x : M) :
+    (tubularCollapse tube).right
+      (ambientSphereHomeomorph (n + k) (e.map x : OnePoint (ModelSpace (n + k)))) =
+        normalThomHomeomorph e
+          ((⟨x, 0⟩ : Bundle.TotalSpace (ModelSpace k) (NormalFiber e)) : OnePoint _) := by
+  sorry
+
+theorem tubularCollapse_complement
+    {n k : ℕ} {M : Type*} [TopologicalSpace M] [T2Space M] [CompactSpace M]
+    [ChartedSpace (ModelSpace n) M] [IsManifold (SmoothModel n) ∞ M]
+    {e : SmoothEuclideanEmbedding n k M} (tube : SmoothTubularNeighborhood e)
+    (x : OnePoint (ModelSpace (n + k)))
+    (_hx : ∀ y : tube.neighbourhood, x ≠ ((y : ModelSpace (n + k)) : OnePoint (ModelSpace (n + k)))) :
+    (tubularCollapse tube).right (ambientSphereHomeomorph (n + k) x) =
+      normalThomHomeomorph e OnePoint.infty := by
   sorry
 
 noncomputable def suspendedAugmentation
