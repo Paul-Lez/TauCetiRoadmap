@@ -612,29 +612,53 @@ noncompact source does not instantiate this classical collapse theorem.
    orientation identifications, and framing equations.  Construct the product cylinder, including
    its vertical boundary cylinder and both corners, as the reflexivity witness.  Use these
    witnesses to prove equivalence and make boundary connected sum into an abelian-group operation.
-3. Separate absolute destabilization from the relative lifting problem.  An absolute handle
-   decomposition of a compact connected `W^n` with nonempty boundary can omit `n`-handles and
-   gives a spine of dimension at most `n-1`; stable-range bundle cancellation can therefore
-   produce some honest tangent trivialization.  A handle decomposition relative to the entire
-   boundary cannot have that claimed form, since `H_n(W, ∂W; ℤ)` contains the relative
-   fundamental class.  For a prescribed product stable framing on a fixed collar, define the
-   obstruction to lifting the corresponding relative map through `BSO(n) ⟶ BSO`, state its
-   obstruction groups and naturality under stabilization and gluing, and prove that its vanishing
-   is equivalent to an honest framing together with a global homotopy of stable
-   trivializations fixed on the collar.  Prove vanishing only under the explicit hypotheses used
-   by the defect-deletion and historical comparison maps; do not assert it for every prescribed
-   relative framing.  Package a successful lift as `RelativelyDestabilizedFillingCycle`, retaining
-   both the honest framing and that global relative homotopy, and state the converse by
-   stabilization.
-4. Separately encode Kervaire--Milnor's historical `P_n` cycles and their stated relative
-   cobordism relation.  Map a historical representative to the relatively destabilized carrier
-   with its chosen honest framing and relative stabilization homotopy.  In the reverse direction,
-   forget only this auxiliary comparison data.  Prove that every stable-filling bordism class
-   needed for the Kervaire--Milnor sequence has such a representative by applying the obstruction
-   criterion from step 3 in its verified range; this is a theorem, not a field or an unconditional
-   relative handle argument.  Compare the collar and three-face corner conventions, prove both
-   composites, and prove compatibility with boundary connected sum, orientation reversal, and
-   boundary.  Only then identify the resulting quotient with `P_n`.
+3. Restrict an honest framing of `TW` to `T(∂W) ⊕ ε_normal`, keeping the normal
+   as a boundary stabilization slot. This is a stable boundary framing and does not imply
+   an honest framing of `T(∂W)`. Construct the collar-normalized stabilization of an honest
+   ambient frame after adding one extra trivial line. First make its collar pullback constant
+   in collar time on a smaller collar: identify tangent fibres by the actual derivative of
+   the product collar, evaluate the pulled-back frame at a smooth reparametrization of time
+   which is zero near the boundary and unchanged off a wider collar, and interpolate those
+   evaluation times to obtain a path of fibrewise isomorphisms. This uses product tangent
+   transport, not the derivative of the reparametrization, which would be singular.
+   Then in collar coordinates write a vector as `(t + sν, a)`, with `ν` the outward collar normal and `t` tangent to the boundary.
+   Rotate the normal and extra line through a quarter turn, so that the normalized frame is
+   `(f(t − aν), s)` at the boundary, before the fixed permutation putting the normal first.
+   Additional stabilization coordinates are unchanged. Use a smooth cutoff on a narrower
+   collar to extend this rotation by the identity off the original collar. Prove forward and
+   inverse smoothness, the displayed evaluation law, orientation/permutation signs, and the
+   resulting global homotopy from the block stabilization to this normalized endpoint.
+   The boundary frame is `(t,a) ↦ f(t − aν)`, with its one normal stabilization retained.
+   The normalization homotopy moves the boundary framing.
+
+   An absolute handle decomposition of a compact connected `W^n` with nonempty boundary
+   gives a spine of dimension at most `n−1`. Use stable-range cancellation to lift the
+   homotopy class of its prescribed stable frame to an honest ambient frame after common
+   stabilization, not just to prove that some honest frame exists. Combine that global
+   homotopy with the explicit normalization homotopy. Package the honest frame and comparison
+   with its normalized stabilization as `CollarNormalizedParallelizableFillingCycle`.
+   Retain the boundary path obtained by pulling back the comparison to the collar, its endpoint
+   laws, and the normal-line transport. No collar-fixed homotopy to the unmodified block
+   stabilization is required. A separate relative lifting theorem with fixed boundary data must
+   retain its actual obstructions; it is not used to obtain these filling representatives.
+4. Construct the standard `D⁷` representative from its constant ambient frame before proving
+   the historical comparison. Identify its actual boundary with `S⁶` and compute the induced
+   stable boundary frame `(t,a) ↦ t − a x`, up to the stated fixed target permutation.
+   Verify the normal/extra-line rotation, its cutoff extension, and the moving boundary path
+   explicitly. This construction requires no honest tangent frame of `S⁶`.
+
+   Separately encode Kervaire–Milnor's historical honestly parallelizable `P_n` cycles and
+   their relative cobordisms. Map a historical representative to its collar-normalized
+   stabilization with the normalization path. In the reverse direction retain the honest
+   ambient frame and use the recorded boundary transport. Prove invariance under stabilization,
+   collar shrinking and choices of cutoff, and prove both composites by cobordisms. For gluing,
+   insert the recorded boundary path as a framed collar cylinder before identifying endpoints;
+   prove identity, concatenation, reversal, and pullback laws for those transports, and compare
+   incoming/outgoing/vertical corner permutations. Prove that defect deletion has the needed
+   normalized representative by the absolute stable-class lifting of item 3. Finally prove
+   compatibility with boundary connected sum, orientation reversal and boundary, then identify
+   the resulting quotient with `P_n`. The meaning of `bP` remains bounding an honestly
+   parallelizable manifold.
 
 Before defining defect deletion on quotient classes, construct the following map on
 connected almost-framed representatives. Extend the open-exterior framing to the closed
@@ -643,7 +667,9 @@ framing. Give the closed exterior its inherited orientation and prove the extend
 induces it. In dimension at least two, prove the exterior connected, and identify its
 boundary with the defect sphere with the reversed boundary orientation. Package these
 specific data as a `StableFramedFillingCycle`, then prove witness compatibility and the
-required Stage 6B comparison before descending the map. No component is discarded.
+required Stage 6B normalization comparison before descending the map. Transport endpoint
+framings along its recorded boundary path when composing the deletion witness with a
+historical filling or gluing witness. No component is discarded.
 
 ### 6C. Maps and exactness
 
@@ -917,10 +943,11 @@ occurs in Stage 7 after the obstruction groups and surgery theorem have been con
 - The defect-disc model for `A_n` and the collared filling model for `P_n` are each proved
   isomorphic to the historical Kervaire--Milnor groups by explicit forward and inverse maps
   compatible with addition, boundary, and defect.  Stable and honest parallelizability are
-  connected only after the absolute destabilization argument and the separate prescribed-collar
-  obstruction have both been discharged; the global relative framing homotopy is retained as
-  data.  `P_n` is then proved isomorphic to the normalized simply connected Wall group, not
-  defined to be it.
+  connected by absolute lifting of the stable framing class and an explicit collar normalization;
+  its moving boundary path, normal-line transport and gluing coherence are retained as data.
+  The standard `D⁷` and its stably framed `S⁶` boundary pass this comparison before the
+  historical isomorphism is asserted. `P_n` is then proved isomorphic to the normalized
+  simply connected Wall group, not defined to be it.
 - Wall's obstruction theorem includes normal-map decomposition, below-middle surgery,
   even-dimensional whole-module quadratic forms, odd-dimensional formations with lawful
   lagrangian submodules, vanishing, realization, and group computation.

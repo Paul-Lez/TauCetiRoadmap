@@ -690,23 +690,124 @@ structure StableFramingHomotopy
       Bundle.TotalSpace (E × ModelSpace r) (StabilizedTangentBundle I M r) ↦
     (framingAt p.1).trivialization p.2
 
-structure StableFramedFillingCycle.StabilizesRelBoundary
+/-- Add trivial summands with the fixed block permutation. -/
+noncomputable def StableTangentFraming.stabilize
+    {E H M : Type*} [NormedAddCommGroup E] [NormedSpace ℝ E] [TopologicalSpace H]
+    {I : ModelWithCorners ℝ E H} [TopologicalSpace M] [ChartedSpace H M]
+    [IsManifold I ∞ M] {r : ℕ} (_f : StableTangentFraming I M r) (s : ℕ) :
+    StableTangentFraming I M (r + s) := by
+  sorry
+
+/-- Restrict the entire homotopy to the collar; this path need not be constant there. -/
+noncomputable def StableFramingHomotopy.pullbackAlongCollar
+    {n r : ℕ} (W : CollaredOrientedFilling n)
+    {f₀ f₁ : StableTangentFraming W.model W.M r} (_h : StableFramingHomotopy f₀ f₁) :
+    StableFramingHomotopy (pullbackFramingAlongCollar W f₀)
+      (pullbackFramingAlongCollar W f₁) := by
+  sorry
+
+/-- Restriction of an honest ambient frame frames TB plus the outward normal, not TB alone.
+The boundary stabilization slot is sent to the negative outward normal in the rotation convention. -/
+noncomputable def boundaryFrameOfHonest {n : ℕ} [NeZero n]
+    (W : CollaredOrientedFilling n) (_f : TangentFraming W.model W.M) :
+    StableTangentFraming (SmoothModel (n - 1)) W.B 1 := by
+  sorry
+
+noncomputable def boundaryStableTargetEquiv (n : ℕ) [NeZero n] :
+    (ModelSpace (n - 1) × ModelSpace 1) ≃L[ℝ] ModelSpace n := by
+  sorry
+
+noncomputable def boundaryTangentMap {n : ℕ} (W : CollaredOrientedFilling n)
+    (b : W.B) (v : ModelSpace (n - 1)) : ModelSpace n :=
+  mfderiv (SmoothModel (n - 1)) W.model
+    (fun y : W.B ↦ (W.boundaryIdentification y : W.M)) b v
+
+/-- The normal is retained as the boundary's stabilization slot. -/
+theorem boundaryFrameOfHonest_apply {n : ℕ} [NeZero n]
+    (W : CollaredOrientedFilling n) (f : TangentFraming W.model W.M)
+    (b : W.B) (v : ModelSpace (n - 1)) (a : ℝ) :
+    boundaryStableTargetEquiv n
+      ((boundaryFrameOfHonest W f).trivialization
+        ⟨b, v, WithLp.toLp 2 (fun _ : Fin 1 ↦ a)⟩).2 =
+      (f.trivialization ⟨(W.boundaryIdentification b : W.M),
+        boundaryTangentMap W b v - a • outwardNormalAt W b⟩).2 := by
+  sorry
+
+/-- Normalize after adding an extra line: rotate the collar normal into that line and the
+added line into the negative normal, with a cutoff to the identity away from the collar.
+This is a gauge-modified stabilization, not the unmodified block stabilization. -/
+noncomputable def collarNormalizedStabilization {n : ℕ}
+    (W : CollaredOrientedFilling n) (_f : TangentFraming W.model W.M) (r : ℕ) :
+    StableTangentFraming W.model W.M (r + 1) := by
+  sorry
+
+noncomputable def collarNormalizationHomotopy {n : ℕ}
+    (W : CollaredOrientedFilling n) (f : TangentFraming W.model W.M) (r : ℕ) :
+    StableFramingHomotopy (f.stabilize (r + 1))
+      (collarNormalizedStabilization W f r) := by
+  sorry
+
+/-- Only the normalized endpoint is product on the collar; the normalization path moves it. -/
+noncomputable def collarNormalizedStabilization_product {n : ℕ}
+    (W : CollaredOrientedFilling n) (f : TangentFraming W.model W.M) (r : ℕ) :
+    (collarNormalizedStabilization W f r).IsProductOnCollar W := by
+  sorry
+
+def StableTangentFraming.castRank
+    {E H M : Type*} [NormedAddCommGroup E] [NormedSpace ℝ E] [TopologicalSpace H]
+    {I : ModelWithCorners ℝ E H} [TopologicalSpace M] [ChartedSpace H M]
+    [IsManifold I ∞ M] {r s : ℕ} (h : r = s) (f : StableTangentFraming I M r) :
+    StableTangentFraming I M s := h ▸ f
+
+theorem collarNormalizedStabilization_boundary {n : ℕ} [NeZero n]
+    (W : CollaredOrientedFilling n) (f : TangentFraming W.model W.M) (r : ℕ) :
+    (collarNormalizedStabilization_product W f r).boundaryFraming.trivialization =
+      (StableTangentFraming.castRank (Nat.add_comm 1 r)
+        ((boundaryFrameOfHonest W f).stabilize r)).trivialization := by
+  sorry
+
+/-- The normal occupies an added coordinate, not a fixed coordinate of the honest target. -/
+theorem collarNormalizedStabilization_normal {n : ℕ}
+    (W : CollaredOrientedFilling n) (f : TangentFraming W.model W.M) (r : ℕ) (b : W.B) :
+    let w := (collarNormalizedStabilization W f r).trivialization
+      ⟨(W.boundaryIdentification b : W.M), outwardNormalAt W b, 0⟩
+    w.2.1 = 0 ∧ ∀ i, w.2.2 i = if i = 0 then 1 else 0 := by
+  sorry
+
+/-- Comparison with a normalized honest frame after common stabilization. Its boundary path
+is the actual pullback of this global homotopy, not a fixed-collar condition. -/
+structure StableFramedFillingCycle.CompatibleWithHonestFrame
     {n : ℕ} (W : StableFramedFillingCycle n)
     (honest : TangentFraming W.filling.model W.filling.M) where
-  stabilized : StableTangentFraming W.filling.model W.filling.M W.framingRank
-  stabilized_eq : stabilized.trivialization =
-    (honest.stabilize W.framingRank).trivialization
-  homotopy : StableFramingHomotopy W.stableFraming stabilized
-  fixedOnCollar : ∀ t,
-    (pullbackFramingAlongCollar W.filling (homotopy.framingAt t)).trivialization =
-      (pullbackFramingAlongCollar W.filling W.stableFraming).trivialization
+  extraRank : ℕ
+  comparison : StableFramingHomotopy (W.stableFraming.stabilize (extraRank + 1))
+    (collarNormalizedStabilization W.filling honest (W.framingRank + extraRank))
 
-/-- A stable filling together with an honest destabilization and the global relative homotopy.
-The roadmap constructs this only after discharging the relative obstruction problem; it does not
-assert that every prescribed boundary framing destabilizes automatically. -/
-structure RelativelyDestabilizedFillingCycle (n : ℕ) extends StableFramedFillingCycle n where
+/-- An honestly parallelizable filling with a chosen normalization and boundary transport.
+The boundary is only stably framed; no honest boundary frame is required. -/
+structure CollarNormalizedParallelizableFillingCycle (n : ℕ)
+    extends StableFramedFillingCycle n where
   honestFraming : TangentFraming filling.model filling.M
-  stabilizesRelBoundary : toStableFramedFillingCycle.StabilizesRelBoundary honestFraming
+  comparison : toStableFramedFillingCycle.CompatibleWithHonestFrame honestFraming
+
+/-- Disc regression target, constructed before the historical comparison. -/
+noncomputable def standardSevenDiskFilling : CollarNormalizedParallelizableFillingCycle 7 := by
+  sorry
+
+noncomputable def standardSevenDiskFilling_carrier :
+    standardSevenDiskFilling.filling.M ≃ₜ Metric.closedBall (0 : ModelSpace 7) 1 := by
+  sorry
+
+/-- Use the chosen boundary atlas of this particular disc, without constructing another atlas. -/
+noncomputable instance : ChartedSpace (ModelSpace 6) standardSevenDiskFilling.filling.B :=
+  standardSevenDiskFilling.filling.boundaryCharted
+
+noncomputable instance : IsManifold (SmoothModel 6) ∞ standardSevenDiskFilling.filling.B :=
+  standardSevenDiskFilling.filling.boundaryManifold
+
+noncomputable def standardSevenDiskFilling_boundary :
+    standardSevenDiskFilling.filling.B ≃ₘ⟮SmoothModel 6, SmoothModel 6⟯ Sphere 6 := by
+  sorry
 
 /-! ## Embedded defects and canonical open complements -/
 
@@ -859,6 +960,38 @@ theorem sphereOutwardNormalLine_apply (n : ℕ) (x : Sphere n) (v : ModelSpace n
         (mfderiv (SmoothModel n) (SmoothModel (n + 1))
           (Subtype.val : Sphere n → ModelSpace (n + 1)) x v) +
         a • (x : ModelSpace (n + 1)) := by
+  sorry
+
+/-- Stable boundary frame of the standard disc; it retains one normal slot. -/
+noncomputable def standardSphereBoundaryFrame (n : ℕ) :
+    StableTangentFraming (SmoothModel n) (Sphere n) 1 := by
+  sorry
+
+theorem standardSphereBoundaryFrame_apply (n : ℕ) (x : Sphere n) (v : ModelSpace n) (a : ℝ) :
+    boundaryStableTargetEquiv (n + 1)
+      ((standardSphereBoundaryFrame n).trivialization
+        ⟨x, v, WithLp.toLp 2 (fun _ : Fin 1 ↦ a)⟩).2 =
+      NormedSpace.fromTangentSpace (x : ModelSpace (n + 1))
+        (mfderiv (SmoothModel n) (SmoothModel (n + 1))
+          (Subtype.val : Sphere n → ModelSpace (n + 1)) x v) -
+        a • (x : ModelSpace (n + 1)) := by
+  sorry
+
+noncomputable def pullbackStableFramingAlongDiffeomorph
+    {n r : ℕ} {M N : Type*} [TopologicalSpace M] [TopologicalSpace N]
+    [ChartedSpace (ModelSpace n) M] [ChartedSpace (ModelSpace n) N]
+    [IsManifold (SmoothModel n) ∞ M] [IsManifold (SmoothModel n) ∞ N]
+    (_e : M ≃ₘ⟮SmoothModel n, SmoothModel n⟯ N)
+    (_f : StableTangentFraming (SmoothModel n) N r) :
+    StableTangentFraming (SmoothModel n) M r := by
+  sorry
+
+/-- The disc's chosen boundary identification carries the explicit normal-stable sphere frame. -/
+theorem standardSevenDiskFilling_boundaryFrame :
+    (boundaryFrameOfHonest standardSevenDiskFilling.filling
+      standardSevenDiskFilling.honestFraming).trivialization =
+    (pullbackStableFramingAlongDiffeomorph standardSevenDiskFilling_boundary
+      (standardSphereBoundaryFrame 6)).trivialization := by
   sorry
 
 noncomputable def restrictStableFramingAlongCodimOne
@@ -1210,11 +1343,11 @@ noncomputable def StableFillingBoundaryFaces.outgoingFraming {n : ℕ}
   restrictStableFramingAlongCodimOne F.outgoingAmbient F.outgoingAmbientSmooth
     F.outgoingNormal framing
 
-/-- A genuine framed cobordism with corners between relatively destabilized fillings.  Endpoint
+/-- A genuine framed cobordism with corners between collar-normalized parallelizable fillings.  Endpoint
 framing equations are stated after one common stabilization, and the vertical face carries the
 restriction of the trace framing, product-compatible on its own collar. -/
 structure StableFillingBordismWitness {n : ℕ}
-    (X Y : RelativelyDestabilizedFillingCycle n) where
+    (X Y : CollarNormalizedParallelizableFillingCycle n) where
   trace : CollaredOrientedFilling (n + 1)
   faces : StableFillingBoundaryFaces X.toStableFramedFillingCycle
     Y.toStableFramedFillingCycle trace
@@ -1244,17 +1377,17 @@ structure StableFillingBordismWitness {n : ℕ}
   verticalProductOnCollar : (faces.verticalFraming framing).IsProductOnCollar faces.vertical
 
 def StableFillingBordant {n : ℕ}
-    (X Y : RelativelyDestabilizedFillingCycle n) : Prop :=
+    (X Y : CollarNormalizedParallelizableFillingCycle n) : Prop :=
   Nonempty (StableFillingBordismWitness X Y)
 
 /-- The rounded product-with-an-interval trace, with horizontal faces `(-X)` and `X` and the
 vertical cylinder on the boundary sphere, supplies reflexivity with all corner and framing data. -/
 noncomputable def stableFillingCylinderWitness {n : ℕ}
-    (X : RelativelyDestabilizedFillingCycle n) : StableFillingBordismWitness X X := by
+    (X : CollarNormalizedParallelizableFillingCycle n) : StableFillingBordismWitness X X := by
   sorry
 
 theorem stableFillingBordant_refl_fromCylinder {n : ℕ}
-    (X : RelativelyDestabilizedFillingCycle n) : StableFillingBordant X X :=
+    (X : CollarNormalizedParallelizableFillingCycle n) : StableFillingBordant X X :=
   ⟨stableFillingCylinderWitness X⟩
 
 theorem stableFillingBordant_equivalence (n : ℕ) :
@@ -1263,7 +1396,7 @@ theorem stableFillingBordant_equivalence (n : ℕ) :
   · sorry
   · sorry
 
-def stableFillingBordismSetoid (n : ℕ) : Setoid (RelativelyDestabilizedFillingCycle n) :=
+def stableFillingBordismSetoid (n : ℕ) : Setoid (CollarNormalizedParallelizableFillingCycle n) :=
   ⟨StableFillingBordant, stableFillingBordant_equivalence n⟩
 
 def StableFillingBordismClass (n : ℕ) := Quotient (stableFillingBordismSetoid n)
