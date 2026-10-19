@@ -20,49 +20,70 @@ body:
       options:
         - AdicSpaces
         - AdicSpacesPartII
+        - AffineLieAlgebras
+        - AffineMorseLefschetz
         - AlgebraicCurves
         - AlgebraicTopology
         - AlgebraicVectorBundles
+        - AmenableGroups
         - AnalyticToricGeometry
         - BanachSpaceTheory
         - BelyiMaps
+        - BordismFormalGroups
         - CFSGStatement
         - Chebotarev
         - ClassFieldTheory
+        - ClassicalArithmeticCompletion
         - ClassifyingSpaces
         - CombinatorialHeegaardFloer
         - CompactOperators
+        - ComplexCurveModuli
         - ConformalMapping
         - DGAInfinity
         - DGFloer
         - DenseGraphLimits
+        - DerivedModuleAlgebra
         - DifferentialGeometry
         - DiophantineApproximationAndTranscendence
         - EllipticCurves
         - Exchangeability
+        - FinancialMathematics
         - FormalLaurentPuiseux
+        - FreeProbability
         - FuchsianOrbifolds
+        - GeneralizedCohomology
         - GeometricMeasureTheory
+        - GeometricRepresentationCategories
         - GeometricTopology
         - GlobalNumberFields
         - GlobalQuadraticForms
+        - GraphConnectivityAndFlows
         - GrothendieckEulerForms
+        - HamiltonianFloerOperations
         - HeegaardFloer
         - HeightsAndUnits
         - HopfRinow
+        - Hyperfunctions
+        - InfinitaryLogic
         - IntegralLattices
         - Isoperimetry
         - JacobianChallenge
+        - KhovanovHomology
         - LocalFieldsRamification
         - LocalGaloisGroups
+        - MassFormula
         - ModularCurves
         - ModularForms
+        - MorseNovikov
+        - MorseTheory
         - NewtonPolygons
         - NoncommutativeGeometry
         - NumberFieldArithmetic
         - OneParameterSemigroups
+        - OperatorAlgebraDynamics
         - OperatorTheory
         - OptimalTransport
+        - Orbifolds
         - OrthogonalSpinGroups
         - PDE
         - PadicFunctionalAnalysis
@@ -70,6 +91,7 @@ body:
         - PeripheralActions
         - PivotalSpherical
         - PolynomialGaloisGroups
+        - PositiveScalarCurvature
         - ProfiniteArithmetic
         - ProfiniteCohomology
         - ProfiniteProPGroups
@@ -77,13 +99,19 @@ body:
         - QuantumGroups
         - RealAlgebraicGeometry
         - ReductiveGroups
+        - ReflectionInvariantTheory
         - Regularity
         - RepresentationTheory
+        - RestrictedPowerSeries
         - RigidAnalyticGeometry
         - SchemeAndStackFoundations
+        - SchubertGeometry
+        - SpinGeometry
         - StablePeriodicCurved
         - StableReduction
         - StandardDistributions
+        - TaubesGromov
+        - Yamabe
         - ZigzagPreprojective
     validations:
       required: true
