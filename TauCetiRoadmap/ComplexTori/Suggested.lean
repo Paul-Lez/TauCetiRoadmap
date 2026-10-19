@@ -200,18 +200,38 @@ abbrev BaseChangeTotal {B B' X : Type*} (β : B' → B) (p : X → B) :=
 def baseChangeProjection {B B' X : Type*} (β : B' → B) (p : X → B) :
     BaseChangeTotal β p → B' := fun q ↦ q.1.1
 
-/-- Covering descent recovers the upstairs family by pulling back the downstairs quotient.
-The topology on the pullback is inherited; its charted structure uses the total-space model H.
-The forward formula is `x ↦ (p_X x, quotientMap x)`, with no logarithmic gauge. -/
+/-- Pull back the installed atlas on Q along the second projection, using the local inverse
+branches of β. The topology is the inherited subtype topology, never an extra input. -/
+@[instance_reducible]
+noncomputable def baseChangeChartedSpace {H B B' Q : Type*} [TopologicalSpace H]
+    [TopologicalSpace B] [TopologicalSpace B'] [TopologicalSpace Q] [ChartedSpace H Q]
+    (β : B' → B) (pQ : Q → B) (_hβ : IsLocalHomeomorph β) (_hpQ : Continuous pQ) :
+    ChartedSpace H (BaseChangeTotal β pQ) := by
+  sorry
+
+/-- This local-diffeomorphism law identifies the atlas with the branch pullback of Q's atlas. -/
+theorem baseChangeSecond_isLocalDiffeomorph {E H B B' Q : Type*}
+    [NormedAddCommGroup E] [NormedSpace ℂ E] [TopologicalSpace H]
+    (I : ModelWithCorners ℂ E H) [TopologicalSpace B] [TopologicalSpace B']
+    [TopologicalSpace Q] [ChartedSpace H Q] [IsManifold I ∞ Q]
+    (β : B' → B) (pQ : Q → B) (hβ : IsLocalHomeomorph β) (hpQ : Continuous pQ) :
+    letI := baseChangeChartedSpace (H := H) β pQ hβ hpQ
+    IsLocalDiffeomorph I I ∞ (fun x : BaseChangeTotal β pQ ↦ x.1.2) := by
+  sorry
+
+/-- Covering descent recovers the upstairs family with the canonical branch-pullback atlas.
+The forward formula is x ↦ (p_X x, quotientMap x), with no logarithmic gauge. -/
 structure PuncturedBaseChangeIdentification {E H B B' X Q : Type*}
     [NormedAddCommGroup E] [NormedSpace ℂ E] [TopologicalSpace H]
     (I : ModelWithCorners ℂ E H)
     [TopologicalSpace B] [TopologicalSpace B'] [TopologicalSpace X] [TopologicalSpace Q]
+    [ChartedSpace H Q] [IsManifold I ∞ Q]
     (β : B' → B) (pQ : Q → B) (pX : X → B') (quotientMap : X → Q)
-    [ChartedSpace H X] [IsManifold I ∞ X]
-    [ChartedSpace H (BaseChangeTotal β pQ)] [IsManifold I ∞ (BaseChangeTotal β pQ)] where
+    (hβ : IsLocalHomeomorph β) (hpQ : Continuous pQ)
+    [ChartedSpace H X] [IsManifold I ∞ X] where
   equivariant : ∀ x, β (pX x) = pQ (quotientMap x)
-  forward : X ≃ₘ⟮I, I⟯ BaseChangeTotal β pQ
+  forward : letI := baseChangeChartedSpace (H := H) β pQ hβ hpQ
+    X ≃ₘ⟮I, I⟯ BaseChangeTotal β pQ
   forward_formula : ∀ x, forward x = ⟨(pX x, quotientMap x), equivariant x⟩
 
 /-- The separate downstairs logarithmic gauge, over the original punctured base. Its
@@ -403,6 +423,40 @@ theorem translation_conjugate_affine (A : T ≃+ T) (t b x : T) :
 def oneSubPow (A : T ≃+ T) (k : ℕ) : T →+ T :=
   (AddEquiv.refl T).toAddMonoidHom - (k • A).toAddMonoidHom
 
+/-- Period-two compatibility on arbitrary additive groups; no division by two is used. -/
+theorem cyclicNormHom_two (A : T ≃+ T) :
+    cyclicNormHom A 2 = AddMonoidHom.id T + A.toAddMonoidHom := by
+  ext x
+  simp [cyclicNormHom, Finset.sum_range_succ]
+
+theorem oneSubPow_one (A : T ≃+ T) :
+    oneSubPow A 1 = AddMonoidHom.id T - A.toAddMonoidHom := by
+  ext x
+  simp [oneSubPow]
+
+theorem involution_norm_comp_difference (A : T ≃+ T) (hA : ∀ x, A (A x) = x) :
+    (cyclicNormHom A 2).comp (oneSubPow A 1) = 0 := by
+  ext x
+  simp [cyclicNormHom_two, oneSubPow_one, hA, add_comm]
+
+theorem involution_difference_comp_norm (A : T ≃+ T) (hA : ∀ x, A (A x) = x) :
+    (oneSubPow A 1).comp (cyclicNormHom A 2) = 0 := by
+  ext x
+  simp [cyclicNormHom_two, oneSubPow_one, hA, add_comm]
+
+/-- Both maps vanish for the identity involution on a group with 2-torsion. -/
+example : cyclicNormHom (AddEquiv.refl (ZMod 2)) 2 = 0 ∧
+    oneSubPow (AddEquiv.refl (ZMod 2)) 1 = 0 := by
+  constructor
+  · rw [cyclicNormHom_two]
+    ext x
+    change x + x = 0
+    rw [← two_mul, show (2 : ZMod 2) = 0 by decide, zero_mul]
+  · rw [oneSubPow_one]
+    ext x
+    change x - x = 0
+    exact sub_self x
+
 /-- The exact fixed-point criterion follows from the iterate formula. -/
 theorem affineEquiv_iterate_hasFixedPoint_iff (A : T ≃+ T) (t : T) (k : ℕ) :
     (∃ x : T, ((affineEquiv A t : T → T)^[k]) x = x) ↔
@@ -422,6 +476,8 @@ end CyclicAffine
 
 /-! ## Mathlib cohomology and the integral connecting map -/
 
+#check Rep.FiniteCyclicGroup.normHomCompSub
+#check Rep.FiniteCyclicGroup.subCompNormHom
 #check Representation.norm
 #check Rep.FiniteCyclicGroup.groupCohomologyIsoOdd
 #check Rep.FiniteCyclicGroup.groupCohomologyIsoEven

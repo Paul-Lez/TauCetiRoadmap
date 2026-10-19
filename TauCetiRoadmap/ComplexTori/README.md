@@ -87,10 +87,11 @@ Use the following objects without replacement wrappers.
   `groupCohomologyπOdd_eq_iff`, `groupCohomologyπEven_eq_iff`, `Representation.norm`,
   `groupCohomology.map`, `groupCohomology.δ`, `δ_naturality`, and `isIso_δ_of_isZero`.
 
-The complex quotient work in
-[mathlib4#40727](https://github.com/leanprover-community/mathlib4/pull/40727) determines the
-orbit-quotient shape consumed here. Build the missing manifold theorem locally in the complex-
-manifolds roadmap and replace it by imports when available.
+The pinned Tau Ceti module `TauCeti.Geometry.Manifold.Instances.Quotient` already supplies
+`TauCeti.instIsManifoldQuotient` and `TauCeti.isLocalDiffeomorph_quotientMk` on Mathlib's
+installed quotient atlas. Consume their complex specialization through ComplexManifolds.
+[mathlib4#40727](https://github.com/leanprover-community/mathlib4/pull/40727) is an API migration
+reference; compare its atlas with the installed atlas before changing local-section calculations.
 
 ## Encoding conventions
 
@@ -255,6 +256,15 @@ are assumed.
    with the ordered sum of powers. Use Mathlib's quotient maps and equality criteria,
    rather than defining another public `H¹` carrier. Retain the partial norms `N_{A,k}`
    for arbitrary `k`, which are needed for the iterate and fixed-point formulas.
+   For the period-two consumer, prove `cyclicNormHom σ 2 = id + σ` and
+   `oneSubPow σ 1 = id − σ`, and both zero-composite laws when `σ² = id`.
+   Use `Rep.FiniteCyclicGroup.normHomCompSub` and `subCompNormHom` as the shared
+   short complexes; negating Mathlib's `σ − id` gives the displayed difference convention.
+   These statements hold for every additive commutative group, including groups with
+   2-torsion. The compatibility contract of
+   [GeometryOfNumbersAndQuadraticArithmetic #851](https://github.com/TauCetiProject/TauCetiRoadmap/pull/851)
+   uses these complexes and comparisons in place of the obsolete `oneSubToNormKer` helper.
+   Its spectral transfer and Tate constructions remain with that consumer.
 4. Prove
 
    `affine(A_T,t)^k` has a fixed point
@@ -321,7 +331,7 @@ not a norm equation in one fixed fibre. At zero the generator has linear part
 5. In the constant-linear-part case distinguish `K_Q|_F`, with character
    `(ζ · det A_E)⁻¹`, from `K_F`, with character `(det A_E)⁻¹`. Prove adjunction
    `K_F ≅ K_Q|_F ⊗ N_(F/Q)`. For varying linear part use the corresponding
-   determinant transition cocycle. Apply Milestone 7.6 to the character cases,
+   determinant transition cocycle. Apply ComplexManifolds Milestone 7.6 to the character cases,
    and prove smoothness, compactness and manifold instances for `F`.
 
 Barth--Hulek--Peters--Van de Ven, *Compact Complex Surfaces*, second edition, Chapter V, the
@@ -339,7 +349,11 @@ cocycles remain in Milestone 5.
 1. For any free equivariant family of Milestone 5 prove the canonical covering
    identification `X* ≃_[D_z*] β_m^*Q*`, with forward map
    `x ↦ (p_X(x), [x])`. Expose the inverse, both projection equations and
-   holomorphy. This theorem requires no logarithm.
+   holomorphy. Give the literal subtype-of-product pullback its atlas by lifting the
+   installed total-space atlas of `Q*` through the local inverse branches of `β_m`;
+   prove the second projection is a local biholomorphism. An independently supplied
+   `ChartedSpace` or manifold instance on the pullback is not an input to the theorem.
+   This theorem requires no logarithm.
 2. For trivial linear part lift the generator's holomorphic translation section
    `b` to `b̃ : D_z → E` by lifting through the period covering of the simply
    connected disc. The action law gives a constant `λ ∈ Λ` such that
@@ -350,6 +364,8 @@ cocycles remain in Milestone 5.
    `x ↦ x+c(z)` normalizes the cocycle to `Π_Y(z^m)λ/m`.
    Identify the invariant `λ mod mΛ` with `b(0) ∈ T_0[m]` and with
    `H¹(C_m,T_0)` for the trivial action; central freeness means exact order `m`.
+   A different lift changes `λ` by `mΛ`; prove the corresponding normalization and
+   overlap-identification comparison, rather than treating a representative `λ` as canonical.
 3. For normalized data prove a separate downstairs gauge
    `G : Q* ≃_[D_t*] Y*`. On a simply connected logarithm chart define
 
@@ -404,6 +420,8 @@ with the complex-manifolds and geometric-topology gluing APIs.
   is a local diffeomorphism.
 - The fibre over `y` is identified with the standard orbit quotient by
   `LinearMap.range (Π y)`, not with a tagged complex-torus type.
+- The period-two norm/difference comparisons and both zero composites work on `ZMod 2`
+  with its identity involution, as well as on torsion-free groups; division by two is absent.
 - A cyclic action cannot be constructed from `A ^ m = 1` without the translation norm equation.
 - The abstract `H¹/H²` calculation accepts `A_T : T ≃+ T`, but the analytic cyclic quotient does
   not accept that alone: it consumes a complex-linear lift preserving the lattice or an explicitly
