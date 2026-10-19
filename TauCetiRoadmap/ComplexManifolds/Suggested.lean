@@ -1,3 +1,6 @@
+import TauCeti.Geometry.Manifold.Instances.OnePoint
+import TauCeti.Geometry.Manifold.Instances.Quotient
+import TauCeti.Geometry.Manifold.Gluing
 import Mathlib.Analysis.Complex.Basic
 import Mathlib.Geometry.Manifold.Instances.Quotient
 import Mathlib.Geometry.Manifold.LocalDiffeomorph
@@ -85,14 +88,14 @@ noncomputable def complexModelOrientation (E : Type*) [NormedAddCommGroup E] [No
 
 /-- The two-chart complex atlas on Mathlib's existing one-point compactification. -/
 @[instance_reducible]
-noncomputable def riemannSphereChartedSpace : ChartedSpace ℂ (OnePoint ℂ) := by
-  sorry
+noncomputable def riemannSphereChartedSpace : ChartedSpace ℂ (OnePoint ℂ) :=
+  OnePoint.instChartedSpace
 
 /-- The named atlas is an integrable one-dimensional complex-manifold atlas. -/
 theorem riemannSphere_isManifold :
     letI := riemannSphereChartedSpace
     IsManifold 𝓘(ℂ, ℂ) ∞ (OnePoint ℂ) := by
-  sorry
+  infer_instance
 
 /-! ## Complex quotients by biholomorphic actions -/
 
@@ -110,7 +113,8 @@ theorem quotientMk_isLocalBiholomorph
     (_holo : ∀ g : G, ContMDiff 𝓘(ℂ, E) 𝓘(ℂ, E) ∞ fun x : M ↦ g • x) :
     IsLocalDiffeomorph 𝓘(ℂ, E) 𝓘(ℂ, E) ∞
       (Quotient.mk (MulAction.orbitRel G M)) := by
-  sorry
+  letI : ContMDiffConstSMul 𝓘(ℂ, E) ∞ G M := ⟨_holo⟩
+  exact TauCeti.isLocalDiffeomorph_quotientMk
 
 end ComplexQuotient
 
@@ -127,8 +131,9 @@ noncomputable def gluedChartedSpace {E H : Type*} [NormedAddCommGroup E] [Normed
     (_left : ∀ i j, IsLocalDiffeomorph I I ∞ (D.f i j))
     (_right : ∀ i j, IsLocalDiffeomorph I I ∞
       (fun x : D.V (i, j) ↦ D.f j i (D.t i j x))) :
-    ChartedSpace H D.toGlueData.glued := by
-  sorry
+    ChartedSpace H D.toGlueData.glued :=
+  TauCeti.chartedSpaceOfIsOpenEmbedding (fun i ↦ D.ι_isOpenEmbedding i)
+    D.ι_jointly_surjective
 
 /-- Hausdorffness is controlled by the closedness of the full equivalence relation `D.Rel` on
 the disjoint union, not by separate closed-graph tests for the generating overlaps. -/

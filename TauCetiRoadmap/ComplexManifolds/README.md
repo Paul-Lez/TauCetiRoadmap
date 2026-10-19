@@ -49,9 +49,8 @@ cohomology; or Riemann--Roch.
 - Mathlib owns `ChartedSpace`, `ModelWithCorners`, `StructureGroupoid`, `HasGroupoid`,
   `Structomorph`, `IsManifold`, `Diffeomorph`, `IsLocalDiffeomorph`, `TopCat.GlueData`,
   `FiberBundle`, `VectorBundle`, `ContMDiffVectorBundle`, and the standard orbit quotients; the
-  quotient-manifold theorem takes the shape of mathlib4#40727 (see below). This roadmap extends
-  those APIs and does
-  not introduce replacement manifold, gluing, quotient, or bundle carriers.
+  installed quotient atlas is retained by Tau Ceti's quotient implementation (see below).
+  This roadmap extends those APIs and does not introduce replacement manifold, gluing, quotient, or bundle carriers.
 - The [completed universal-covers roadmap](../../Completed/UniversalCovers/README.md) owns universal covers, deck groups,
   quotient-cover classification, and lifting theory. This roadmap consumes
   `IsQuotientCoveringMap` and `IsAddQuotientCoveringMap` and adds the compatible
@@ -68,6 +67,11 @@ cohomology; or Riemann--Roch.
 - The [conformal-mapping roadmap](../ConformalMapping/README.md) owns one-variable analytic
   theorems such as Riemann mapping and Schwarz reflection. It consumes the Riemann-sphere manifold
   and transport interfaces from this roadmap.
+- [SmoothBundlesConnections B2, #887](https://github.com/TauCetiProject/TauCetiRoadmap/pull/887)
+  owns missing generic associated, direct-sum, dual, tensor, exterior-power and Hom bundle
+  carriers. This roadmap proves their holomorphic refinements on those same carriers, with
+  explicit realification/forgetful comparison maps. Only B2's foundational operation layer is
+  an input, not its connections or projective examples.
 - The complex-tori and analytic-toric-geometry roadmaps consume the quotient, bundle, and open
   gluing interfaces here. They own their geometric constructions and do not add competing general
   quotient theorems.
@@ -99,21 +103,36 @@ At the repository pin, consume the following existing interfaces directly.
 - `OnePoint ℂ` and `OnePoint.equivProjectivization`, including the existing homogeneous-coordinate
   formulas. No topology or charted space is placed on a second projective-line carrier.
 
-The following interfaces are consumed from Mathlib whenever the dependency pin provides them, and
-otherwise mirrored locally in the shape of the cited pull request.
+The pinned Tau Ceti modules already implement the following foundations; import them directly.
 
-- [mathlib4#40727](https://github.com/leanprover-community/mathlib4/pull/40727) is the selected
-  shape for the `IsManifold` theorem for properly discontinuous quotients: its `IsManifold`
-  construction, local inverses, and transition-map API. Whenever the dependency pin lacks that
-  API, Tau Ceti mirrors precisely `orbitRel.Quotient.localInverseAt`,
-  `localInverseAt_apply_mk`, `localInverseAt_symm_trans_eqOn_smul`,
-  `exists_smul_mem_localInverseAt_target`, `transitionMap`, `transitionMap_eqOn_smul`,
-  `transitionMap_locally_smul`, and `MulAction.isManifold_quotient_of_contMDiffSMul` under a
-  temporary internal namespace, then deletes the mirror and imports the Mathlib module on a
-  dependency update. Tau Ceti does not mirror `MulAction.instChartedSpaceQuotient` or the
-  covering-map, open-quotient, Hausdorff, second-countability, and connectedness results, which are
-  already at the pin. The genuinely new targets here are local biholomorphy and descent of
-  invariant holomorphic maps, sections, and bundle morphisms.
+- `TauCeti.Geometry.Manifold.Instances.OnePoint`: `OnePoint.affineChart`, `invChart`,
+  `instChartedSpace`, their source/target and evaluation formulas, and `instIsManifold`
+  at analytic regularity `ω`. The complex `∞` specialization uses this installed atlas.
+- `TauCeti.Geometry.Manifold.Instances.Quotient`: `TauCeti.instIsManifoldQuotient` and
+  `TauCeti.isLocalDiffeomorph_quotientMk`, under `ContMDiffConstSMul I n G M`, on
+  Mathlib's installed quotient atlas. Local biholomorphy is their complex specialization.
+- `TauCeti.Geometry.Manifold.Gluing`: `TauCeti.chartedSpaceOfIsOpenEmbedding`,
+  `isManifold_chartedSpaceOfIsOpenEmbedding`, smooth inclusions/local inverses, and
+  `partialDiffeomorphOfIsOpenEmbedding`. Milestone 5 supplies the `TopCat.GlueData`
+  compatibility adapter and the remaining functoriality and comparison laws.
+- `ContMDiffVectorBundle`, `VectorBundleCore.IsContMDiff`, the smooth-core/prebundle
+  constructors, and their total-space manifold/projection infrastructure are Mathlib inputs;
+  specialize to the complex field and `∞`, without introducing another transition mixin.
+
+The following Mathlib interfaces determine migration and missing-comparison targets.
+
+- [mathlib4#40727](https://github.com/leanprover-community/mathlib4/pull/40727), at
+  [revision 9da60c2](https://github.com/pepamontero/mathlib4/blob/9da60c2df334c05bcf3b745a17854c9404bb0518/Mathlib/Geometry/Manifold/Instances/Quotient.lean),
+  uses `orbitRel.Quotient.localInverseAt`, `localInverseAt_apply_mk_eq_smul`,
+  `localInverseAt_symm_trans_eqOn_smul`, `exists_smul_mem_localInverseAt_target`,
+  `transitionMap`, `transitionMap_eqOn_smul`, `mk_chartAt_symm_mem_localInverseAt_source`,
+  and `MulAction.isManifold_quotient_of_contMDiffConstSMul`.
+  Consume the installed Tau Ceti implementation now. On a dependency migration, adapt local
+  sections to the installed right inverse or prove the identity diffeomorphism between its atlas
+  and the atlas based on `chartedSpaceOfRightInverse Quotient.out_eq`. They are compatible
+  atlases, not definitionally identical instances. Never install a competing global quotient
+  atlas or require an obsolete transition lemma. The covering, separation and countability
+  results above remain direct inputs.
 - [mathlib4#42847](https://github.com/leanprover-community/mathlib4/pull/42847) develops transport
   of charted spaces and structure groupoids along homeomorphisms. Atlas transport and
   realification follow that design. Whenever the dependency pin lacks it, Tau Ceti locally mirrors
@@ -121,8 +140,8 @@ otherwise mirrored locally in the shape of the cited pull request.
   `Homeomorph.pullbackChartedSpace`, `_chartAt`, `_atlas`,
   `transOpenPartialHomeomorph_mem_pullbackChartedSpace_atlas`, `pullback_symm_trans`,
   `pullback_hasGroupoid`, and `pullbackStructomorph`. Realification, canonical complex orientation,
-  compatible open gluing, and holomorphic bundle structures remain genuinely new Tau Ceti
-  declarations.
+  compatible-gluing adapters, and the missing holomorphic bundle comparisons remain targets
+  here on the installed carriers.
 
 ## Encoding conventions
 
@@ -201,14 +220,15 @@ convention; the shared Lean carrier and comparison theorem come from the differe
 
 ## Milestone 3: the Riemann sphere
 
-On Mathlib's existing carrier `OnePoint ℂ`, construct a named two-chart complex atlas.
+Use Tau Ceti's installed `OnePoint.instChartedSpace` on `OnePoint ℂ`; a named atlas here
+is an alias of that instance. Consume its two charts and their formulas directly.
 
 1. The finite chart has source `OnePoint ℂ \ {∞}` and sends `coe z` to `z`. The chart at infinity
    has source `OnePoint ℂ \ {coe 0}`, sends `∞` to `0`, and sends `coe z` to `z⁻¹`.
-2. Prove the exact source, target, inverse, and overlap formulas. The transition on `ℂ \ {0}` is
-   inversion; prove it and its inverse holomorphic.
-3. Establish `ChartedSpace`, `HasGroupoid`, and `IsManifold` for the named atlas and retain the
-   existing compact, Hausdorff, connected, and second-countable topology.
+2. Use the implemented exact source, target, inverse and overlap formulas. The transition on
+   `ℂ \ {0}` is inversion; its analyticity is part of the installed manifold proof.
+3. Specialize the installed `IsManifold` at `ω` to `∞`, retaining its `ChartedSpace`,
+   `HasGroupoid`, compact, Hausdorff, connected and second-countable topology.
 4. Relate the atlas to `OnePoint.equivProjectivization` through Mathlib's existing formulas and
    prove the standard Möbius transformations are biholomorphisms.
 
@@ -217,17 +237,15 @@ holomorphic transition calculation.
 
 ## Milestone 4: smooth and complex quotients
 
-Fix a group `G` acting freely and properly discontinuously on a manifold `M`.
+Fix a group `G` acting freely and properly discontinuously on a manifold `M`, with
+`ContinuousConstSMul G M`, `T2Space M`, `LocallyCompactSpace M`, and
+`ContMDiffConstSMul I n G M`. Use the installed Mathlib quotient atlas and the pinned Tau Ceti
+manifold theorem. The topological quotient and covering results in the inventory are inputs.
 
-Use the quotient-manifold theorem in the exact shape of mathlib4#40727, including its local inverses
-and transition maps. Whenever the dependency pin lacks that theorem, mirror the same API locally and
-replace the mirror with Mathlib imports on a dependency update. The covering-map,
-open-quotient, Hausdorff, second-countability, and connectedness results listed in the inventory are
-inputs here, not targets.
-
-1. Prove that `Quotient.mk (MulAction.orbitRel G M)` is a local diffeomorphism, using the local
-   inverse and transition-map API selected above. Specialize this to biholomorphic actions to obtain
-   a local biholomorphism, and give the additive versions through the existing additive action API.
+1. Specialize `TauCeti.isLocalDiffeomorph_quotientMk` to the chosen field and regularity.
+   For the complex theorem construct `ContMDiffConstSMul 𝓘(ℂ, E) ∞ G M` from the
+   displayed holomorphy of every action map. Obtain local biholomorphy without rebuilding
+   the quotient manifold. Supply additive versions on the existing additive orbit carrier.
 2. For an invariant map `f : M → N`, construct its quotient descent on the standard quotient.
    Prove continuity, smoothness, or holomorphy exactly when the pullback along the quotient
    projection has that property. Prove uniqueness, composition, products, and naturality under
@@ -243,7 +261,8 @@ inputs here, not targets.
 
 Lee, *Introduction to Smooth Manifolds*, supplies the free proper-action quotient argument;
 Forster, Sections 4--5, supplies the analytic-covering and holomorphic descent pattern. The
-Mathlib pull request above is normative for Lean-level names and carriers.
+installed quotient atlas and the versioned Mathlib migration comparison above fix the Lean
+carriers and local-section conventions.
 
 ## Milestone 5: compatible open gluing
 
@@ -256,9 +275,13 @@ and structure groupoid.
    transition equation rather than treating `D.t i j` between arbitrary overlap atlases as the
    whole condition. Prove symmetry, restriction, and cocycle lemmas from `GlueData` rather than
    copying the gluing relation into a new record.
-2. Construct a `ChartedSpace` on `D.toGlueData.glued`, prove `HasGroupoid` and `IsManifold`, and
-   prove every `D.toGlueData.ι i` is an open local diffeomorphism. Smooth and complex gluing are
-   corollaries of this one theorem.
+2. Define the named atlas on `D.toGlueData.glued` by
+   `TauCeti.chartedSpaceOfIsOpenEmbedding`, using `D.ι_isOpenEmbedding` and
+   `D.ι_jointly_surjective`. Construct its local smooth-transition witnesses from
+   `D.ι_eq_iff_rel` and the two compatible overlap maps in item 1, then apply
+   `TauCeti.isManifold_chartedSpaceOfIsOpenEmbedding` and its inclusion/local-inverse
+   results. This `GlueData` adapter supplies smooth and complex gluing without rebuilding
+   the open-cover atlas. Empty pieces impose no extra nonemptiness hypothesis.
 3. Prove uniqueness up to the identity diffeomorphism, compatibility with restriction to a
    subfamily of pieces, functoriality under maps of gluing data, and compatibility with products
    and atlas transport.
@@ -295,23 +318,28 @@ criteria; the formal statements remain in Mathlib's topology vocabulary.
 
 ## Milestone 7: holomorphic vector and line bundles
 
-Fix a finite-dimensional complex normed space `F` once and for all. A holomorphic vector bundle is
-an existing `VectorBundle ℂ F E` whose Mathlib bundle trivializations have holomorphic transition
-maps into `F →L[ℂ] F`. This is a property/mixin on the existing bundle, analogous to
-`ContMDiffVectorBundle ∞ F E 𝓘(ℂ, EB)`; it is not a new total-space or fibre carrier. The bundle
-charts induce the named complex atlas on `TotalSpace F E`, and a morphism is an existing bundle
-map whose fibre maps are complex-linear and whose total map is holomorphic.
+Fix a finite-dimensional complex normed space `F` once and for all. A holomorphic vector
+bundle is literally `ContMDiffVectorBundle ∞ F E 𝓘(ℂ, EB)` on the existing complex
+`VectorBundle`; `HolomorphicVectorBundle` is only an abbreviation for that mixin. On cores use
+`VectorBundleCore.IsContMDiff`. Its transition condition quantifies over `e,e'` with
+`MemTrivializationAtlas e` and `MemTrivializationAtlas e'`, on `e.baseSet ∩ e'.baseSet`.
+The existing total-space manifold and holomorphic projection results are inputs or complex
+specializations. A morphism uses the existing fibrewise complex-linear bundle map and a
+holomorphic total map.
 
-1. Define the holomorphic-transition mixin on `VectorBundleCore ℂ B F ι` and on an existing
-   `VectorBundle ℂ F E`. Prove that it implies the existing `ContMDiffVectorBundle` instance,
-   constructs the total-space complex atlas, makes the projection holomorphic, and is equivalent
-   to holomorphy in all bundle trivializations. Keep `FiniteDimensional ℂ F` visible in every
-   finite-rank theorem.
-2. Prove cocycle gluing, change of trivialization, holomorphic bundle equivalence, pullback, direct sum, dual,
-   tensor product, tensor powers, exterior powers, and determinant. Supply identity, composition,
-   and naturality lemmas for each operation. The determinant has fixed fibre
-   `⋀^(finrank_ℂ F) F`, or the equivalent standard top-exterior-power carrier selected once for the
-   API; its rank hypothesis is explicit.
+1. Supply the missing local characterizations for the designated atlas trivializations, and
+   equivalently for the maximal compatible holomorphic trivialization atlas. Changes of frame
+   must be holomorphic gauges. An arbitrary continuous or real-smooth complex-linear
+   trivialization is not admissible: on the trivial line over `ℂ`, the gauge `exp(Re z)`
+   sends the holomorphic constant section to a nonholomorphic coordinate function.
+   Keep `FiniteDimensional ℂ F` explicit in every finite-rank theorem.
+2. Use the existing core/prebundle constructors for holomorphic cocycle gluing. On B2's shared
+   direct-sum, dual, tensor, tensor-power, exterior-power and Hom carriers, prove the induced
+   transition maps holomorphic. Construct pullback using Mathlib's installed pullback carrier.
+   Supply bundle equivalences, identity, composition and naturality, including equality or
+   canonical isomorphism with the generic B2 operations after realification. Define determinant
+   on B2's chosen top-exterior-power carrier with fibre `⋀^(finrank_ℂ F) F`, and prove its
+   holomorphic structure and comparisons there. Do not construct another operation carrier.
 3. Develop the rank-one specialization without a second line-bundle carrier. Prove the
    trivial-bundle criterion by a nowhere-zero holomorphic section and identify cocycle
    isomorphisms with holomorphic bundle equivalences.
@@ -336,26 +364,35 @@ and change-of-trivialization spine.
 
 ## Dependency order
 
-Milestones 1 and 3 start from Mathlib. Milestone 2 uses Milestone 1 and the exact orientation carrier
-from the differential-geometry roadmap. Milestone 4 uses Milestone 1 and the Mathlib-owned quotient shape.
-Milestone 5 uses Milestone 1 and `TopCat.GlueData`. Milestone 6 uses Milestone 5's canonical maps
-only for its gluing applications and can develop its general topology in parallel. Milestone 7 uses
-Milestones 1 and 5; its hypersurface and canonical-bundle targets also use Milestone 2.
+Milestone 1 starts from Mathlib and Milestone 3 from the installed Tau Ceti sphere API.
+Milestone 2 uses Milestone 1 and DifferentialGeometry's chosen orientation. The quotient and
+covering foundation 4.1–4.2 and the gluing adapter 5 use Milestone 1 and their installed
+implementations. Develop 7.1–7.3 next, using that gluing adapter and only
+SmoothBundlesConnections B2's foundational operation carriers. Bundle descent 4.3 then uses
+7.1–7.3; the character application 7.6 uses 4.1–4.3. Thus quotient foundation does not depend
+on its later bundle-descent application. Items 7.4–7.5 use the preceding bundle layer and the
+orientation convention of Milestone 2. Milestone 6 uses Milestone 5's canonical maps for its
+gluing applications and can develop the general topology independently.
 
 ## Acceptance checks
 
 - The quotient of `ℂ` by integer translations is constructed on
   `AddAction.orbitRel.Quotient ℤ ℂ`; it consumes Mathlib's quotient-manifold structure and existing
-  covering-map theorem, while Tau Ceti supplies the local-biholomorphism result.
+  covering-map theorem and specializes the installed Tau Ceti local-diffeomorphism result.
 - A free properly discontinuous action by non-holomorphic diffeomorphisms does not satisfy the
   complex quotient theorem merely because its underlying real quotient is smooth.
 - The orbit projection `M → M/G` is never called the projection of a manifold bundle over an
   unrelated base.
+- The named sphere atlas is definitionally the installed `OnePoint.instChartedSpace`, and
+  the existing analytic instance supplies its complex smoothness. No second atlas is installed.
 - The finite and infinity charts make `OnePoint ℂ` a complex manifold and have transition
   `z ↦ z⁻¹` on the exact punctured overlap.
 - Two-chart and finite-star examples acquire complex atlases from the same `TopCat.GlueData`
   theorem, every input overlap atlas is compatible with both adjacent piece atlases, and every
   canonical inclusion is an open local biholomorphism.
+- Local bundle characterizations quantify over compatible holomorphic atlas trivializations;
+  the real-smooth gauge `exp(Re z)` is excluded. Tensor/dual/determinant refinements use the
+  shared B2 carriers and commute with forgetting the holomorphic structure.
 - A cocycle for a trivial line bundle and a nontrivial finite-order character both pass through
   the same holomorphic-line-bundle constructor.
 - Gluing two copies of `ℂ` along `ℂˣ` produces the doubled origin; its generated equivalence
