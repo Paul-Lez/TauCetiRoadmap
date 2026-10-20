@@ -337,8 +337,12 @@ holomorphic total map.
    direct-sum, dual, tensor, tensor-power, exterior-power and Hom carriers, prove the induced
    transition maps holomorphic. Construct pullback using Mathlib's installed pullback carrier.
    Supply bundle equivalences, identity, composition and naturality, including equality or
-   canonical isomorphism with the generic B2 operations after realification. Define determinant
-   on B2's chosen top-exterior-power carrier with fibre `⋀^(finrank_ℂ F) F`, and prove its
+   canonical isomorphism with the generic B2 operations after realifying the base and
+   forgetting holomorphy, while retaining the complex fibre scalars and complex tensor products.
+   Restriction of fibre scalars to ℝ is a separate operation and is not asserted to commute
+   with complex tensor products. Direct uses of B2 retain its stated base hypotheses; any
+   extension of local cocycle operations to more general glued bases must state and prove
+   that extension explicitly. Define determinant on B2's chosen top-exterior-power carrier with fibre `⋀^(finrank_ℂ F) F`, and prove its
    holomorphic structure and comparisons there. Do not construct another operation carrier.
 3. Develop the rank-one specialization without a second line-bundle carrier. Prove the
    trivial-bundle criterion by a nowhere-zero holomorphic section and identify cocycle
