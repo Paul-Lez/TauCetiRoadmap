@@ -638,6 +638,31 @@ noncomputable def outwardNormalAt {n : ℕ} (W : CollaredOrientedFilling n) (b :
     ⟨(0, b), Internal.GeometricTopologySupplierMirror.zero_mem_collarSource b⟩
     (WithLp.toLp 2 (fun _ : Fin 1 ↦ (1 : ℝ)), 0)
 
+/-- Reparametrize a supplied collar by a positive proper width. -/
+def reparametrizedCollarPoint {n : ℕ} (W : CollaredOrientedFilling n)
+    (ε : Set.Ioo (0 : ℝ) 1) (p : HalfOpenCollarDomain W) : HalfOpenCollarDomain W := by
+  refine ⟨(⟨(ε : ℝ) * (p.val.1 : ℝ),
+    ⟨mul_nonneg ε.property.1.le p.val.1.property.1, ?_⟩⟩, p.val.2), ?_⟩
+  · nlinarith [p.val.1.property.2, ε.property.1, ε.property.2]
+  · change (ε : ℝ) * (p.val.1 : ℝ) < 1
+    nlinarith [p.val.1.property.2, ε.property.1, ε.property.2]
+
+noncomputable def reparametrizedCollarMap {n : ℕ} (W : CollaredOrientedFilling n)
+    (ε : Set.Ioo (0 : ℝ) 1) (p : HalfOpenCollarDomain W) : W.M :=
+  W.collar (reparametrizedCollarPoint W ε p)
+
+noncomputable def outwardNormalAtWidth {n : ℕ} (W : CollaredOrientedFilling n)
+    (ε : Set.Ioo (0 : ℝ) 1) (b : W.B) : ModelSpace n :=
+  -mfderiv ((𝓡∂ 1).prod (SmoothModel (n - 1))) W.model
+    (reparametrizedCollarMap W ε)
+    ⟨(0, b), Internal.GeometricTopologySupplierMirror.zero_mem_collarSource b⟩
+    (WithLp.toLp 2 (fun _ : Fin 1 ↦ (1 : ℝ)), 0)
+
+theorem outwardNormalAtWidth_eq {n : ℕ} (W : CollaredOrientedFilling n)
+    (ε : Set.Ioo (0 : ℝ) 1) (b : W.B) :
+    outwardNormalAtWidth W ε b = (ε : ℝ) • outwardNormalAt W b := by
+  sorry
+
 noncomputable def pullbackFramingAlongCollar {n r : ℕ}
     (W : CollaredOrientedFilling n)
     (_framing : StableTangentFraming W.model W.M r) :
@@ -652,12 +677,32 @@ noncomputable def collarProductFraming {n r : ℕ}
       (HalfOpenCollarDomain W) r := by
   sorry
 
+/-- Product on a returned proper subcollar, in the original collar coordinates. -/
 structure StableTangentFraming.IsProductOnCollar {n r : ℕ}
     (W : CollaredOrientedFilling n)
     (framing : StableTangentFraming W.model W.M r) where
+  width : Set.Ioo (0 : ℝ) 1
   boundaryFraming : StableTangentFraming (SmoothModel (n - 1)) W.B r
-  agrees : (pullbackFramingAlongCollar W framing).trivialization =
+  agrees : Set.EqOn (pullbackFramingAlongCollar W framing).trivialization
     (collarProductFraming W boundaryFraming).trivialization
+    {z | ((Bundle.TotalSpace.proj z).val.1 : ℝ) < (width : ℝ)}
+
+theorem StableTangentFraming.IsProductOnCollar.width_pos {n r : ℕ}
+    {W : CollaredOrientedFilling n} {f : StableTangentFraming W.model W.M r}
+    (h : f.IsProductOnCollar W) : 0 < (h.width : ℝ) := h.width.property.1
+
+theorem StableTangentFraming.IsProductOnCollar.width_lt_one {n r : ℕ}
+    {W : CollaredOrientedFilling n} {f : StableTangentFraming W.model W.M r}
+    (h : f.IsProductOnCollar W) : (h.width : ℝ) < 1 := h.width.property.2
+
+/-- Shrinking preserves the actual product frame and its boundary data. -/
+def StableTangentFraming.IsProductOnCollar.restrict {n r : ℕ}
+    {W : CollaredOrientedFilling n} {f : StableTangentFraming W.model W.M r}
+    (h : f.IsProductOnCollar W) (ε : Set.Ioo (0 : ℝ) 1)
+    (hε : (ε : ℝ) ≤ (h.width : ℝ)) : f.IsProductOnCollar W where
+  width := ε
+  boundaryFraming := h.boundaryFraming
+  agrees := h.agrees.mono (fun _ hz ↦ lt_of_lt_of_le hz hε)
 
 structure StableFramedFillingCycle (n : ℕ) where
   filling : CollaredOrientedFilling n
@@ -733,6 +778,17 @@ theorem boundaryFrameOfHonest_apply {n : ℕ} [NeZero n]
         boundaryTangentMap W b v - a • outwardNormalAt W b⟩).2 := by
   sorry
 
+/-- Reparametrization retains the normal slot, with the required positive scalar transport. -/
+theorem boundaryFrameOfHonest_rescaleNormal {n : ℕ} [NeZero n]
+    (W : CollaredOrientedFilling n) (f : TangentFraming W.model W.M)
+    (ε : Set.Ioo (0 : ℝ) 1) (b : W.B) (v : ModelSpace (n - 1)) (a : ℝ) :
+    boundaryStableTargetEquiv n
+      ((boundaryFrameOfHonest W f).trivialization
+        ⟨b, v, WithLp.toLp 2 (fun _ : Fin 1 ↦ (ε : ℝ) * a)⟩).2 =
+      (f.trivialization ⟨(W.boundaryIdentification b : W.M),
+        boundaryTangentMap W b v - a • outwardNormalAtWidth W ε b⟩).2 := by
+  simp only [boundaryFrameOfHonest_apply, outwardNormalAtWidth_eq, smul_smul, mul_comm]
+
 /-- Normalize after adding an extra line: rotate the collar normal into that line and the
 added line into the negative normal, with a cutoff to the identity away from the collar.
 This is a gauge-modified stabilization, not the unmodified block stabilization. -/
@@ -747,7 +803,8 @@ noncomputable def collarNormalizationHomotopy {n : ℕ}
       (collarNormalizedStabilization W f r) := by
   sorry
 
-/-- Only the normalized endpoint is product on the collar; the normalization path moves it. -/
+/-- The endpoint returns a proper width on which it is product. The global path moves the
+boundary framing; no product equation is asserted on the rest of the original collar. -/
 noncomputable def collarNormalizedStabilization_product {n : ℕ}
     (W : CollaredOrientedFilling n) (f : TangentFraming W.model W.M) (r : ℕ) :
     (collarNormalizedStabilization W f r).IsProductOnCollar W := by
@@ -809,6 +866,24 @@ noncomputable def standardSevenDiskFilling_boundary :
     standardSevenDiskFilling.filling.B ≃ₘ⟮SmoothModel 6, SmoothModel 6⟯ Sphere 6 := by
   sorry
 
+/-- The regression's input is the full radial collar, not a specially pre-shrunk collar. -/
+theorem standardSevenDiskFilling_radialCollar
+    (p : HalfOpenCollarDomain standardSevenDiskFilling.filling) :
+    (standardSevenDiskFilling_carrier
+      (standardSevenDiskFilling.filling.collar p : standardSevenDiskFilling.filling.M)).val =
+    (1 - (p.val.1 : ℝ)) • (standardSevenDiskFilling_boundary p.val.2 : ModelSpace 7) := by
+  sorry
+
+/-- Normalizing that radial input returns equality only below a proper width. -/
+theorem standardSevenDiskFilling_normalization_width (r : ℕ) :
+    let h := collarNormalizedStabilization_product standardSevenDiskFilling.filling
+      standardSevenDiskFilling.honestFraming r
+    0 < (h.width : ℝ) ∧ (h.width : ℝ) < 1 := by
+  exact ⟨(collarNormalizedStabilization_product standardSevenDiskFilling.filling
+    standardSevenDiskFilling.honestFraming r).width_pos,
+    (collarNormalizedStabilization_product standardSevenDiskFilling.filling
+      standardSevenDiskFilling.honestFraming r).width_lt_one⟩
+
 /-! ## Embedded defects and canonical open complements -/
 
 noncomputable def DefectCollarDomain
@@ -846,9 +921,11 @@ structure StableTangentFraming.IsProductNearDefect
     [TopologicalSpace M] [ChartedSpace H M] [IsManifold I ∞ M]
     (D : Internal.GeometricTopologySupplierMirror.SmoothEmbeddedClosedDisk (M := M) n I)
     (framing : StableTangentFraming I D.exterior r) where
+  width : Set.Ioo (0 : ℝ) 1
   boundaryFraming : StableTangentFraming (SmoothModel (n - 1)) D.disk.B r
-  agrees : (pullbackFrameToDefectCollar D framing).trivialization =
+  agrees : Set.EqOn (pullbackFrameToDefectCollar D framing).trivialization
     (defectCollarProductFraming D boundaryFraming).trivialization
+    {z | ((Bundle.TotalSpace.proj z).val.1 : ℝ) < (width : ℝ)}
 
 noncomputable def orientationOnOpen
     {n : ℕ} {H M : Type*} [TopologicalSpace H]

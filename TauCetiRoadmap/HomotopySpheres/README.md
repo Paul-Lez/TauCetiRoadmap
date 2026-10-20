@@ -2,7 +2,8 @@
 
 This roadmap develops the reusable smooth topology behind the Kervaire--Milnor groups of
 homotopy spheres.  It constructs the simply connected smooth h-cobordism theorem, stable
-homotopy groups of spheres, real Bott periodicity, stable oriented bundle classification,
+homotopy groups of spheres, real Bott periodicity, smooth framing applications of stable
+oriented bundle classification,
 framed bordism and Pontryagin--Thom, surgery obstruction groups, and the Kervaire--Milnor exact
 sequence.  The first complete low-dimensional calculation is `Theta_6 = 0`, followed by the
 direct smooth recognition theorem for compact smooth homotopy six-spheres.
@@ -15,7 +16,7 @@ calculations or exactness as input fields.
 
 Suggested homes are `TauCeti/Geometry/Manifold/HCobordism/`,
 `TauCeti/Geometry/Manifold/HomotopySphere/`, `TauCeti/AlgebraicTopology/StableHomotopy/`,
-`TauCeti/AlgebraicTopology/FramedBordism/`, `TauCeti/Topology/VectorBundle/Classifying/`, and
+`TauCeti/AlgebraicTopology/FramedBordism/`, `TauCeti/Geometry/Manifold/VectorBundle/Framing/`, and
 `TauCeti/Geometry/Manifold/Surgery/Obstruction/`.
 
 ## Scope and completion criterion
@@ -35,9 +36,10 @@ The roadmap is complete when Tau Ceti proves the following connected development
    The James construction,
    Freudenthal theorem, EHP sequence, composition, and Toda brackets provide a reproducible
    calculation route rather than a table oracle.
-5. Stable `SO`, `BSO`, oriented stable vector bundles, real Bott periodicity, and stable `J` are
-   constructed in the same convenient category, with all comparison and classification theorems
-   needed for manifold framings.
+5. Stable `O`/`SO`, their loop comparison with the shared `BSO`, real Bott periodicity and
+   stable `J` are constructed in one convenient category. TopologicalKTheory T1.5–T1.6 supplies
+   the fixed-rank/stable classifiers and bundle classification. This roadmap supplies their
+   clutching, smoothing and tangent/normal framing comparisons.
 6. Pontryagin--Thom gives a natural group isomorphism between framed bordism and stable
    homotopy.  Its collapse map factors through
    `Th(nu) ~= Sigma^k M_+` before the augmentation to `S^k`, and both constructions and both
@@ -83,12 +85,24 @@ endpoint.
 - The [completed universal-covers roadmap](../../Completed/UniversalCovers/README.md) owns basepoint change, covering
   maps, and induced maps on homotopy groups.  The simple-connectivity and homotopy-equivalence
   arguments here consume those interfaces.
+- [TopologicalKTheory T1.5–T1.6, #894](https://github.com/TauCetiProject/TauCetiRoadmap/pull/894)
+  owns the finite Grassmannians, fixed-rank `BO(n)`/`BSO(n)`, stable `BO`/`BSO` colimits,
+  universal bundle diagrams and finite-CW/numerable classification. Its oriented construction
+  uses CharacteristicClasses C1.1a's finite oriented-cover precursor. Consume the actual
+  classifier carriers and maps, with the supplier's positive-rank and signed rank-zero
+  qualifications. This roadmap owns stable `O`/`SO`, `Omega BSO ~=_h SO`, smooth framing
+  applications and the complete real Bott loop chain. Compare alternative homogeneous models
+  with these classifiers on universal bundles, basepoints, stabilization and clutching maps.
+  The stage order is early convenient spaces (3A), T1.5–T1.6, then 4A–4B here, then
+  TopologicalKTheory T7's real KO/ABS applications. T1.6's classification is independent of
+  that later Bott application. The same split is specified in the public
+  [HomotopySpheres follow-up #1287](https://github.com/TauCetiProject/TauCetiRoadmap/pull/1287).
 - The spin-representation section of the
   [representation-theory roadmap](../RepresentationTheory/README.md) owns the algebraic
   eightfold periodicity of real Clifford algebras and supplies the Clifford-module comparison
   input used in Stage 4B.  This roadmap owns the topological loop-space equivalences, stable
-  `SO` table, and bundle-classification consequences; algebraic Clifford periodicity alone does
-  not discharge them.
+  `SO` table, and smooth framing comparisons with those shared classifiers; algebraic
+  Clifford periodicity alone does not discharge them.
 - [RiemannianGeometry R1–R3, #935](https://github.com/TauCetiProject/TauCetiRoadmap/pull/935)
   owns invariant and normal-homogeneous metrics, Jacobi fields, finite broken-geodesic
   manifolds, energy-band compactness, and their path-space comparisons. Stage 4B consumes
@@ -174,8 +188,9 @@ These choices are acceptance conditions for every stage.
   canonical inclusions and their universal properties.  Transition maps, stable-range
   comparisons, products, and `J` commute by proved diagrams.  A family of abstract groups with
   the expected values is not an implementation.
-- **Use classifying spaces for stable bundles.**  `BSO` is the stable oriented Grassmannian or
-  the classifying space obtained from the stable principal `SO` object, with a universal bundle.
+- **Use the shared classifiers for stable bundles.** `BSO` is TopologicalKTheory T1.6's
+  stable oriented Grassmannian with its universal bundle diagram. A principal-`SO` or other
+  homogeneous model has a named comparison with that classifier and its actual bundle maps.
   Stable bundle equivalence is stabilization by trivial real bundles.  A stable framing is a
   chosen smooth vector-bundle equivalence
   `TM directSum epsilon^r ~= M times R^(n+r)`, not a proposition asserting that one exists and not
@@ -201,8 +216,14 @@ These choices are acceptance conditions for every stage.
   convention are part of the construction. Incoming comparisons reverse that normal line.
 - **Stable and honest framings remain distinct.**  A cycle carrying only a trivialization after
   adding trivial summands is called stably framed or s-parallelizable.  The name
-  `ParallelizableFilling` is used only after the relative destabilization theorem has produced
-  an honest tangent trivialization compatible with the chosen boundary collar.
+  `ParallelizableFilling` is used only after absolute lifting has supplied an honest tangent
+  frame and its collar-normalized stabilization comparison, including the returned proper
+  subcollar, moving boundary path and positive normal-rescaling transport.
+- **Product near a boundary carries a proper width.** Every collar product witness returns
+  `0 < ε < 1` and equality on total-bundle vectors based at `s < ε` in the supplied collar.
+  This convention applies to fillings, cobordism faces and defect exteriors. Shrinking uses a
+  common smaller width and preserves the boundary frame. Reparametrization additionally
+  transports the normal line by its positive derivative factor.
 - **Pontryagin--Thom is constructed in both directions.**  The collapse map uses a chosen
   tubular neighbourhood and a normal framing; independence is a theorem.  The inverse uses
   smooth approximation, a regular value, and the induced framed submanifold.  The two bordisms
@@ -420,14 +441,19 @@ secondary operations, suspension sequences, and the low-stem calculation.
    compare their underlying spaces with the corresponding compactly generated colimits.  Use the
    sphere fibration `SO(r) -> SO(r+1) -> S^r` to prove the finite-to-stable comparison range on
    homotopy groups.
-2. Construct finite oriented Grassmannians and their tautological bundles, stabilization by a
-   trivial line, `BSO` as the compactly generated filtered colimit, and the universal stable
-   oriented real bundle.  Prove `Omega BSO ~=_h SO` in the same pointed category, including
-   components and basepoints.
-3. Define stable isomorphism of oriented real vector bundles by adding trivial summands.  Over a
-   finite CW complex `K`, construct mutually inverse maps between stable bundle classes and
-   `[K,BSO]`; prove naturality under pullback, compatibility with Whitney sum, and homotopy
-   invariance.
+2. Import the fixed-rank and stable oriented Grassmannians and universal bundle diagrams
+   from TopologicalKTheory T1.5–T1.6, using the positive-rank finite oriented cover of
+   CharacteristicClasses C1.1a. Use its stabilization maps and chosen basepoints. Construct
+   `Omega BSO ~=_h SO` for that shared `BSO` in the pointed convenient category. Compare
+   any auxiliary principal/homogeneous model by named maps preserving universal bundles,
+   basepoints, stabilization and the induced clutching maps.
+3. Consume T1.6's mutually inverse classification maps over finite CW bases and its numerable
+   classification over paracompact Hausdorff bases, with the stated rank qualifications.
+   Retain oriented isomorphisms and the supplier's separate signed rank-zero datum.
+   Apply the pullback, Whitney-sum and homotopy-invariance laws to smooth tangent/normal
+   bundles. Construct the smoothing comparisons between continuous bundle trivializations
+   and smooth stable framings, including homotopies and collar-relative variants in their
+   explicit ranges; do not define a second stable bundle classifier.
 4. Prove that the classifying map is null exactly when a chosen stabilization is trivializable.
    Express this as existence of a stable framing and retain the chosen trivialization as data.
 5. Prove `BSO` simply connected.  For `n>=2`, compare pointed and unpointed classes from `S^n`
@@ -439,9 +465,11 @@ Bundles*, Chapters 3--4 and 8--9, supply the universal-bundle and clutching proo
 
 ### 4B. Full real Bott proof spine
 
-1. Construct the stable homogeneous spaces and fibrations in the real Bott chain
-   `BO x Z, O, O/U, U/Sp, BSp x Z, Sp, Sp/U, U/O`.  Identify base components and prove that the
-   finite-dimensional inclusions induce equivalences in increasing connectivity ranges.
+1. Construct the stable homogeneous-space comparisons and fibrations in the real Bott chain
+   `BO x Z, O, O/U, U/Sp, BSp x Z, Sp, Sp/U, U/O`, using TopologicalKTheory's shared `BO`
+   for the first term. A distinct homogeneous `BO` model must be compared with that carrier
+   and its universal bundle and stabilization maps. Identify base components and prove that
+   the finite-dimensional inclusions induce equivalences in increasing connectivity ranges.
 2. Consume RiemannianGeometry R1's bi-invariant and normal-homogeneous metrics,
    submersion and curvature formulas, and R2's Jacobi-field and exponential-derivative API.
    Specify the invariant products and normalization on each compact classical group and
@@ -584,14 +612,15 @@ noncompact source does not instantiate this classical collapse theorem.
 
 1. Define a `StableFramedFillingCycle n` as a compact connected oriented smooth `n`-manifold whose
    boundary is identified orientation-preservingly with a homotopy `(n-1)`-sphere, together with a
-   stable tangent framing product-compatible on a fixed collar.  Call this carrier stably framed
-   or s-parallelizable, not parallelizable.  The boundary carrier is identified with the actual
+   stable tangent framing product-compatible on a returned proper subcollar of the chosen
+   collar. Call this carrier stably framed or s-parallelizable, not parallelizable.  The boundary carrier is identified with the actual
    Mathlib boundary subtype of the filling, and the collar restricts at zero to that
    identification.  Pin it as a diffeomorphism from the open subtype `[0,1) × boundary` of the
    relative cylinder to the displayed open collar neighbourhood.  Construct the product
    framing only from the collar derivative, normal line, and boundary framing; product
-   compatibility is equality with the ambient trivialization after pullback to that half-open
-   source.  A construction allowed to return the ambient framing itself makes this condition
+   compatibility is equality with the ambient trivialization on all actual total-bundle
+   vectors whose base has collar time `s < ε`, for a returned `0 < ε < 1`. There is no
+   equality requirement near the missing width-one endpoint of the supplied collar.  A construction allowed to return the ambient framing itself makes this condition
    circular and does not count.
 2. A filling bordism is a collared, oriented, framed `(n+1)`-manifold with corners whose rounded
    boundary is decomposed into three named faces: the incoming filling, the outgoing filling, and
@@ -615,13 +644,16 @@ noncompact source does not instantiate this classical collapse theorem.
 3. Restrict an honest framing of `TW` to `T(∂W) ⊕ ε_normal`, keeping the normal
    as a boundary stabilization slot. This is a stable boundary framing and does not imply
    an honest framing of `T(∂W)`. Construct the collar-normalized stabilization of an honest
-   ambient frame after adding one extra trivial line. First make its collar pullback constant
+   ambient frame after adding one extra trivial line. Return a width `0 < ε < 1` and a
+   slightly larger cutoff width `ε < δ < 1`; all product claims refer only to `s < ε` in
+   the original collar coordinates. First make its collar pullback constant
    in collar time on a smaller collar: identify tangent fibres by the actual derivative of
    the product collar, evaluate the pulled-back frame at a smooth reparametrization of time
    which is zero near the boundary and unchanged off a wider collar, and interpolate those
    evaluation times to obtain a path of fibrewise isomorphisms. This uses product tangent
    transport, not the derivative of the reparametrization, which would be singular.
-   Then in collar coordinates write a vector as `(t + sν, a)`, with `ν` the outward collar normal and `t` tangent to the boundary.
+   Then in collar coordinates write a vector as `(t + sν, a)`, with `ν` the outward collar
+   normal and `t` tangent to the boundary.
    Rotate the normal and extra line through a quarter turn, so that the normalized frame is
    `(f(t − aν), s)` at the boundary, before the fixed permutation putting the normal first.
    Additional stabilization coordinates are unchanged. Use a smooth cutoff on a narrower
@@ -629,7 +661,17 @@ noncompact source does not instantiate this classical collapse theorem.
    inverse smoothness, the displayed evaluation law, orientation/permutation signs, and the
    resulting global homotopy from the block stabilization to this normalized endpoint.
    The boundary frame is `(t,a) ↦ f(t − aν)`, with its one normal stabilization retained.
-   The normalization homotopy moves the boundary framing.
+   The normalization homotopy moves the boundary framing. Return the proper width with the
+   endpoint's product witness; a product theorem on the entire supplied collar is not a target.
+   Restriction to any smaller positive width preserves the same boundary frame and its equations.
+
+   If a caller reparametrizes as `c_ε(s,b)=c(εs,b)`, prove its derivative is `dc_(εs,b)`
+   composed with `(u,v) ↦ (εu,v)` and its outward normal is `ν_ε=εν`. Transport the boundary
+   stable frame by the positive rescaling `(v,a) ↦ (v,εa)`, so its evaluation is
+   `f(v−aν_ε)`. Record this rescaling's smooth inverse, path to the identity, compatibility
+   with stabilization and the restricted global comparison homotopy. The product witness here
+   uses the original collar parameters; it does not silently identify these reparametrized
+   normal fields.
 
    An absolute handle decomposition of a compact connected `W^n` with nonempty boundary
    gives a spine of dimension at most `n−1`. Use stable-range cancellation to lift the
@@ -645,13 +687,18 @@ noncompact source does not instantiate this classical collapse theorem.
    the historical comparison. Identify its actual boundary with `S⁶` and compute the induced
    stable boundary frame `(t,a) ↦ t − a x`, up to the stated fixed target permutation.
    Verify the normal/extra-line rotation, its cutoff extension, and the moving boundary path
-   explicitly. This construction requires no honest tangent frame of `S⁶`.
+   explicitly. Include the full radial input collar `c(s,x)=(1−s)x` onto `D⁷ \ {0}` and
+   construct normalization on a returned proper subcollar. This tests arbitrary supplied collars,
+   rather than only one preselected narrow collar. No global frame is required to be product
+   along all radial rays down to the centre. This construction requires no honest tangent frame
+   of `S⁶`.
 
    Separately encode Kervaire–Milnor's historical honestly parallelizable `P_n` cycles and
    their relative cobordisms. Map a historical representative to its collar-normalized
    stabilization with the normalization path. In the reverse direction retain the honest
    ambient frame and use the recorded boundary transport. Prove invariance under stabilization,
-   collar shrinking and choices of cutoff, and prove both composites by cobordisms. For gluing,
+   collar shrinking (using a common smaller width), positive normal rescaling and choices of
+   cutoff, and prove both composites by cobordisms. For gluing,
    insert the recorded boundary path as a framed collar cylinder before identifying endpoints;
    prove identity, concatenation, reversal, and pullback laws for those transports, and compare
    incoming/outgoing/vertical corner permutations. Prove that defect deletion has the needed
@@ -662,8 +709,9 @@ noncompact source does not instantiate this classical collapse theorem.
 
 Before defining defect deletion on quotient classes, construct the following map on
 connected almost-framed representatives. Extend the open-exterior framing to the closed
-exterior using its fixed product collar and prove that restriction recovers the given
-framing. Give the closed exterior its inherited orientation and prove the extended framing
+exterior using its product witness on a returned proper subcollar and prove that restriction
+recovers the given framing. Use a common smaller width for all endpoint and gluing comparisons;
+carry the positive normal-rescaling transport if collars are reparametrized. Give the closed exterior its inherited orientation and prove the extended framing
 induces it. In dimension at least two, prove the exterior connected, and identify its
 boundary with the defect sphere with the reversed boundary orientation. Package these
 specific data as a `StableFramedFillingCycle`, then prove witness compatibility and the
@@ -881,7 +929,7 @@ as unexplained data does not meet the roadmap.
 | 1 h-cobordism | geometric topology, DifferentialGeometry orientations/Sard, HF Morse data, algebraic topology | 2, 10 |
 | 2 small skeleton and `Theta_n` | 1, triangulation, geometric connected sum | 6, 9--10 |
 | 3 James/EHP/stable stems | algebraic topology, compactly generated substrate | 5, 8--9 |
-| 4 `SO`/`BSO`/Bott/`J` | compactly generated substrate, bundles, Lie groups | 5--6, 8--9 |
+| 4 `SO`/shared `BSO`/Bott/`J` | 3A, TopologicalKTheory T1.5–T1.6, bundles, Lie groups | 5--6, 8--9 |
 | 5 Pontryagin--Thom | 3--4, tubular neighbourhoods, transversality | 6, 8--9 |
 | 6 `A_n`, `P_n`, exactness | 1--2, 4--5 | 7--9 |
 | 7 Wall surgery | algebraic topology, geometric surgery, TangentialBordism B3.2 pure algebra, 4--6 | 8--9 |
@@ -889,7 +937,10 @@ as unexplained data does not meet the roadmap.
 | 9 sixth-stem calculation | 3--8 | 10 |
 | 10 smooth recognition | 1--2, 9 | endpoint |
 
-Stages 1, 3, and 4 can begin independently against their cited foundations.  Stage 5 joins the
+Stages 1, 3A and the group-colimit part of 4A.1 can begin against their cited foundations.
+The shared classifier order is 3A → TopologicalKTheory T1.5–T1.6 → 4A.2–4B →
+TopologicalKTheory T7. The early classification proof does not use the Bott theorem it later
+feeds.  Stage 5 joins the
 stable-homotopy and vector-bundle tracks.  The geometric `A_n`/`P_n` definitions and their
 comparison with the historical Kervaire--Milnor models begin in Stage 6; the Wall comparison
 occurs in Stage 7 after the obstruction groups and surgery theorem have been constructed.
@@ -934,8 +985,13 @@ occurs in Stage 7 after the obstruction groups and surgery theorem have been con
   Its proof includes the broken-geodesic approximations, compact-family comparison, Morse--Bott
   Hessian and negative-bundle attachments, and increasing-connectivity estimate.  A proof of
   only `pi_5(SO)=pi_6(SO)=0` does not pass.
-- The `BSO` classifier is natural for pullback and Whitney sum, and a zero class is equivalent to
-  the existence of a chosen stable framing.
+- The shared TopologicalKTheory classifier and universal bundles are used with their actual
+  basepoints, stabilization and clutching maps; the group/loop and smooth-framing comparisons
+  commute with them. The full real Bott chain is retained without a classifier/Bott cycle.
+- The normalization product witness returns `0 < ε < 1` and equality only below that width,
+  including for the disc's full radial input collar. Shrinking, positive normal rescaling and
+  the moving boundary path preserve the filling class and the gluing/corner comparisons.
+- A zero smooth bundle class is equivalent to the existence of a chosen stable framing.
 - Pontryagin--Thom identifies a framed rank-`k` Thom space with
   `M_+ smash S^k`, then uses the augmentation to obtain the map to `S^k`; it also includes
   continuous pointed collapse and augmentation maps, collapse-map independence, the regular-value
