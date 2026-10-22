@@ -531,14 +531,30 @@ increasing-connectivity estimate, postulates the eight-periodic table, or proves
    and connected product cylinders with their actual boundary identifications.
 3. Construct one-point compactification of a vector bundle and its Thom space.  If the rank-`k`
    normal bundle `nu` of `M` is framed, prove the pointed equivalences
-   `Th(nu) ~= M_+ smash S^k ~= Sigma^k M_+`, natural under pullback and stabilization.  It is not
-   in general a sphere.
-4. Choose a tubular neighbourhood and define the collapse map
+   `Th(nu) ~= M_+ smash S^k ~= Sigma^k M_+`, natural under pullback and stabilization.
+   Construct this equivalence from the displayed normal trivialization: on a finite normal
+   vector `v` it sends its Thom class to the compactification class of
+   `(base(v), framing(v))`, and it sends infinity to the suspension basepoint. It is not
+   a separately chosen pointed isomorphism, and the Thom space is not in general a sphere.
+4. Choose a tubular neighbourhood whose derivative at the zero section induces the identity
+   on the actual normal quotient `T_ambient / d(embedding)(TM)`. Compress the whole normal
+   bundle onto the open disc domain by a fibrewise radial homeomorphism
+   `v ↦ a(v)v`, where `a` is continuous and strictly positive. Preserve the zero section;
+   prove the compactification and shrinking comparisons for these compressions. In particular,
+   a fibre reflection cannot be substituted while the displayed framing stays fixed.
+   Define the collapse map
    `S^(n+k) -> Th(nu)`.  Compose the framed Thom equivalence with the map
    `Sigma^k M_+ -> Sigma^k S^0 = S^k` induced by the augmentation `M_+ -> S^0`; this composite,
    not the Thom space alone, is the Pontryagin--Thom representative.  Prove continuity at the
    collapsed complement, independence under shrinking or changing the tubular neighbourhood,
    invariance under framed isotopy, and compatibility with disjoint union and stabilization.
+   Pin the augmentation by `(x,v) ↦ v` in the finite compactification coordinates and by
+   the basepoint at infinity. As a regression, embed one positively framed point at the
+   origin of `R`, with the quotient normal coordinate and standard positive trivialization.
+   Construct its identity tube and show that every allowed tube and positive compression
+   gives a collapse composite pointed-homotopic to the identity of `OnePoint R`, hence degree
+   `+1`. Changing the normal framing by reflection gives degree `−1`; changing tube or
+   compression with the framing fixed does not.
 5. For the inverse, apply relative smooth approximation to a stable sphere map, choose a regular
    value using Sard and transversality, and give its inverse image the induced compact smooth
    structure and stable normal framing.  Prove independence from approximation and regular value
@@ -558,6 +574,8 @@ VIII--X, gives the modern Pontryagin--Thom proof.  Hirsch, *Differential Topolog
 2--4, supplies
 approximation, transversality, embeddings, and tubular neighbourhoods.  Every independence
 statement above is part of the theorem, not quotient-by-choice automation.
+[Snaith, §3.1, printed p. 8](https://arxiv.org/pdf/1001.4751#page=8) fixes the Thom
+identification induced by the normal trivialization and the following augmentation.
 
 The sphere-source collapse has a compact source manifold as an explicit hypothesis.
 Use the chosen normal-disc quotient model of the Thom space: the tubular coordinate maps
@@ -585,8 +603,22 @@ noncompact source does not instantiate this classical collapse theorem.
    its genuine tubular neighbourhood, named endpoint embeddings identifying that track with the
    two chosen defect discs and collars. Model this track as a proper product tube with named
    endcaps, their endpoint-disc identifications, and a lateral face. Only the lateral face
-   has an exterior collar; an endcap interior lies in the ambient trace boundary. Construct
-   the standard `Dⁿ × I ⊂ M × I` tube with these faces before proving reflexivity.
+   has an exterior collar; an endcap interior lies in the ambient trace boundary. The tube's
+   closed lateral width parameter `s ∈ [0,1]` is matched at its endpoints to
+   `c_X(ε_X s,b)` and `c_Y(ε_Y s,b)`, where `0 < ε_X, ε_Y < 1` lie strictly below the
+   corresponding cycle product widths. Thus the included lateral width-one slice stays
+   inside each supplied half-open endpoint collar. Transport its derivative by
+   `(u,v) ↦ (εu,v)`, including the positive normal rescaling in the endpoint framing
+   comparison; use the induced inverse rescaling when returning to the original coordinates.
+   The lateral product condition itself returns a proper width `0 < μ < 1` and asserts
+   equality only on total-bundle vectors based at `0 < s < μ`. Shrinking retains the same
+   lateral framing. No matching or product condition extends an endpoint collar to width one.
+   Construct the standard `Dⁿ × I ⊂ M × I` tube with these faces before proving reflexivity.
+   In particular, construct the product witness for a hemispherical defect in `S⁶` with
+   full radial exterior collar `c(s,b)=(1-s)b` in `D⁶`, not a pre-shrunk input. Its lateral
+   collar is `(s,t,b) ↦ (t,c(εs,b))`, with a common proper width below the cycle product
+   width, and remains embedded at `s=1`. Return the product complement frame with its
+   derivative and endpoint equations; derive reflexivity from this cylinder construction.
    Include product compatibility of the complement framing on the lateral collar and a stable
    framing off that neighbourhood whose endpoint
    pullbacks equal the two displayed complement framings after one common stabilization.
